@@ -1,0 +1,14 @@
+{
+  "discord": {
+    "token": "MTk2OTI4MDY0MDk2MTc0MDgw.Xk76ew.5Cia_nlnysLEpg4iSOkbeRgiuuE",
+    "commandPrefix": "!"
+  },
+  "http": {
+    "port": 25565,
+    "maxWorkerThreads": 3
+  },
+  "database": {
+    "type": "sqlite",
+    "database": "Core.db"
+  }
+}

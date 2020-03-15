@@ -1,0 +1,278 @@
+package uk.co.bjdavies.agent;
+
+import javassist.*;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.SignatureAttribute;
+import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.StringMemberValue;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.ProtectionDomain;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+/**
+ * @author ben.davies99@outlook.com (Ben Davies)
+ * @since 1.0.0
+ */
+public class Agent {
+    private static final String GENERATED_DATE_PATTERN = "yyyy-MM-dd'T'hh:mm:ss.SSSZZZ";
+    private static final Set<ClassLoader> loaders = new HashSet<ClassLoader>();
+    private static final List<CtClass> models = new ArrayList<CtClass>();
+    private static ClassPool cp;
+    private static CtClass modelClass = null;
+    private static String currentDirectoryPath;
+
+    public static void premain(String args, Instrumentation instrumentation) {
+        cp = ClassPool.getDefault();
+
+        try {
+            cp.insertClassPath(new ClassClassPath(Class.forName("uk.co.bjdavies.api.db.Model")));
+            modelClass = cp.get("uk.co.bjdavies.api.db.Model");
+        } catch (ClassNotFoundException | NotFoundException e) {
+            e.printStackTrace();
+        }
+        System.out.println("===================================================\n\n");
+        System.out.println("Starting BabblebotAgent for object instrumentation");
+        System.out.println("\n\n===================================================\n\n");
+
+        CtClass finalModelClass = modelClass;
+        instrumentation.addTransformer(new ClassFileTransformer() {
+            @Override
+            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+                try {
+                    if (className.contains("Proxy") || className.contains("java/lang") || className.contains("com/sun") || className.contains("Guice") || className.contains("google") || className.contains("GeneratedMethodAccessor") || className.contains("GeneratedConstructorAccessor")) {
+                        return null;
+                    }
+                    if (!loaders.contains(loader) && loader instanceof URLClassLoader) {
+                        scanLoader(loader);
+                        loaders.add(loader);
+                    }
+                    CtClass clazz = cp.get(className.replace('/', '.'));
+
+                    if (clazz != null && notAbstract(clazz) && clazz.subclassOf(finalModelClass) &&
+                            !clazz.equals(finalModelClass) && !clazz.equals(cp.get("uk.co.bjdavies.db.impl.ImplModel"))) {
+
+                        byte[] bytecode = instrument(clazz);
+                        System.out.println("Instrumented model: " + clazz.getName());
+                        return bytecode;
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        });
+
+    }
+
+    private static void scanLoader(ClassLoader loader) throws Exception {
+        System.out.println("Scanning  class loader:  " + loader);
+        //lets skip known jars to save some time
+        List<String> toSkipList = Arrays.asList("rt.jar", "activejdbc-", "javalite-common", "mysql-connector", "slf4j",
+                "rt.jar", "jre", "jdk", "springframework", "servlet-api", "activeweb", "junit", "jackson", "jaxen",
+                "dom4j", "guice", "javax", "aopalliance", "commons-logging", "app-config", "freemarker",
+                "commons-fileupload", "hamcrest", "commons-fileupload", "commons-io", "javassist", "ehcache", "xml-apis");
+
+        if (loader instanceof URLClassLoader) {
+            URL[] urls = ((URLClassLoader) loader).getURLs();
+            for (URL url : urls) {
+                boolean skip = false;
+                for (String name : toSkipList) {
+                    if (url.getPath().contains(name)) {
+                        skip = true;
+                    }
+                }
+
+                if (!skip) {
+                    processURL(url);
+                }
+            }
+        }
+    }
+
+    private static void processURL(URL url) throws Exception {
+        System.out.println("Processing: " + url);
+        File f = new File(url.toURI());
+        if (f.isFile()) {
+            processFilePath(f);
+        } else {
+            processDirectoryPath(f);
+        }
+    }
+
+    private static void processDirectoryPath(File f) throws Exception {
+        currentDirectoryPath = f.getCanonicalPath();
+        processDirectory(f);
+    }
+
+    private static void processDirectory(File f) throws Exception {
+        findFiles(f);
+        File[] files = f.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    processDirectory(file);
+                }
+            }
+        }
+    }
+
+    private static void findFiles(File f) throws Exception {
+        File[] files = f.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".class");
+            }
+        });
+
+        if (files != null) {
+            for (File file : files) {
+                int current = currentDirectoryPath.length();
+                String fileName = file.getCanonicalPath().substring(++current);
+                String className = fileName.replace(File.separatorChar, '.').substring(0, fileName.length() - 6);
+                tryClass(className);
+            }
+        }
+    }
+
+    private static void processFilePath(File file) throws Exception {
+        try {
+            if (file.getCanonicalPath().toLowerCase().endsWith(".jar")
+                    || file.getCanonicalPath().toLowerCase().endsWith(".zip")) {
+
+                ZipFile zip = new ZipFile(file);
+                Enumeration<? extends ZipEntry> entries = zip.entries();
+
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+
+                    if (entry.getName().endsWith("class")) {
+                        InputStream zin = zip.getInputStream(entry);
+                        tryClass(entry.getName().replace(File.separatorChar, '.').substring(0, entry.getName().length() - 6));
+                        zin.close();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void tryClass(String className) throws Exception {
+        try {
+            CtClass clazz = cp.get(className.replace('/', '.'));
+            if (isModel(clazz)) {
+                if (!models.contains(clazz)) {
+                    models.add(clazz);
+                    System.out.println("Found model: " + className);
+
+                }
+            }
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+
+    private static boolean isModel(CtClass clazz) {
+        return clazz != null && notAbstract(clazz) && clazz.subclassOf(modelClass) && !clazz.equals(modelClass);
+    }
+
+    private static byte[] instrument(CtClass target) throws Exception {
+        try {
+            doInstrument(target);
+            target.detach();
+            return target.toBytecode();
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+
+    private static void doInstrument(CtClass target) throws NotFoundException, CannotCompileException {
+        CtClass modelClass = cp.get("uk.co.bjdavies.db.impl.ImplModel");
+        target.setSuperclass(modelClass);
+
+        CtMethod[] modelMethods = modelClass.getDeclaredMethods();
+        CtMethod[] targetMethods = target.getDeclaredMethods();
+
+        CtMethod modelGetClass = modelClass.getDeclaredMethod("getModelClass");
+        CtMethod newGetClass = CtNewMethod.copy(modelGetClass, target, null);
+        newGetClass.setBody("{ return " + target.getName() + ".class; }");
+        ClassMap classMap = new ClassMap();
+        classMap.fix(modelClass);
+
+
+        CodeConverter conv = new CodeConverter();
+
+        conv.redirectMethodCall(modelGetClass, newGetClass);
+
+
+        for (CtMethod method : modelMethods) {
+            int modifiers = method.getModifiers();
+            if (Modifier.isStatic(modifiers)) {
+                if (targetHasMethod(targetMethods, method)) {
+                    System.out.println("Detected method: " + method.getName() + ", skipping delegate.");
+                } else {
+                    CtMethod newMethod;
+                    if (Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)) {
+                        newMethod = CtNewMethod.copy(method, target, classMap);
+                        newMethod.instrument(conv);
+                    } else if ("getModelClass".equals(method.getName())) {
+                        newMethod = newGetClass;
+                    } else {
+                        newMethod = CtNewMethod.delegator(method, target);
+                    }
+
+                    // Include the generic signature
+                    for (Object attr : method.getMethodInfo().getAttributes()) {
+                        if (attr instanceof SignatureAttribute) {
+                            newMethod.getMethodInfo().addAttribute((SignatureAttribute) attr);
+                        }
+                    }
+                    addGeneratedAnnotation(newMethod, target);
+                    target.addMethod(newMethod);
+                }
+            }
+        }
+    }
+
+    private static void addGeneratedAnnotation(CtMethod newMethod, CtClass target) {
+        ConstPool constPool = target.getClassFile().getConstPool();
+        AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        Annotation annot = new Annotation("javax.annotation.Generated", constPool);
+        annot.addMemberValue("value", new StringMemberValue("uk.co.bjdavies.agent.Agent", constPool));
+
+        ZonedDateTime now = ZonedDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(GENERATED_DATE_PATTERN);
+        annot.addMemberValue("date", new StringMemberValue(now.format(formatter), constPool));
+
+        attr.addAnnotation(annot);
+        newMethod.getMethodInfo().addAttribute(attr);
+    }
+
+    private static boolean targetHasMethod(CtMethod[] targetMethods, CtMethod method) {
+        for (CtMethod targetMethod : targetMethods) {
+            if (targetMethod.equals(method)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean notAbstract(CtClass clazz) {
+        int modifiers = clazz.getModifiers();
+        return !(Modifier.isAbstract(modifiers) || Modifier.isInterface(modifiers));
+    }
+}

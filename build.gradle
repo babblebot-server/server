@@ -1,0 +1,81 @@
+plugins {
+    id 'groovy'
+    id 'java-library'
+    id 'signing'
+    id 'com.gorylenko.gradle-git-properties' version '2.2.0' apply false
+    id 'com.github.ben-manes.versions' version '0.27.0'
+    id 'net.researchgate.release' version '2.8.1'
+}
+
+group 'uk.co.bjdavies'
+version '1.0.0'
+//1.0.0
+//1 Major Version
+//.0 Minor Version
+//.0 Patch Version
+
+ext {
+    //Project Contants
+    project_name = 'BabbleBot-Server'
+    artifact_group = 'co.uk.bjdavies'
+    project_version = "$version".toString()
+    project_description = "This is a simple Discord Server using Discord4J"
+    project_url = 'https://babblebot.bj-davies.co.uk'
+    project_jdk = '1.8'
+    jdk = JavaVersion.current().majorVersion
+    jdk_javadoc = "https://docs.oracle.com/javase/$jdk/docs/api/".toString()
+    if (JavaVersion.current().isJava11Compatible()) {
+        jdk_javadoc = "https://docs.oracle.com/en/java/javase/$jdk/docs/api/".toString()
+    }
+
+    isRelease = !version.toString().endsWith("-SNAPSHOT")
+}
+
+if (!isRelease) {
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+allprojects {
+    apply plugin: 'com.github.ben-manes.versions'
+    apply plugin: 'maven-publish'
+
+    if (isRelease) apply plugin: 'signing'
+
+    group = artifact_group
+    version = project_version
+    description = project_description
+
+    sourceCompatibility = project_jdk
+    targetCompatibility = project_jdk
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    archivesBaseName = "babblebot-server-$project.name"
+    tasks.withType(Javadoc) {
+        title = "$archivesBaseName ${version} API"
+        options.windowTitle = "$archivesBaseName ($version)"
+    }
+
+    task createProperties {
+        doLast {
+            def version = project.version.toString()
+            def file = new File("$project.buildDir/resources/main/version.txt")
+            if (!file.exists()) {
+                println("Ran Create Properties")
+                new File("$project.buildDir/resources/main/").mkdirs()
+                file.createNewFile()
+            }
+            file.write(version)
+        }
+    }
+
+    jar { dependsOn createProperties }
+}
+
+

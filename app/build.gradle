@@ -1,0 +1,46 @@
+plugins {
+    id 'application'
+}
+
+//mainClassName = 'uk.co.bjdavies.BabbleBot'
+
+project.startScripts {
+    doLast {
+        String agentFileName = 'babblebot-server-agent-' + project(':agent').getVersion() + '.jar'
+        String forwardSlash = "/"
+        String unixRegex = $/exec "$$JAVACMD" /$
+        String unixReplacement = $/exec "$$JAVACMD" -javaagent:"$$APP_HOME/lib${forwardSlash}${
+            agentFileName
+        }" /$
+        unixScript.text = unixScript.text.replace(unixRegex, unixReplacement)
+        String windowsRegex = $/"%JAVA_EXE%" %DEFAULT_JVM_OPTS%/$
+        String windowsReplacement = $/"%JAVA_EXE%" %DEFAULT_JVM_OPTS% -javaagent:"%APP_HOME%\lib\$agentFileName"/$
+        windowsScript.text = windowsScript.text.replace(windowsRegex, windowsReplacement)
+    }
+}
+
+
+project.tasks.run {
+    dependsOn ':agent:build'
+    doFirst {
+        project.applicationDefaultJvmArgs += ["-javaagent:${project(':agent').getBuildDir()}/libs/babblebot-server-agent-${project(':agent').getVersion()}.jar"]
+        project.applicationDefaultJvmArgs += ["-Dname=BabbleBot-Server"]
+        project.applicationDefaultJvmArgs += ["-Dio.netty.noUnsafe=true"]
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'uk.co.bjdavies.BabbleBot'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':server')
+    implementation project(':api')
+    implementation project(':agent')
+}

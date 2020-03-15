@@ -1,0 +1,22 @@
+plugins {
+    id 'java-library'
+}
+repositories {
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes 'Premain-Class': 'uk.co.bjdavies.agent.Agent'
+        attributes 'Can-Retransform-Classes': true
+        attributes 'Can-Redefine-Classes': true
+    }
+}
+
+
+dependencies {
+    implementation 'net.bytebuddy:byte-buddy:1.7.5'
+    implementation 'org.javassist:javassist:3.26.0-GA'
+    implementation project(':server')
+    implementation project(':api')
+}

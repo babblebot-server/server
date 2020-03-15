@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api 'com.google.inject:guice:4.2.2'
+    api 'com.discord4j:discord4j-core:3.0.12'
+}
