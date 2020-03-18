@@ -2,21 +2,14 @@ plugins {
     id 'groovy'
     id 'java-library'
     id 'signing'
-    id 'com.gorylenko.gradle-git-properties' version '2.2.0' apply false
-    id 'com.github.ben-manes.versions' version '0.27.0'
-    id 'net.researchgate.release' version '2.8.1'
+    id 'de.gliderpilot.semantic-release' version '1.4.0' apply true
 }
 
 group 'uk.co.bjdavies'
-version '1.0.0'
-//1.0.0
-//1 Major Version
-//.0 Minor Version
-//.0 Patch Version
 
 ext {
     //Project Contants
-    project_name = 'BabbleBot-Server'
+    project_name = "BabbleBot-Server"
     artifact_group = 'co.uk.bjdavies'
     project_version = "$version".toString()
     project_description = "This is a simple Discord Server using Discord4J"
@@ -29,6 +22,15 @@ ext {
     }
 
     isRelease = !version.toString().endsWith("-SNAPSHOT")
+    ghToken = project.hasProperty('ghToken') ? project.getProperty('ghToken') : System.getenv('GH_TOKEN') ?: null
+}
+
+
+semanticRelease {
+    repo {
+        ghToken = project.ghToken
+        releaseAsset jar
+    }
 }
 
 if (!isRelease) {
@@ -38,7 +40,6 @@ if (!isRelease) {
 }
 
 allprojects {
-    apply plugin: 'com.github.ben-manes.versions'
     apply plugin: 'maven-publish'
 
     if (isRelease) apply plugin: 'signing'

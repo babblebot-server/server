@@ -275,3 +275,7 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/java,linux,macos,maven,gradle,windows,intellij,intellij+all
+
+#Make sure to not upload import files
+app/config.json
+app/Core.db
