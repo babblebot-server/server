@@ -1,8 +1,4 @@
 sudo: false
-addons:
-  apt:
-    packages:
-      - git
 language: java
 dist: xenial
 jdk: oraclejdk9
@@ -11,11 +7,6 @@ branches:
   except:
     - /^v\d+\.\d+\.\d+$/
 before_install:
-  - git fetch --unshallow
-  - git config user.email "info@bdavies.net"
-  - git config user.name "Travis-CI"
-  - git config url.https://.insteadOf git://
-  - git checkout -qf $TRAVIS_BRANCH
   - nvm install 12
   - npm ci
 install:
