@@ -14,8 +14,8 @@ ext {
     artifact_group = 'co.uk.bjdavies'
     project_version = "$version".toString()
     project_description = "This is a simple Discord Server using Discord4J"
-    project_url = 'https://babblebot.bdavies.net'
-    project_jdk = JavaVersion.VERSION_11
+    project_url = 'https://babblebot.bj-davies.co.uk'
+    project_jdk = '1.8'
     jdk = JavaVersion.current().majorVersion
     jdk_javadoc = "https://docs.oracle.com/javase/$jdk/docs/api/".toString()
     if (JavaVersion.current().isJava11Compatible()) {
@@ -57,6 +57,7 @@ allprojects {
             links = [
                     jdk_javadoc,
                     "https://fasterxml.github.io/jackson-databind/javadoc/2.10/",
+                    "https://www.javadoc.io/doc/com.discord4j/Discord4J/",
                     "http://www.reactive-streams.org/reactive-streams-1.0.3-javadoc/",
                     "https://projectreactor.io/docs/core/release/api/",
                     "https://projectreactor.io/docs/netty/release/api/",
@@ -65,14 +66,13 @@ allprojects {
             ]
         }
         if (JavaVersion.current().isJava9Compatible()) {
-            //options.addBooleanOption('html5', true)
+            options.addBooleanOption('html5', true)
         }
     }
 
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
         options.incremental = true
-
     }
 
     task downloadDependencies() {
@@ -99,8 +99,7 @@ subprojects {
             publications {
                 maven(MavenPublication) {
                     from components.java
-                    artifact sourcesJar
-                    artifact javadocJar
+
                     artifactId archivesBaseName
 
                     versionMapping {
@@ -160,20 +159,13 @@ subprojects {
                 }
             }
 
-            publish.dependsOn(bintrayUpload, bintrayPublish)
+            publish.dependsOn(bintrayUpload)
         }
     }
 
     tasks.withType(Javadoc) {
-        if (project.name != "app") {
-            title = "$archivesBaseName ${version} API"
-            options.windowTitle = "$archivesBaseName ($version)"
-            options.addStringOption('Xdoclint:none', '-quiet')
-            options.addStringOption('encoding', 'UTF-8')
-            options.addStringOption('charSet', 'UTF-8')
-        } else {
-            failOnError false
-        }
+        title = "$archivesBaseName ${version} API"
+        options.windowTitle = "$archivesBaseName ($version)"
     }
 
     task createProperties {
