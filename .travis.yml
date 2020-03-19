@@ -22,7 +22,8 @@ script:
   - echo "Testing goes here"
 jobs:
   include:
-    - stage: deploy
-      if: branch == master && !fork
-      script:
-        - npm run semantic-release
+    - stage: release
+      script: true
+      deploy:
+        provider: script
+        script: npm run release
