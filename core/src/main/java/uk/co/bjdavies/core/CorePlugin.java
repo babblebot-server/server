@@ -95,6 +95,7 @@ public class CorePlugin implements IPlugin {
 
     @Override
     public void onReload() {
+        log.info("Plugin reload");
     }
 
     @Override
