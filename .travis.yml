@@ -1,21 +1,28 @@
-sudo: false
-addons:
-  apt:
-    packages:
-      - git
 language: java
-jdk: oraclejdk7
+os: linux
+dist: xenial
+jdk: oraclejdk11
 env: TERM=dumb
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 before_install:
-  - git fetch --unshallow
-  - git config user.email "name@example.com"
-  - git config user.name "Travis-CI"
-  - git config url.https://.insteadOf git://
-  - git checkout -qf $TRAVIS_BRANCH
+  - nvm install 12
+  - npm ci
 install:
-  - echo "skip default gradlew assemble"
+  - ./gradlew assemble
 script:
-  - ./gradlew release -Dorg.ajoberstar.grgit.auth.username=${GH_TOKEN} -Dorg.ajoberstar.grgit.auth.password
+  - echo "Testing goes here"
+jobs:
+  include:
+    - stage: release
+      deploy:
+        provider: script
+        script: npm run release
