@@ -34,7 +34,21 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
-      "@semantic-release/github",
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "app/build/distributions/*.tar",
+              "label": "Tar Archive"
+            },
+            {
+              "path": "app/build/distributions/*.zip",
+              "label": "Zip Archive"
+            }
+          ]
+        }
+      ],
       "gradle-semantic-release-plugin",
       [
         "@semantic-release/git",
