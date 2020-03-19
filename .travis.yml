@@ -1,5 +1,5 @@
-sudo: false
 language: java
+os: linux
 dist: xenial
 jdk: oraclejdk9
 env: TERM=dumb
@@ -19,6 +19,4 @@ jobs:
       script: skip
       deploy:
         provider: script
-        skip_cleanup: true
-        script:
-          - npm run semantic-release
+        script: npm run semantic-release
