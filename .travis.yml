@@ -20,6 +20,8 @@ install:
   - ./gradlew assemble
 script:
   - echo "Testing goes here"
+before_deploy:
+  - ./gradlew assembleDist
 jobs:
   include:
     - stage: release
