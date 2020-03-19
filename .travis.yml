@@ -1,7 +1,7 @@
 language: java
 os: linux
 dist: xenial
-jdk: oraclejdk9
+jdk: oraclejdk11
 env: TERM=dumb
 branches:
   except:
