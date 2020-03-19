@@ -2,10 +2,10 @@ plugins {
     id 'groovy'
     id 'java-library'
     id 'signing'
-    id 'de.gliderpilot.semantic-release' version '1.4.0' apply true
 }
 
 group 'uk.co.bjdavies'
+version "1.0.0"
 
 ext {
     //Project Contants
@@ -23,14 +23,6 @@ ext {
 
     isRelease = !version.toString().endsWith("-SNAPSHOT")
     ghToken = project.hasProperty('ghToken') ? project.getProperty('ghToken') : System.getenv('GH_TOKEN') ?: null
-}
-
-
-semanticRelease {
-    repo {
-        ghToken = project.ghToken
-        releaseAsset jar
-    }
 }
 
 if (!isRelease) {
