@@ -23,7 +23,6 @@ script:
 jobs:
   include:
     - stage: release
-      script: true
       deploy:
         provider: script
         script: npm run release
