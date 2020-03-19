@@ -4,18 +4,30 @@ addons:
     packages:
       - git
 language: java
-jdk: oraclejdk7
+dist: xenial
+jdk: oraclejdk9
 env: TERM=dumb
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
 before_install:
   - git fetch --unshallow
-  - git config user.email "name@example.com"
+  - git config user.email "info@bdavies.net"
   - git config user.name "Travis-CI"
   - git config url.https://.insteadOf git://
   - git checkout -qf $TRAVIS_BRANCH
+  - nvm install 12
+  - npm ci
 install:
-  - echo "skip default gradlew assemble"
+  - ./gradlew assemble
 script:
-  - ./gradlew release -Dorg.ajoberstar.grgit.auth.username=${GH_TOKEN} -Dorg.ajoberstar.grgit.auth.password
+  - echo "Testing goes here"
+jobs:
+  include:
+    - stage: release
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script:
+          - npm run semantic-release
