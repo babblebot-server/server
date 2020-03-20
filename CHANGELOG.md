@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.2...v1.2.3) (2020-03-20)
+
+
+### Bug Fixes
+
+* If javadoc fails don't fail publish ([e20e90a](https://github.com/bendavies99/BabbleBot-Server/commit/e20e90a32d43f49689f99c916f389381e57d1103))
+
 ## [1.2.2](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.1...v1.2.2) (2020-03-20)
 
 
