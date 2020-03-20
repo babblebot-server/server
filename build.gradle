@@ -160,7 +160,10 @@ subprojects {
                 }
             }
 
-            publish.dependsOn(bintrayUpload, bintrayPublish)
+            publish.dependsOn(bintrayUpload)
+            project.tasks.bintrayUpload.doLast {
+                bintrayPublish
+            }
         }
     }
 
