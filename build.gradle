@@ -177,15 +177,12 @@ subprojects {
     }
 
     tasks.withType(Javadoc) {
-        if (project.name != "app") {
-            title = "$archivesBaseName ${version} API"
-            options.windowTitle = "$archivesBaseName ($version)"
-            options.addStringOption('Xdoclint:none', '-quiet')
-            options.addStringOption('encoding', 'UTF-8')
-            options.addStringOption('charSet', 'UTF-8')
-        } else {
-            failOnError false
-        }
+        title = "$archivesBaseName ${version} API"
+        options.windowTitle = "$archivesBaseName ($version)"
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+        options.addStringOption('charSet', 'UTF-8')
+        failOnError false
     }
 
     task createProperties {
