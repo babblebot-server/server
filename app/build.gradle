@@ -2,7 +2,10 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'uk.co.bjdavies.BabbleBot'
+application {
+    mainClassName = 'uk.co.bjdavies.BabbleBot'
+    applicationName = 'Babblebot'
+}
 
 project.startScripts {
     doLast {
