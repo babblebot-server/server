@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.3...v1.2.4) (2020-03-20)
+
+
+### Bug Fixes
+
+* Github releases uploading all archives built ([4198c26](https://github.com/bendavies99/BabbleBot-Server/commit/4198c2672a0733dcad4324f10dd0b3a30aaa83d7))
+
 ## [1.2.3](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.2...v1.2.3) (2020-03-20)
 
 
