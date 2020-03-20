@@ -1,3 +1,11 @@
+## [1.2.1](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.0...v1.2.1) (2020-03-20)
+
+
+### Bug Fixes
+
+* Bintray not publishing on deploy ([d2fccd4](https://github.com/bendavies99/BabbleBot-Server/commit/d2fccd4a74e98a0d8777b8b02403b4f12fa7801b))
+* Github releases uploading all archives built ([bca00c9](https://github.com/bendavies99/BabbleBot-Server/commit/bca00c98c984aecfabb72cc8c460809163d3046f))
+
 # [1.2.0](https://github.com/bendavies99/BabbleBot-Server/compare/v1.1.0...v1.2.0) (2020-03-20)
 
 
