@@ -1,3 +1,19 @@
+# [1.2.0](https://github.com/bendavies99/BabbleBot-Server/compare/v1.1.0...v1.2.0) (2020-03-20)
+
+
+### Bug Fixes
+
+*  Merging conflicts ([92f683e](https://github.com/bendavies99/BabbleBot-Server/commit/92f683eb95194159cf8c7f84bec056ad4077e243))
+*  Merging conflicts ([ece2535](https://github.com/bendavies99/BabbleBot-Server/commit/ece2535ff44780d0ee6d6ddade946f1ad501095e))
+* Fixed Zip and Tar to github releases to have current release ([eae52be](https://github.com/bendavies99/BabbleBot-Server/commit/eae52bec813afe45199eb12fc71891187c3cd903))
+* Fixed Zip and Tar to github releases to have current release ([1551b70](https://github.com/bendavies99/BabbleBot-Server/commit/1551b705d7d42f93d3c3cc65a95e2740f9365b9b))
+
+
+### Features
+
+* Added Zip and Tar to github releases ([eb54e09](https://github.com/bendavies99/BabbleBot-Server/commit/eb54e091d7480988a3d4c1447619937730843f1d))
+* Added Zip and Tar to github releases ([cb0c0a8](https://github.com/bendavies99/BabbleBot-Server/commit/cb0c0a80fc5158354ea27c9a8e293bfc8ba180af))
+
 # [1.1.0](https://github.com/bendavies99/BabbleBot-Server/compare/v1.0.0...v1.1.0) (2020-03-19)
 
 
