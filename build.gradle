@@ -81,11 +81,6 @@ allprojects {
             configurations.findAll { it.canBeResolved }.files
         }
     }
-
-    java {
-        withJavadocJar()
-        withSourcesJar()
-    }
 }
 
 subprojects {
@@ -95,14 +90,26 @@ subprojects {
     if (!isJitpack && isRelease) apply plugin: 'signing'
 
     project.afterEvaluate {
+        task javadocJar(type: Jar) {
+            dependsOn project.tasks.javadoc
+            from project.tasks.javadoc.destinationDir
+            archiveClassifier = 'javadoc'
+            group 'build'
+        }
+
+        task sourceJar(type: Jar) {
+            dependsOn project.tasks.classes
+            from sourceSets.main.allSource
+            archiveClassifier = 'sources'
+            group 'build'
+        }
         publishing {
             publications {
                 maven(MavenPublication) {
                     from components.java
-                    artifact sourcesJar
+                    artifact sourceJar
                     artifact javadocJar
                     artifactId archivesBaseName
-
                     versionMapping {
                         usage('java-api') {
                             fromResolutionOf('runtimeClasspath')
@@ -143,6 +150,7 @@ subprojects {
         }
 
         if (!isJitpack) {
+
             bintray {
                 user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
                 key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
