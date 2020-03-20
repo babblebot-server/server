@@ -47,11 +47,11 @@
         {
           "assets": [
             {
-              "path": "app/build/distributions/Babblebot-${nexttRelease.version}.tar",
+              "path": "app/build/distributions/Babblebot-${nextRelease.gitTag}.tar",
               "label": "Tar Archive"
             },
             {
-              "path": "app/build/distributions/Babblebot-${nexttRelease.version}.zip",
+              "path": "app/build/distributions/Babblebot-${nextRelease.gitTag}.zip",
               "label": "Zip Archive"
             }
           ]
