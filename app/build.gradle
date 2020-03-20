@@ -32,11 +32,13 @@ project.tasks.run {
         project.applicationDefaultJvmArgs += ["-Dio.netty.noUnsafe=true"]
     }
 }
-
 jar {
     manifest {
         attributes 'Main-Class': 'uk.co.bjdavies.BabbleBot'
     }
+
+
+    dependsOn createProperties
 }
 
 repositories {

@@ -199,6 +199,7 @@ subprojects {
     }
 
     jar { dependsOn createProperties }
+    compileJava { dependsOn createProperties }
 }
 
 
