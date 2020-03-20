@@ -39,7 +39,7 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "./gradlew assembleDist"
+          "prepareCmd": "bash -c \"./gradlew assembleDist && rm -rf ./app/build/distributions\""
         }
       ],
       [
@@ -47,11 +47,11 @@
         {
           "assets": [
             {
-              "path": "app/build/distributions/Babblebot-${nextRelease.gitTag}.tar",
+              "path": "app/build/distributions/*.tar",
               "label": "Tar Archive"
             },
             {
-              "path": "app/build/distributions/Babblebot-${nextRelease.gitTag}.zip",
+              "path": "app/build/distributions/*.zip",
               "label": "Zip Archive"
             }
           ]
