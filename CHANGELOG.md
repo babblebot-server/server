@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.5...v1.2.6) (2020-03-20)
+
+
+### Bug Fixes
+
+* Use JDK 11 because that's the java requirement ([fd9dbed](https://github.com/bendavies99/BabbleBot-Server/commit/fd9dbed7e1c916df51d07905d4671acbd47570af))
+
 ## [1.2.5](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.4...v1.2.5) (2020-03-20)
 
 
