@@ -4,15 +4,12 @@ import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.Command;
-import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.api.db.Model;
 import uk.co.bjdavies.api.plugins.IPlugin;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -111,23 +108,22 @@ public class CorePlugin implements IPlugin {
     }
 
     @Command(description = "Start listening again to a channel the bot will then start responding again.")
-    public String listen(ICommandContext commandContext) {
+    public void listen(ICommandContext commandContext) {
         Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId().asString())
                 .first();
         model.ifPresent(Model::delete);
-
         if (model.isEmpty()) {
-            return "Channel is not ignored, so cancelling command.";
+            commandContext.getCommandResponse().sendString("Channel is not ignored, so cancelling command.");
         }
-        return "You can now use BabbleBot in this channel again.";
+        commandContext.getCommandResponse().sendString("You can now use BabbleBot in this channel again.");
     }
 
     @Command(description = "Ignore a channel so the bot wont respond")
-    public String ignore(ICommandContext commandContext) {
+    public void ignore(ICommandContext commandContext) {
         Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId().asString())
                 .first();
         if (model.isPresent()) {
-            return "Channel is already ignored, so cancelling command.";
+            commandContext.getCommandResponse().sendString("Channel is already ignored, so cancelling command.");
         } else {
             Ignore newIgnore = new Ignore();
             newIgnore.setChannelId(commandContext.getMessage().getChannelId().asString());
@@ -136,80 +132,82 @@ public class CorePlugin implements IPlugin {
             newIgnore.save();
         }
 
-        return "BabbleBot is now ignoring this channel";
+        commandContext.getCommandResponse().sendString("BabbleBot is now ignoring this channel");
     }
 
     @Command(description = "This will help you to discover all the commands and their features.",
             usage = "help (-cmd=CommandName)",
             type = "All")
     public String help(ICommandContext commandContext) {
+
         //TODO: Separate Namespaces
         //TODO: Fix not being to see !help bbtest
         //TODO: add namespace as a field in the help menu
-        if (commandContext.getValue().equals("") && !commandContext.hasParameter("cmd")) {
-            StringBuilder sb = new StringBuilder(commandContext.getType().equals("Discord") ? "```" : "");
-
-            for (ICommand command : commandDispatcher.getCommands(commandContext.getType())) {
-                sb.append(config.getCommandPrefix()).append(command.getAliases()[0]).append(" - ").append(command.getDescription()).append("\n\n");
-            }
-
-            sb.append(commandContext.getType().equals("Discord") ? "```" : "");
-
-            if (commandContext.getType().equals("Discord")) {
-                commandContext.getCommandUtils().sendPrivateMessage("List of all commands: use !help {command} for more\n" + sb.toString());
-                return "Check your DMs I would have sent you a message :)";
-            } else {
-                return "List of all commands: use !help {command} for more\n" + sb.toString();
-            }
-
-
-        } else {
-
-            String commandName;
-
-            if (commandContext.hasParameter("cmd")) {
-
-                commandName = commandContext.getParameter("cmd");
-
-            } else {
-                commandName = commandContext.getValue();
-            }
-
-            Optional<ICommand> command = commandDispatcher
-                    .getCommandByAlias(commandDispatcher.getNamespaceFromCommandName(commandName), commandName,
-                            commandContext.getType());
-            if (command.isPresent()) {
-
-                ICommand commandFound = command.get();
-
-                StringBuilder stringBuilder = new StringBuilder();
-
-                stringBuilder.append("Help for Command: ").append(commandName).append("\n");
-
-                stringBuilder.append("\nAlias(es):\n").append(commandContext.getType().equals("Discord") ? "```" : "");
-
-                List<String> aliases = Arrays.asList(commandFound.getAliases());
-
-                aliases.forEach(e -> {
-                    stringBuilder.append(e);
-                    if (!(aliases.indexOf(e) == aliases.size() - 1)) {
-                        stringBuilder.append("/");
-                    }
-                });
-
-                stringBuilder.append(commandContext.getType().equals("Discord") ? "```" : "")
-                        .append("\nDescription: \n").append(commandContext.getType().equals("Discord") ? "```" : "")
-                        .append(commandFound.getDescription());
-
-                stringBuilder.append(commandContext.getType().equals("Discord") ? "```" : "").append("\nUsage: \n")
-                        .append(commandContext.getType().equals("Discord") ? "```" : "").append(commandFound.getUsage())
-                        .append(commandContext.getType().equals("Discord") ? "```" : "");
-
-                return stringBuilder.toString();
-
-            } else {
-                return "The command entered does not exist.";
-            }
-        }
+        return "TODO!";
+//        if (commandContext.getValue().equals("") && !commandContext.hasParameter("cmd")) {
+//            StringBuilder sb = new StringBuilder(commandContext.getType().equals("Discord") ? "```" : "");
+//
+//            for (ICommand command : commandDispatcher.getCommands(commandContext.getType())) {
+//                sb.append(config.getCommandPrefix()).append(command.getAliases()[0]).append(" - ").append(command.getDescription()).append("\n\n");
+//            }
+//
+//            sb.append(commandContext.getType().equals("Discord") ? "```" : "");
+//
+//            if (commandContext.getType().equals("Discord")) {
+//                commandContext.getCommandUtils().sendPrivateMessage("List of all commands: use !help {command} for more\n" + sb.toString());
+//                return "Check your DMs I would have sent you a message :)";
+//            } else {
+//                return "List of all commands: use !help {command} for more\n" + sb.toString();
+//            }
+//
+//
+//        } else {
+//
+//            String commandName;
+//
+//            if (commandContext.hasParameter("cmd")) {
+//
+//                commandName = commandContext.getParameter("cmd");
+//
+//            } else {
+//                commandName = commandContext.getValue();
+//            }
+//
+//            Optional<ICommand> command = commandDispatcher
+//                    .getCommandByAlias(commandDispatcher.getNamespaceFromCommandName(commandName), commandName,
+//                            commandContext.getType());
+//            if (command.isPresent()) {
+//
+//                ICommand commandFound = command.get();
+//
+//                StringBuilder stringBuilder = new StringBuilder();
+//
+//                stringBuilder.append("Help for Command: ").append(commandName).append("\n");
+//
+//                stringBuilder.append("\nAlias(es):\n").append(commandContext.getType().equals("Discord") ? "```" : "");
+//
+//                List<String> aliases = Arrays.asList(commandFound.getAliases());
+//
+//                aliases.forEach(e -> {
+//                    stringBuilder.append(e);
+//                    if (!(aliases.indexOf(e) == aliases.size() - 1)) {
+//                        stringBuilder.append("/");
+//                    }
+//                });
+//
+//                stringBuilder.append(commandContext.getType().equals("Discord") ? "```" : "")
+//                        .append("\nDescription: \n").append(commandContext.getType().equals("Discord") ? "```" : "")
+//                        .append(commandFound.getDescription());
+//
+//                stringBuilder.append(commandContext.getType().equals("Discord") ? "```" : "").append("\nUsage: \n")
+//                        .append(commandContext.getType().equals("Discord") ? "```" : "").append(commandFound.getUsage())
+//                        .append(commandContext.getType().equals("Discord") ? "```" : "");
+//
+//                return stringBuilder.toString();
+//
+//            } else {
+//                return "The command entered does not exist.";
+//            }
+//        }
     }
 }

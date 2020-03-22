@@ -63,9 +63,24 @@ public final class PluginCommandParser {
 
                         @Override
                         public String run(IApplication application, ICommandContext commandContext) {
-                            return (String) executePluginCommand(new PluginCommandExecutionBuilder(method.getName(),
+                            return "";
+                        }
+
+
+                        @Override
+                        public void exec(IApplication application, ICommandContext commandContext) {
+                            PluginCommandDefinition cd = new PluginCommandExecutionBuilder(method.getName(),
                                     plugin.getClass()).setParameterTypes(ICommandContext.class)
-                                    .setArgs(commandContext).build());
+                                    .setArgs(commandContext).build();
+                            if (method.getReturnType().equals(Void.class)) {
+                                executePluginCommand(cd);
+                            } else {
+                                if (!commandContext.getCommandResponse().send(executePluginCommand(cd))) {
+                                    log.error("Plugin command: " + plugin.getName() + "#" + method.getName() +
+                                            " is not supported, command will not run please return a valid response type or use void and use commandContext.getCommandResponse()" +
+                                            ".send(Data)");
+                                }
+                            }
                         }
 
                         @Override
