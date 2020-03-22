@@ -1,9 +1,8 @@
 package uk.co.bjdavies.discord;
 
+import discord4j.core.object.entity.Member;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.discord.IDiscordCommandUtil;
-
-import java.util.Objects;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -19,7 +18,9 @@ public class DiscordCommandUtil implements IDiscordCommandUtil {
 
     @Override
     public void sendPrivateMessage(String text) {
-        Objects.requireNonNull(Objects.requireNonNull(commandContext.getMessage().getAuthorAsMember().block())
-                .getPrivateChannel().block()).createMessage(text).block();
+        commandContext.getMessage().getAuthorAsMember()
+                .flatMap(Member::getPrivateChannel)
+                .flatMap(c -> c.createMessage(text))
+                .subscribe();
     }
 }

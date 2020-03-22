@@ -43,9 +43,19 @@ public interface ICommand {
      *
      * @param application    - The application instance.
      * @param commandContext - The command context for all command parameters and values.
-     * @return String
+     * @return String - This return method is deprecated. use {@link ICommandResponse}
+     * @deprecated - To be removed in 2.0.0
      */
     String run(IApplication application, ICommandContext commandContext);
+
+    /**
+     * This is the execution point for the command.
+     *
+     * @param application    - The application instance.
+     * @param commandContext - The command context for all command parameters and values.
+     * @since 1.2.7
+     */
+    void exec(IApplication application, ICommandContext commandContext);
 
 
     /**

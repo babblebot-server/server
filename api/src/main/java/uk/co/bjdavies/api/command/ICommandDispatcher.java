@@ -1,7 +1,9 @@
 package uk.co.bjdavies.api.command;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -44,7 +46,7 @@ public interface ICommandDispatcher {
      * @param type  - The type of command.
      * @return Optional
      */
-    Optional<ICommand> getCommandByAlias(String namespace, String alias, String type);
+    Mono<ICommand> getCommandByAlias(String namespace, String alias, String type);
 
     /**
      * This will return the list of commands in the dispatcher.
@@ -52,7 +54,7 @@ public interface ICommandDispatcher {
      * @param type - THe type of command.
      * @return List
      */
-    List<ICommand> getCommands(String namespace, String type);
+    Flux<ICommand> getCommands(String namespace, String type);
 
     /**
      * This will return the list of commands in the dispatcher from all namespaces.
@@ -60,9 +62,9 @@ public interface ICommandDispatcher {
      * @param type - THe type of command.
      * @return List
      */
-    List<ICommand> getCommands(String type);
+    Flux<ICommand> getCommands(String type);
 
-    List<ICommand> getCommandsFromNamespace(String namespace);
+    Flux<ICommand> getCommandsFromNamespace(String namespace);
 
     String getNamespaceFromCommandName(String commandName);
 
