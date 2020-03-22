@@ -55,4 +55,11 @@ public interface ICommandContext {
      * @return IMessage
      */
     Message getMessage();
+
+    /**
+     * This will return a response instance so you can send responses to the discord client.
+     *
+     * @return ICommandResponse
+     */
+    ICommandResponse getCommandResponse();
 }

@@ -4,6 +4,7 @@ package uk.co.bjdavies.command;
 import discord4j.core.object.entity.Message;
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.command.ICommandContext;
+import uk.co.bjdavies.api.command.ICommandResponse;
 import uk.co.bjdavies.api.discord.IDiscordCommandUtil;
 import uk.co.bjdavies.discord.DiscordCommandUtil;
 
@@ -43,12 +44,17 @@ public class CommandContext implements ICommandContext {
      */
     private Message message;
 
+    /**
+     * This is the response system for babblebot.
+     */
+    private final ICommandResponse commandResponse;
+
 
     /**
      * This is the CommandContext Constructor.
      *
      * @param commandName - The name of the command.
-     * @param parameters  - THe command's paramaters.
+     * @param parameters  - THe command's parameters.
      * @param value       - The value of the command (if any).
      * @param type        - The type of the command.
      */
@@ -57,6 +63,7 @@ public class CommandContext implements ICommandContext {
         this.parameters = parameters;
         this.value = value;
         this.type = type;
+        commandResponse = new CommandResponse();
     }
 
 
@@ -64,7 +71,7 @@ public class CommandContext implements ICommandContext {
      * This is the CommandContext Constructor.
      *
      * @param commandName - The name of the command.
-     * @param parameters  - THe command's paramaters.
+     * @param parameters  - THe command's parameters.
      * @param value       - The value of the command (if any).
      * @param type        - The type of the command.
      * @param message     - IMessage of which was created when the message was sent.
@@ -75,6 +82,7 @@ public class CommandContext implements ICommandContext {
         this.value = value;
         this.type = type;
         this.message = message;
+        commandResponse = new CommandResponse();
     }
 
 
@@ -144,5 +152,10 @@ public class CommandContext implements ICommandContext {
      */
     public Message getMessage() {
         return message;
+    }
+
+    @Override
+    public ICommandResponse getCommandResponse() {
+        return commandResponse;
     }
 }

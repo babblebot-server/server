@@ -7,6 +7,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This is used for plugins and will be used for a method
+ * Return types valid for a function are:-
+ * String,
+ * Mono<String>
+ * and Mono<EmbedSpec>
+ *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */

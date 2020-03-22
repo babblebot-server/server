@@ -1,5 +1,6 @@
 package uk.co.bjdavies;
 
+import reactor.core.publisher.Mono;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
@@ -51,7 +52,13 @@ public final class BabbleBot {
 
             @Override
             public String run(IApplication application, ICommandContext commandContext) {
-                return "Test from the command dispatcher, $(getRandomGIF(1.14))";
+                return "";
+            }
+
+            @Override
+            public void exec(IApplication application, ICommandContext commandContext) {
+                commandContext.getCommandResponse()
+                        .sendString(Mono.just("Test from the command dispatcher, $(getRandomGIF(1.14))"));
             }
 
             @Override

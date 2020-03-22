@@ -1,18 +1,18 @@
 package uk.co.bjdavies.command;
 
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.command.ICommandMiddleware;
 import uk.co.bjdavies.command.parser.MessageParser;
-import uk.co.bjdavies.variables.VariableParser;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -118,13 +118,14 @@ public class CommandDispatcher implements ICommandDispatcher {
 
     }
 
-    public List<ICommand> getCommandsFromNamespace(String namespace) {
+    public Flux<ICommand> getCommandsFromNamespace(String namespace) {
         if (!commands.containsKey(namespace)) {
             log.error("Namespace: " + namespace + " has not been created yet, cannot get namepsace");
-            return new ArrayList<>();
+            return Flux.empty();
         }
-
-        return commands.get(namespace);
+        return Flux.create(sink -> {
+            commands.get(namespace).forEach(sink::next);
+        });
     }
 
     /**
@@ -134,10 +135,9 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @param type  - The type of command.
      * @return Optional
      */
-    public Optional<ICommand> getCommandByAlias(String namespace, String alias, String type) {
-        return getCommandsFromNamespace(namespace).stream()
-                .filter(e -> Arrays.asList(e.getAliases()).contains(alias) && e.getType().equals(type))
-                .findAny();
+    public Mono<ICommand> getCommandByAlias(String namespace, String alias, String type) {
+        return Mono.from(getCommandsFromNamespace(namespace)
+                .filter(e -> Arrays.asList(e.getAliases()).contains(alias) && e.getType().equals(type)).take(1));
     }
 
 
@@ -149,7 +149,7 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @param application - The application instance.
      * @return String - The command's response
      */
-    public String execute(MessageParser parser, String message, IApplication application) {
+    public Flux<String> execute(MessageParser parser, String message, IApplication application) {
 
         ICommandContext commandContext = parser.parseString(message);
 
@@ -164,77 +164,78 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing middleware");
-                return "";
+                return Flux.just("");
             }
 
-            final ICommand[] command = new ICommand[1];
 
             String namespace = getNamespaceFromCommandName(commandContext.getCommandName());
             String commandName = commandContext.getCommandName().replace(namespace, "");
 
-            getCommandsFromNamespace(namespace)
-                    .stream()
-                    .filter(e -> checkType(e.getType(), commandContext.getType())).forEach(e -> {
-                Optional<String> findCommand = Arrays.stream(e.getAliases())
-                        .filter(alias -> alias.toLowerCase().equals(commandName.toLowerCase()))
-                        .findFirst();
-                if (findCommand.isPresent()) {
-                    command[0] = e;
-                }
-            });
-
-            if (command[0] != null) {
-                boolean isValid = command[0].validateUsage(commandContext);
-                if (isValid) {
-                    log.debug("Running Command:" + commandContext.getCommandName() + " In Guild: " +
-                            Objects.requireNonNull(commandContext.getMessage().getGuild().block()).getName());
-                    return new VariableParser(command[0].run(application, commandContext), application).toString();
-                } else {
-                    return command[0].getUsage();
-                }
-            } else {
-
-                List<ICommand> commandsFilter = getCommandsLike(commandName,
-                        commandContext.getType());
-
-                if (commandsFilter.size() == 0) {
-                    return "The command couldn't be found.";
-                } else {
-
-                    StringBuilder sb = new StringBuilder("```markdown\n# Command Not Found\n\nDid You mean?\n");
-
-                    commandsFilter.forEach(c -> {
-                        sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append("? - ").append(c.getDescription()).append("\n");
+            return getCommandsFromNamespace(namespace)
+                    .filter(e -> checkType(e.getType(), commandContext.getType()))
+                    .filter(e -> Arrays.stream(e.getAliases())
+                            .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())) &&
+                            e.validateUsage(commandContext))
+                    .doOnError(e -> log.error("Error in the command dispatcher.", e))
+                    .flatMap(c -> {
+                        //noinspection ReactiveStreamsUnusedPublisher
+                        commandContext.getMessage().getGuild().doOnNext(g ->
+                                log.debug("Running command: " + commandContext.getCommandName() + "In Guild: " +
+                                        g.getName()));
+                        String runCommand = c.run(application, commandContext);
+                        if (!runCommand.equals("")) {
+                            return Flux.just(runCommand);
+                        } else {
+                            return Flux.just("");
+                        }
                     });
-
-                    sb.append("```");
-
-                    Objects.requireNonNull(commandContext.getMessage().getChannel().block())
-                            .createMessage(sb.toString()).block();
-                }
-
-                return "";
-            }
-
         } else {
-            return "Command could not be parsed.";
+            return Flux.just("Command could not be parsed.");
         }
+
+//            if (command[0] != null) {
+//                boolean isValid = command[0].validateUsage(commandContext);
+//                if (isValid) {
+//                    log.debug("Running Command:" + commandContext.getCommandName() + " In Guild: " +
+//                            Objects.requireNonNull(commandContext.getMessage().getGuild().block()).getName());
+//                    return new VariableParser(command[0].run(application, commandContext), application).toString();
+//                } else {
+//                    return command[0].getUsage();
+//                }
+//            } else {
+//
+//                List<ICommand> commandsFilter = getCommandsLike(commandName,
+//                        commandContext.getType());
+//
+//                if (commandsFilter.size() == 0) {
+//                    return "The command couldn't be found.";
+//                } else {
+//
+//                    StringBuilder sb = new StringBuilder("```markdown\n# Command Not Found\n\nDid You mean?\n");
+//
+//                    commandsFilter.forEach(c -> {
+//                        sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append("? - ").append(c.getDescription()).append("\n");
+//                    });
+//
+//                    sb.append("```");
+//
+//                    Objects.requireNonNull(commandContext.getMessage().getChannel().block())
+//                            .createMessage(sb.toString()).block();
+//                }
+//
+//                return "";
+//            }
+//
+//        } else {
+//            return "Command could not be parsed.";
+//        }
 
     }
 
-    private List<ICommand> getCommandsLike(String commandName, String type) {
-
-        List<ICommand> allCommands = getCommands(type);
-
-        List<ICommand> resultingCommands = new ArrayList<>();
-
-        allCommands.forEach(c -> Arrays.asList(c.getAliases()).forEach(a -> {
-            if (a.contains(commandName)) {
-                resultingCommands.add(c);
-            }
-        }));
-
-        return resultingCommands;
+    private Flux<ICommand> getCommandsLike(String commandName, String type) {
+        return Flux.create(sink -> getCommands(type).filter(c -> Arrays.stream(c.getAliases())
+                .anyMatch(a -> a.contains(commandName)))
+                .doOnNext(sink::next).subscribe());
     }
 
     private String getNamespaceForCommand(ICommand c) {
@@ -299,9 +300,8 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @param type - THe type of command.
      * @return List
      */
-    public List<ICommand> getCommands(String namespace, String type) {
-        return getCommandsFromNamespace(namespace)
-                .stream().filter(e -> e.getType().equals(type)).collect(Collectors.toList());
+    public Flux<ICommand> getCommands(String namespace, String type) {
+        return getCommandsFromNamespace(namespace).filter(c -> c.getType().equals(type));
     }
 
     /**
@@ -310,9 +310,8 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @param type - THe type of command.
      * @return List
      */
-    public List<ICommand> getCommands(String type) {
-        List<ICommand> commandsToReturn = new ArrayList<>();
-        commands.keySet().forEach(k -> commandsToReturn.addAll(getCommands(k, type)));
-        return commandsToReturn;
+    public Flux<ICommand> getCommands(String type) {
+        return Flux.create(sink -> commands.keySet().forEach(k ->
+                getCommands(k, type).doOnNext(sink::next).subscribe()));
     }
 }

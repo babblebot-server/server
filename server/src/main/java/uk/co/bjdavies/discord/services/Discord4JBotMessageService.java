@@ -37,21 +37,20 @@ public class Discord4JBotMessageService {
     }
 
     public void register() {
-        client.getEventDispatcher().on(MessageCreateEvent.class)
-                .flatMap(e -> Mono.justOrEmpty(e.getMessage().getContent()).log()
-                        .flatMap(c -> Mono.just(c.startsWith(config.getCommandPrefix()))
-                                .filter(r -> r)
-                                .filterWhen(a -> e.getMessage()
-                                        .getAuthorAsMember()
-                                        .map(User::isBot)
-                                        .map(isBot -> !isBot))
-                                .flatMap(r -> Mono.just((CommandDispatcher) commandDispatcher)
-                                        .flatMap(cd -> Mono.justOrEmpty(
-                                                cd.execute(new DiscordMessageParser(e.getMessage()), c.replace(config.getCommandPrefix(), ""), application))
-                                                .filter(cr -> !cr.isEmpty())
-                                                .flatMap(cr -> e.getMessage().getChannel()
-                                                        .flatMap(chan -> chan.createMessage(cr))
-                                                        .then()))
-                                ))).log(Loggers.getLogger(Discord4JBotMessageService.class)).subscribe();
+
+        client.getEventDispatcher().on(MessageCreateEvent.class).log(Loggers.getLogger(Discord4JBotMessageService.class))
+                .subscribe(e ->
+                        Mono.justOrEmpty(e.getMessage().getContent())
+                                .filter(m -> m.startsWith(config.getCommandPrefix()))
+                                .filterWhen(m ->
+                                        e.getMessage()
+                                                .getAuthorAsMember()
+                                                .map(User::isBot)
+                                                .map(isBot -> !isBot)
+                                ).subscribe(m -> {
+                            CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
+                            cd.execute(new DiscordMessageParser(e.getMessage()), m.replace(config.getCommandPrefix(), ""), application)
+                                    .subscribe(s -> e.getMessage().getChannel().subscribe(c -> c.createMessage(s).subscribe()));
+                        }));
     }
 }
