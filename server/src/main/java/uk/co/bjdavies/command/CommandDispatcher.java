@@ -3,6 +3,7 @@ package uk.co.bjdavies.command;
 import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.Loggers;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
@@ -125,6 +126,7 @@ public class CommandDispatcher implements ICommandDispatcher {
         }
         return Flux.create(sink -> {
             commands.get(namespace).forEach(sink::next);
+            sink.complete();
         });
     }
 
@@ -172,6 +174,7 @@ public class CommandDispatcher implements ICommandDispatcher {
             String commandName = commandContext.getCommandName().replace(namespace, "");
 
             return getCommandsFromNamespace(namespace)
+                    .log(Loggers.getLogger(CommandDispatcher.class))
                     .filter(e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
                             .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())) &&
