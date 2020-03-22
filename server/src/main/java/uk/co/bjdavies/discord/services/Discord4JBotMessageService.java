@@ -50,6 +50,7 @@ public class Discord4JBotMessageService {
                                 ).subscribe(m -> {
                             CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
                             cd.execute(new DiscordMessageParser(e.getMessage()), m.replace(config.getCommandPrefix(), ""), application)
+                                    .filter(s -> !s.equals(""))
                                     .subscribe(s -> e.getMessage().getChannel().subscribe(c -> c.createMessage(s).subscribe()));
                         }));
     }

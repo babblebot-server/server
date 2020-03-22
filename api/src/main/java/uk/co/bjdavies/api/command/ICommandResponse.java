@@ -19,28 +19,40 @@ public interface ICommandResponse {
      *
      * @param embed this is the CreateSpec {@link EmbedCreateSpec}
      */
-    void sendEmbed(Consumer<EmbedCreateSpec> embed);
+    boolean sendEmbed(Consumer<EmbedCreateSpec> embed);
 
     /**
      * This will send one String and then the command has finished
      *
      * @param string - This is the string you wish to respond with.
+     * @return boolean
      */
-    void sendString(String string);
+    boolean sendString(String string);
 
     /**
      * This is a single reactive string.
      * The command dispatcher will subscribe to this.
      *
      * @param string - mono of a string
+     * @return boolean
      */
-    void sendString(Mono<String> string);
+    boolean sendString(Mono<String> string);
 
     /**
      * Multiple strings you wish to send to the user.
      * The command dispatcher will subscribe to this.
      *
      * @param string - Flux of string.
+     * @return boolean
      */
-    void sendString(Flux<String> string);
+    boolean sendString(Flux<String> string);
+
+    /**
+     * This will handle a response and add it to the response,
+     * then make sure it is compatible with command dispatcher if not it will fail
+     *
+     * @param obj - to test for
+     * @return boolean
+     */
+    boolean send(Object obj);
 }

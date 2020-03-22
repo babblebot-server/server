@@ -13,23 +13,29 @@ import java.util.function.Consumer;
  */
 public class CommandResponse implements ICommandResponse {
 
-    @Override
-    public void sendEmbed(Consumer<EmbedCreateSpec> embed) {
 
+    @Override
+    public boolean sendEmbed(Consumer<EmbedCreateSpec> embed) {
+        return false;
     }
 
     @Override
-    public void sendString(String string) {
-
+    public boolean sendString(String string) {
+        return false;
     }
 
     @Override
-    public void sendString(Mono<String> string) {
-
+    public boolean sendString(Mono<String> string) {
+        return false;
     }
 
     @Override
-    public void sendString(Flux<String> string) {
+    public boolean sendString(Flux<String> string) {
+        return false;
+    }
 
+    @Override
+    public boolean send(Object obj) {
+        return false;
     }
 }

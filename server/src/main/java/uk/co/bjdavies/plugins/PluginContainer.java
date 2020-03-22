@@ -29,6 +29,7 @@ public class PluginContainer implements IPluginContainer {
         if (plugins.containsKey(name) || plugins.containsValue(plugin)) {
             log.error("The key or plugin is already in the container.");
         } else {
+            //TODO: Use SemVer library
             String serverVersion = application.getServerVersion();
             int major = Integer.parseInt(serverVersion.split("\\.")[0]);
             int minor = Integer.parseInt(serverVersion.split("\\.")[1]);

@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
  * Return types valid for a function are:-
  * String,
  * Mono<String>
- * and Mono<EmbedSpec>
+ * Mono<EmbedSpec>
+ * Flux<String>
  *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
