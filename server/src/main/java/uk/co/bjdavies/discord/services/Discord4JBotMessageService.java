@@ -13,6 +13,8 @@ import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.command.CommandDispatcher;
 import uk.co.bjdavies.command.parser.DiscordMessageParser;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
@@ -37,7 +39,7 @@ public class Discord4JBotMessageService {
     }
 
     public void register() {
-
+        AtomicBoolean hasSentMessage = new AtomicBoolean(false);
         client.getEventDispatcher().on(MessageCreateEvent.class).log(Loggers.getLogger(Discord4JBotMessageService.class))
                 .subscribe(e ->
                         Mono.justOrEmpty(e.getMessage().getContent())
@@ -51,7 +53,15 @@ public class Discord4JBotMessageService {
                             CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
                             cd.execute(new DiscordMessageParser(e.getMessage()), m.replace(config.getCommandPrefix(), ""), application)
                                     .filter(s -> !s.equals(""))
-                                    .subscribe(s -> e.getMessage().getChannel().subscribe(c -> c.createMessage(s).subscribe()));
+                                    .subscribe(s -> {
+                                        e.getMessage().getChannel().subscribe(c -> c.createMessage(s).subscribe());
+                                        hasSentMessage.set(true);
+                                    }, null, () -> {
+                                        if (!hasSentMessage.get()) {
+                                            e.getMessage().getChannel().subscribe(c ->
+                                                    c.createMessage("Babblebot command could'nt be found.").subscribe());
+                                        }
+                                    });
                         }));
     }
 }
