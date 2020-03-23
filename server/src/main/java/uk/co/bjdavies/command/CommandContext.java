@@ -112,6 +112,11 @@ public class CommandContext implements ICommandContext {
         return parameters.containsKey(name);
     }
 
+    @Override
+    public boolean hasNonEmptyParameter(String name) {
+        return hasParameter(name) && !getParameter(name).equals("");
+    }
+
 
     /**
      * Returns the command's name.
