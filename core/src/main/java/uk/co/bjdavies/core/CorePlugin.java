@@ -101,8 +101,6 @@ public class CorePlugin implements IPlugin {
         commandDispatcher.registerGlobalMiddleware(context ->
                 Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
                         || context.getCommandName().equals("listen"));
-
-        commandDispatcher.registerPluginMiddleware(this, context -> false);
     }
 
     @Override

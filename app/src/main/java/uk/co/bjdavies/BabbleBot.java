@@ -69,7 +69,7 @@ public final class BabbleBot {
 
             @Override
             public boolean validateUsage(ICommandContext commandContext) {
-                return commandContext.hasParameter("param");
+                return commandContext.hasNonEmptyParameter("param");
             }
         });
     }
