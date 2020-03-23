@@ -64,7 +64,9 @@ public class Discord4JBotMessageService {
                                                             .subscribe());
                                             hasSentMessage.set(true);
                                         }
-                                    }, null, () -> {
+                                    }, throwable -> {
+                                        hasSentMessage.set(true);
+                                    }, () -> {
                                         if (!hasSentMessage.get()) {
                                             e.getMessage().getChannel().subscribe(c ->
                                                     c.createMessage("Babblebot command could'nt be found.").subscribe());
