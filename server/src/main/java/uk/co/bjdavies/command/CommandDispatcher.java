@@ -1,14 +1,19 @@
 package uk.co.bjdavies.command;
 
+import discord4j.core.object.entity.Message;
 import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Loggers;
 import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.command.*;
+import uk.co.bjdavies.api.command.ICommand;
+import uk.co.bjdavies.api.command.ICommandContext;
+import uk.co.bjdavies.api.command.ICommandDispatcher;
+import uk.co.bjdavies.api.command.ICommandMiddleware;
 import uk.co.bjdavies.api.plugins.IPlugin;
 import uk.co.bjdavies.command.errors.UsageException;
 import uk.co.bjdavies.command.parser.MessageParser;
+import uk.co.bjdavies.variables.VariableParser;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -151,7 +156,7 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @param application - The application instance.
      * @return String - The command's response
      */
-    public Flux<IResponse> execute(MessageParser parser, String message, IApplication application) {
+    public void execute(MessageParser parser, String message, IApplication application) {
 
         ICommandContext commandContext = parser.parseString(message);
 
@@ -166,13 +171,11 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing middleware");
-                return Flux.error(new Exception("Failing middleware"));
             }
 
 
             String namespace = getNamespaceFromCommandName(commandContext.getCommandName());
 
-            //noinspection CallingSubscribeInNonBlockingScope
             this.getMiddlewareForNamespace(namespace).doOnNext(middleware -> {
                 log.info("Running middleware for: " + namespace);
                 if (canRun.get()) {
@@ -182,18 +185,41 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing plugin middleware");
-                return Flux.error(new Exception("Failing middleware"));
             }
 
             String commandName = commandContext.getCommandName().replace(namespace, "");
+            Message m = commandContext.getMessage();
+            AtomicBoolean hasSentMessage = new AtomicBoolean(false);
+            AtomicBoolean hasFoundOne = new AtomicBoolean(false);
 
-            return getCommandsFromNamespace(namespace)
+            getCommandsFromNamespace(namespace)
                     .filter(e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
                             .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())))
                     .doOnError(e -> log.error("Error in the command dispatcher.", e))
+                    .doOnComplete(() -> {
+                        if (!hasFoundOne.get()) {
+                            StringBuilder sb = new StringBuilder("```markdown\n# Command Not Found\n\nDid You mean?\n");
+                            getCommandsLike(commandName, commandContext.getType())
+                                    .subscribe(c -> {
+                                        sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0])
+                                                .append("? - ").append(c.getDescription()).append("\n");
+                                        hasSentMessage.set(true);
+                                    }, null, () -> {
+                                        if (!hasSentMessage.get()) {
+                                            m.getChannel().subscribe(c ->
+                                                    c.createMessage("Babblebot command could'nt be found.").subscribe());
+                                        } else {
+                                            sb.append("```");
+                                            m.getChannel().subscribe(c ->
+                                                    c.createMessage(sb.toString()).subscribe());
+                                        }
+                                    });
+                        }
+                    })
+                    .log(Loggers.getLogger(CommandDispatcher.class))
                     .flatMap(c -> {
-
+                        hasFoundOne.set(true);
                         if (!c.validateUsage(commandContext)) {
                             return Flux.error(new UsageException(c.getUsage()));
                         }
@@ -210,9 +236,29 @@ public class CommandDispatcher implements ICommandDispatcher {
                             return commandContext.getCommandResponse().getResponses()
                                     .log(Loggers.getLogger(CommandDispatcher.class));
                         }
+                    })
+                    .subscribe(s -> {
+                        if (s.isStringResponse()) {
+                            m.getChannel().subscribe(c ->
+                                    c.createMessage(new VariableParser(s.getStringResponse(), application).toString())
+                                            .subscribe());
+                            hasSentMessage.set(true);
+                        } else if (s.getEmbedCreateSpecResponse() != null) {
+                            m.getChannel().subscribe(c ->
+                                    c.createEmbed(s.getEmbedCreateSpecResponse())
+                                            .subscribe());
+                            hasSentMessage.set(true);
+                        }
+                    }, throwable -> {
+                        if (throwable instanceof UsageException) {
+                            m.getChannel().subscribe(c ->
+                                    c.createMessage(throwable.getMessage()).subscribe());
+                        }
+                        hasSentMessage.set(true);
                     });
+
         } else {
-            return Flux.just(ResponseFactory.createStringResponse("Command could not be parsed."));
+            log.error("Command could not be parsed: " + message);
         }
 
 //            if (command[0] != null) {
@@ -255,8 +301,9 @@ public class CommandDispatcher implements ICommandDispatcher {
     }
 
     private Flux<ICommand> getCommandsLike(String commandName, String type) {
-        return Flux.create(sink -> getCommands(type).filter(c -> Arrays.stream(c.getAliases())
-                .anyMatch(a -> a.contains(commandName)))
+        return Flux.create(sink -> getCommands(type)
+                .doOnComplete(sink::complete)
+                .filter(c -> Arrays.stream(c.getAliases()).anyMatch(a -> a.contains(commandName)))
                 .doOnNext(sink::next).subscribe());
     }
 
@@ -357,7 +404,13 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @return List
      */
     public Flux<ICommand> getCommands(String type) {
-        return Flux.create(sink -> commands.keySet().forEach(k ->
-                getCommands(k, type).doOnNext(sink::next).subscribe()));
+
+        AtomicReference<Flux<ICommand>> commandFlux = new AtomicReference<>(Flux.empty());
+
+        commands.keySet().forEach(k -> {
+            commandFlux.set(commandFlux.get().concatWith(getCommands(k, type)));
+        });
+
+        return commandFlux.get();
     }
 }
