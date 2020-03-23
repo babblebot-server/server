@@ -53,6 +53,12 @@ public class DiscordMessageParser implements MessageParser {
         while (matcher.find()) {
             message = message.replace(matcher.group(), "");
         }
+
+        matcher = getRawParameters(message);
+        while (matcher.find()) {
+            message = message.replace(matcher.group(), "");
+        }
+
         message = message.trim();
         return message;
     }
@@ -84,12 +90,21 @@ public class DiscordMessageParser implements MessageParser {
     private Map<String, String> parseParams(String message) {
         Map<String, String> params = new HashMap<>();
         Matcher matcher = getParameterMatcher(message);
-
+        String copy = new String(message.getBytes());
         while (matcher.find()) {
             String name = matcher.group(1);
             String value = matcher.group(2).replaceAll("\"", "");
             params.put(name, value);
+            copy = copy.replace(matcher.group(), "");
         }
+
+        matcher = getRawParameters(copy);
+
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            params.put(name, "");
+        }
+
         return params;
     }
 
@@ -102,6 +117,14 @@ public class DiscordMessageParser implements MessageParser {
      */
     private Matcher getParameterMatcher(String message) {
         String parameterRegex = "-([a-zA-Z0-9]+)=(([a-zA-Z0-9:/?=&_.]+)|(\"([a-zA-Z0-9:/?=&_.]+)\"))";
+
+        Pattern pattern = Pattern.compile(parameterRegex);
+
+        return pattern.matcher(message);
+    }
+
+    private Matcher getRawParameters(String message) {
+        String parameterRegex = "-([a-zA-Z0-9]+)";
 
         Pattern pattern = Pattern.compile(parameterRegex);
 
