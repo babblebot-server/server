@@ -2,6 +2,7 @@ package uk.co.bjdavies.api.command;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import uk.co.bjdavies.api.plugins.IPlugin;
 
 import java.util.List;
 
@@ -69,4 +70,6 @@ public interface ICommandDispatcher {
     String getNamespaceFromCommandName(String commandName);
 
     void registerGlobalMiddleware(ICommandMiddleware middleware);
+
+    void registerPluginMiddleware(IPlugin plugin, ICommandMiddleware middleware);
 }

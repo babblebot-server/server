@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.Loggers;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.*;
+import uk.co.bjdavies.api.plugins.IPlugin;
 import uk.co.bjdavies.command.parser.MessageParser;
 
 import java.util.*;
@@ -26,14 +27,15 @@ public class CommandDispatcher implements ICommandDispatcher {
      */
     private final Map<String, List<ICommand>> commands;
 
-    private final List<ICommandMiddleware> middlewareList;
+    private final Map<IPlugin, List<ICommandMiddleware>> middlewareList;
 
     /**
      * This will initialize the commands list to an ArrayList.
      */
     public CommandDispatcher() {
         this.commands = new HashMap<>();
-        this.middlewareList = new ArrayList<>();
+        this.middlewareList = new HashMap<>();
+        this.middlewareList.put(null, new ArrayList<>());
     }
 
 
@@ -155,7 +157,7 @@ public class CommandDispatcher implements ICommandDispatcher {
         if (commandContext != null) {
             AtomicBoolean canRun = new AtomicBoolean(true);
 
-            this.middlewareList.forEach(m -> {
+            this.middlewareList.get(null).forEach(m -> {
                 if (canRun.get()) {
                     canRun.set(m.onExecute(commandContext));
                 }
@@ -163,11 +165,24 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing middleware");
-                return Flux.just(ResponseFactory.createStringResponse(""));
+                return Flux.error(new Exception("Failing middleware"));
             }
 
 
             String namespace = getNamespaceFromCommandName(commandContext.getCommandName());
+
+            //noinspection CallingSubscribeInNonBlockingScope
+            this.getMiddlewareForNamespace(namespace).doOnNext(middleware -> {
+                if (canRun.get()) {
+                    canRun.set(middleware.onExecute(commandContext));
+                }
+            }).subscribe();
+
+            if (!canRun.get()) {
+                log.info("Cannot run command due to failing plugin middleware");
+                return Flux.error(new Exception("Failing middleware"));
+            }
+
             String commandName = commandContext.getCommandName().replace(namespace, "");
 
             return getCommandsFromNamespace(namespace)
@@ -262,7 +277,31 @@ public class CommandDispatcher implements ICommandDispatcher {
 
     @Override
     public void registerGlobalMiddleware(ICommandMiddleware middleware) {
-        this.middlewareList.add(middleware);
+        this.middlewareList.get(null).add(middleware);
+    }
+
+
+    @Override
+    public void registerPluginMiddleware(IPlugin plugin, ICommandMiddleware middleware) {
+        if (!middlewareList.containsKey(plugin)) {
+            middlewareList.put(plugin, new ArrayList<>());
+        }
+
+        middlewareList.get(plugin).add(middleware);
+    }
+
+    private Flux<ICommandMiddleware> getMiddlewareForNamespace(String namespace) {
+
+        return Flux.create(sink -> {
+            middlewareList.forEach((key, value) -> {
+                if (key != null) {
+                    if (key.getNamespace().equals(namespace)) {
+                        value.forEach(sink::next);
+                    }
+                }
+            });
+            sink.complete();
+        });
     }
 
 
