@@ -7,6 +7,7 @@ import reactor.util.Loggers;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.*;
 import uk.co.bjdavies.api.plugins.IPlugin;
+import uk.co.bjdavies.command.errors.UsageException;
 import uk.co.bjdavies.command.parser.MessageParser;
 
 import java.util.*;
@@ -188,10 +189,14 @@ public class CommandDispatcher implements ICommandDispatcher {
             return getCommandsFromNamespace(namespace)
                     .filter(e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
-                            .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())) &&
-                            e.validateUsage(commandContext))
+                            .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())))
                     .doOnError(e -> log.error("Error in the command dispatcher.", e))
                     .flatMap(c -> {
+
+                        if (!c.validateUsage(commandContext)) {
+                            return Flux.error(new UsageException(c.getUsage()));
+                        }
+
                         //noinspection ReactiveStreamsUnusedPublisher
                         commandContext.getMessage().getGuild().doOnNext(g ->
                                 log.debug("Running command: " + commandContext.getCommandName() + "In Guild: " +
