@@ -24,6 +24,14 @@ public interface ICommandContext {
      */
     boolean hasParameter(String name);
 
+    /**
+     * This checks whether a parameter is present.
+     *
+     * @param name - This is the name of the paramater.
+     * @return boolean
+     */
+    boolean hasNonEmptyParameter(String name);
+
 
     /**
      * Returns the command's name.
