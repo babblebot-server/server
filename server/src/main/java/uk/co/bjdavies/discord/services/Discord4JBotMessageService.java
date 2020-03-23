@@ -10,9 +10,7 @@ import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.command.CommandDispatcher;
-import uk.co.bjdavies.command.errors.UsageException;
 import uk.co.bjdavies.command.parser.DiscordMessageParser;
-import uk.co.bjdavies.variables.VariableParser;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,31 +50,7 @@ public class Discord4JBotMessageService {
                                                 .map(isBot -> !isBot)
                                 ).subscribe(m -> {
                             CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
-                            cd.execute(new DiscordMessageParser(e.getMessage()), m.replace(config.getCommandPrefix(), ""), application)
-                                    .subscribe(s -> {
-                                        if (s.isStringResponse()) {
-                                            e.getMessage().getChannel().subscribe(c ->
-                                                    c.createMessage(new VariableParser(s.getStringResponse(), application).toString())
-                                                            .subscribe());
-                                            hasSentMessage.set(true);
-                                        } else if (s.getEmbedCreateSpecResponse() != null) {
-                                            e.getMessage().getChannel().subscribe(c ->
-                                                    c.createEmbed(s.getEmbedCreateSpecResponse())
-                                                            .subscribe());
-                                            hasSentMessage.set(true);
-                                        }
-                                    }, throwable -> {
-                                        if (throwable instanceof UsageException) {
-                                            e.getMessage().getChannel().subscribe(c ->
-                                                    c.createMessage(throwable.getMessage()).subscribe());
-                                        }
-                                        hasSentMessage.set(true);
-                                    }, () -> {
-                                        if (!hasSentMessage.get()) {
-                                            e.getMessage().getChannel().subscribe(c ->
-                                                    c.createMessage("Babblebot command could'nt be found.").subscribe());
-                                        }
-                                    });
+                            cd.execute(new DiscordMessageParser(e.getMessage()), m.replace(config.getCommandPrefix(), ""), application);
                         }));
     }
 }
