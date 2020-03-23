@@ -174,6 +174,7 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             //noinspection CallingSubscribeInNonBlockingScope
             this.getMiddlewareForNamespace(namespace).doOnNext(middleware -> {
+                log.info("Running middleware for: " + namespace);
                 if (canRun.get()) {
                     canRun.set(middleware.onExecute(commandContext));
                 }
