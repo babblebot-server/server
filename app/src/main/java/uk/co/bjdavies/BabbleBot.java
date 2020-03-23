@@ -1,9 +1,11 @@
 package uk.co.bjdavies;
 
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
+
+import java.time.Duration;
 
 /**
  * A Server for the Discord App this server provides a way for the user to give commands
@@ -57,8 +59,15 @@ public final class BabbleBot {
 
             @Override
             public void exec(IApplication application, ICommandContext commandContext) {
-                commandContext.getCommandResponse()
-                        .sendString(Mono.just("Test from the command dispatcher, $(getRandomGIF(1.14))"));
+//                commandContext.getCommandResponse()
+//                        .sendString(Mono.just("Test from the command dispatcher, $(getRandomGIF(1.14))"));
+//
+//                commandContext.getCommandResponse()
+//                        .sendString("Also, babblebot can have multiple responses for commands now?");
+
+                commandContext.getCommandResponse().sendString(Flux.just("$(getRandomGIF(1.14))",
+                        "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))")
+                        .delayElements(Duration.ofSeconds(5)));
             }
 
             @Override
