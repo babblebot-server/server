@@ -157,10 +157,10 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @return String - The command's response
      */
     public void execute(MessageParser parser, String message, IApplication application) {
-
         ICommandContext commandContext = parser.parseString(message);
 
         if (commandContext != null) {
+            log.info("Handling command: " + commandContext.getCommandName());
             AtomicBoolean canRun = new AtomicBoolean(true);
 
             this.middlewareList.get(null).forEach(m -> {
@@ -217,7 +217,6 @@ public class CommandDispatcher implements ICommandDispatcher {
                                     });
                         }
                     })
-                    .log(Loggers.getLogger(CommandDispatcher.class))
                     .flatMap(c -> {
                         hasFoundOne.set(true);
                         if (!c.validateUsage(commandContext)) {
@@ -229,16 +228,18 @@ public class CommandDispatcher implements ICommandDispatcher {
                                 log.debug("Running command: " + commandContext.getCommandName() + "In Guild: " +
                                         g.getName()));
                         String runCommand = c.run(application, commandContext);
+
                         if (!runCommand.equals("")) {
                             return Flux.just(ResponseFactory.createStringResponse(runCommand));
                         } else {
                             c.exec(application, commandContext);
                             return commandContext.getCommandResponse().getResponses()
-                                    .log(Loggers.getLogger(CommandDispatcher.class));
+                                    .log(Loggers.getLogger("CommandResponses"));
                         }
                     })
                     .subscribe(s -> {
                         if (s.isStringResponse()) {
+
                             m.getChannel().subscribe(c ->
                                     c.createMessage(new VariableParser(s.getStringResponse(), application).toString())
                                             .subscribe());
