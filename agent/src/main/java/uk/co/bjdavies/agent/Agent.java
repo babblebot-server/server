@@ -6,9 +6,9 @@ import javassist.bytecode.ConstPool;
 import javassist.bytecode.SignatureAttribute;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.StringMemberValue;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
@@ -27,6 +27,7 @@ import java.util.zip.ZipFile;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
+@Slf4j
 public class Agent {
     private static final String GENERATED_DATE_PATTERN = "yyyy-MM-dd'T'hh:mm:ss.SSSZZZ";
     private static final Set<ClassLoader> loaders = new HashSet<ClassLoader>();
@@ -44,9 +45,7 @@ public class Agent {
         } catch (ClassNotFoundException | NotFoundException e) {
             e.printStackTrace();
         }
-        System.out.println("===================================================\n\n");
-        System.out.println("Starting BabblebotAgent for object instrumentation");
-        System.out.println("\n\n===================================================\n\n");
+        log.info("Started Babblebot Agent...");
 
         CtClass finalModelClass = modelClass;
         instrumentation.addTransformer(new ClassFileTransformer() {
@@ -66,7 +65,7 @@ public class Agent {
                             !clazz.equals(finalModelClass) && !clazz.equals(cp.get("uk.co.bjdavies.db.impl.ImplModel"))) {
 
                         byte[] bytecode = instrument(clazz);
-                        System.out.println("Instrumented model: " + clazz.getName());
+                        log.info("Instrumented model: " + clazz.getName());
                         return bytecode;
                     }
 
@@ -105,7 +104,7 @@ public class Agent {
     }
 
     private static void processURL(URL url) throws Exception {
-        System.out.println("Processing: " + url);
+        log.info("Processing: " + url);
         File f = new File(url.toURI());
         if (f.isFile()) {
             processFilePath(f);
@@ -132,11 +131,7 @@ public class Agent {
     }
 
     private static void findFiles(File f) throws Exception {
-        File[] files = f.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".class");
-            }
-        });
+        File[] files = f.listFiles((dir, name) -> name.endsWith(".class"));
 
         if (files != null) {
             for (File file : files) {
@@ -223,7 +218,7 @@ public class Agent {
             int modifiers = method.getModifiers();
             if (Modifier.isStatic(modifiers)) {
                 if (targetHasMethod(targetMethods, method)) {
-                    System.out.println("Detected method: " + method.getName() + ", skipping delegate.");
+                    log.info("Detected method: " + method.getName() + ", skipping delegate.");
                 } else {
                     CtMethod newMethod;
                     if (Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)) {
