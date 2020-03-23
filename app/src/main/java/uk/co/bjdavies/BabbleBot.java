@@ -5,8 +5,6 @@ import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
 
-import java.time.Duration;
-
 /**
  * A Server for the Discord App this server provides a way for the user to give commands
  * and then this bot acts on those commands
@@ -44,7 +42,7 @@ public final class BabbleBot {
 
             @Override
             public String getUsage() {
-                return "test";
+                return "bbtest -param";
             }
 
             @Override
@@ -66,13 +64,12 @@ public final class BabbleBot {
 //                        .sendString("Also, babblebot can have multiple responses for commands now?");
 
                 commandContext.getCommandResponse().sendString(Flux.just("$(getRandomGIF(1.14))",
-                        "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))")
-                        .delayElements(Duration.ofSeconds(5)));
+                        "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))"));
             }
 
             @Override
             public boolean validateUsage(ICommandContext commandContext) {
-                return true;
+                return commandContext.hasParameter("param");
             }
         });
     }

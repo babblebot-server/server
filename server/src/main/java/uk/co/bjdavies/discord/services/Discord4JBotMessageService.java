@@ -10,6 +10,7 @@ import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.command.CommandDispatcher;
+import uk.co.bjdavies.command.errors.UsageException;
 import uk.co.bjdavies.command.parser.DiscordMessageParser;
 import uk.co.bjdavies.variables.VariableParser;
 
@@ -65,6 +66,10 @@ public class Discord4JBotMessageService {
                                             hasSentMessage.set(true);
                                         }
                                     }, throwable -> {
+                                        if (throwable instanceof UsageException) {
+                                            e.getMessage().getChannel().subscribe(c ->
+                                                    c.createMessage(throwable.getMessage()).subscribe());
+                                        }
                                         hasSentMessage.set(true);
                                     }, () -> {
                                         if (!hasSentMessage.get()) {
