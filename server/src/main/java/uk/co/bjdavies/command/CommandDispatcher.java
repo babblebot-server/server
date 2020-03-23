@@ -5,10 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Loggers;
 import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.command.ICommand;
-import uk.co.bjdavies.api.command.ICommandContext;
-import uk.co.bjdavies.api.command.ICommandDispatcher;
-import uk.co.bjdavies.api.command.ICommandMiddleware;
+import uk.co.bjdavies.api.command.*;
 import uk.co.bjdavies.command.parser.MessageParser;
 
 import java.util.*;
@@ -151,7 +148,7 @@ public class CommandDispatcher implements ICommandDispatcher {
      * @param application - The application instance.
      * @return String - The command's response
      */
-    public Flux<String> execute(MessageParser parser, String message, IApplication application) {
+    public Flux<IResponse> execute(MessageParser parser, String message, IApplication application) {
 
         ICommandContext commandContext = parser.parseString(message);
 
@@ -166,7 +163,7 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing middleware");
-                return Flux.just("");
+                return Flux.just(ResponseFactory.createStringResponse(""));
             }
 
 
@@ -174,7 +171,6 @@ public class CommandDispatcher implements ICommandDispatcher {
             String commandName = commandContext.getCommandName().replace(namespace, "");
 
             return getCommandsFromNamespace(namespace)
-                    .log(Loggers.getLogger(CommandDispatcher.class))
                     .filter(e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
                             .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())) &&
@@ -187,13 +183,15 @@ public class CommandDispatcher implements ICommandDispatcher {
                                         g.getName()));
                         String runCommand = c.run(application, commandContext);
                         if (!runCommand.equals("")) {
-                            return Flux.just(runCommand);
+                            return Flux.just(ResponseFactory.createStringResponse(runCommand));
                         } else {
-                            return Flux.just("");
+                            c.exec(application, commandContext);
+                            return commandContext.getCommandResponse().getResponses()
+                                    .log(Loggers.getLogger(CommandDispatcher.class));
                         }
                     });
         } else {
-            return Flux.just("Command could not be parsed.");
+            return Flux.just(ResponseFactory.createStringResponse("Command could not be parsed."));
         }
 
 //            if (command[0] != null) {

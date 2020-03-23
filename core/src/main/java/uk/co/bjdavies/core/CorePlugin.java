@@ -143,7 +143,7 @@ public class CorePlugin implements IPlugin {
         //TODO: Separate Namespaces
         //TODO: Fix not being to see !help bbtest
         //TODO: add namespace as a field in the help menu
-        return "TODO!";
+        return "Yay its help time";
 //        if (commandContext.getValue().equals("") && !commandContext.hasParameter("cmd")) {
 //            StringBuilder sb = new StringBuilder(commandContext.getType().equals("Discord") ? "```" : "");
 //

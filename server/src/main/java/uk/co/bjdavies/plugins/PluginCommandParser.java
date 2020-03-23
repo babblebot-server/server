@@ -75,7 +75,7 @@ public final class PluginCommandParser {
                             if (method.getReturnType().equals(Void.class)) {
                                 executePluginCommand(cd);
                             } else {
-                                if (!commandContext.getCommandResponse().send(executePluginCommand(cd))) {
+                                if (!commandContext.getCommandResponse().send(method.getGenericReturnType(), executePluginCommand(cd))) {
                                     log.error("Plugin command: " + plugin.getName() + "#" + method.getName() +
                                             " is not supported, command will not run please return a valid response type or use void and use commandContext.getCommandResponse()" +
                                             ".send(Data)");
