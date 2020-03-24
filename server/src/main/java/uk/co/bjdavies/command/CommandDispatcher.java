@@ -67,6 +67,8 @@ public class CommandDispatcher implements ICommandDispatcher {
     public void addNamespace(String namespace, List<ICommand> commandsToAdd) {
         if (commands.containsKey(namespace)) {
             log.info("Namespace: " + namespace + " has already been created.");
+            log.warn("Plugin with this namespace already exists please consider changing it.");
+            commands.get(namespace).addAll(commandsToAdd);
         } else {
             commands.put(namespace, commandsToAdd);
         }
