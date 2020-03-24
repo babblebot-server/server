@@ -16,6 +16,7 @@ public interface IPlugin {
      * This is the version of the Plugin.
      *
      * @return String
+     * @deprecated Not required for plugin processing
      */
     String getVersion();
 
@@ -42,7 +43,8 @@ public interface IPlugin {
 
     /**
      * This is the namespace for your commands
-     * Please don't use "";
+     * Please don't use ""
+     * <p>
      * Because if it clashes with any commands your commands will not be added to system.
      *
      * @return String
