@@ -7,9 +7,6 @@ import uk.co.bjdavies.api.db.fields.IntField;
 import uk.co.bjdavies.api.db.fields.PrimaryField;
 import uk.co.bjdavies.api.db.fields.StringField;
 import uk.co.bjdavies.api.db.fields.Unique;
-import uk.co.bjdavies.api.db.methods.HasMany;
-
-import java.util.List;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -37,10 +34,6 @@ public class Ignore extends Model {
     @Getter
     @Setter
     private String ignoredBy;
-
-    @HasMany
-    @Getter
-    private List<User> users;
 
     @Override
     public String toString() {
