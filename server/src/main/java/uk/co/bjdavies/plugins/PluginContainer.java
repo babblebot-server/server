@@ -42,6 +42,7 @@ public class PluginContainer implements IPluginContainer {
 
 
             if (major >= minMajor && minor >= minMinor && patch >= minPatch) {
+                PluginConfigParser.parsePlugin(application, plugin);
                 plugin.onBoot();
                 PluginCommandParser commandParser = new PluginCommandParser(plugin);
                 application.getCommandDispatcher().addNamespace(plugin.getNamespace(), commandParser.parseCommands());

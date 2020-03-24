@@ -3,7 +3,7 @@ package uk.co.bjdavies.config;
 import uk.co.bjdavies.api.config.*;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * BabbleBot, open-source Discord Bot
@@ -77,7 +77,7 @@ public class Config implements IConfig {
      *
      * @return Collection(ModuleConfig)
      */
-    public Collection<IPluginConfig> getPlugins() {
+    public List<IPluginConfig> getPlugins() {
         return Arrays.asList(plugins);
     }
 

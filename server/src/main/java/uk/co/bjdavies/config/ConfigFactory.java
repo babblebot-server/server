@@ -25,26 +25,32 @@ public class ConfigFactory {
     @SneakyThrows
     public static IConfig makeConfig(String json) {
         if (json.equals("config.json")) {
-            File f = new File(json);
+            //noinspection ResultOfMethodCallIgnored
+            new File("config").mkdirs();
+            File f = new File("config/" + json);
             if (!f.exists()) {
-                f.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(f));
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("{\n  \"discord\": {\n" +
-                        "    \"token\": \"Insert me\",\n" +
-                        "    \"commandPrefix\": \"!\"\n" +
-                        "  },\n" +
-                        "  \"database\": {\n" +
-                        "    \"type\": \"sqlite\",\n" +
-                        "    \"database\": \"Core.db\"\n" +
-                        "  }\n}");
-                writer.write(stringBuilder.toString());
-                writer.flush();
-                writer.close();
-                throw new RuntimeException("You need to insert your bot token into the newly generated config. Exiting now!!");
+                if (f.createNewFile()) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(ConfigFactory.class
+                            .getResourceAsStream("/config.example.json")));
+
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+
+                    BufferedWriter writer = new BufferedWriter(new FileWriter(f));
+                    writer.write(stringBuilder.toString());
+                    writer.flush();
+                    writer.close();
+                    throw new RuntimeException("You need to insert your bot token into the newly generated config. Exiting now!!");
+                } else {
+                    throw new RuntimeException("Unable to create config file please refer to the document regarding configuration.");
+                }
             }
             try {
-                BufferedReader bufferedReader = new BufferedReader(new FileReader(json));
+                BufferedReader bufferedReader = new BufferedReader(new FileReader("config/" + json));
                 return new ConfigParser(bufferedReader).getConfig();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

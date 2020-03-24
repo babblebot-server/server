@@ -25,4 +25,6 @@ public interface IPluginConfig {
      * @return String
      */
     String getPluginType();
+
+
 }

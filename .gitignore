@@ -239,7 +239,7 @@ ehthumbs_vista.db
 # Dump file
 *.stackdump
 
-# Folder config file
+# Folder pluginConfig file
 [Dd]esktop.ini
 
 # Recycle Bin used on file shares
@@ -259,7 +259,7 @@ $RECYCLE.BIN/
 .gradle
 build/
 
-# Ignore Gradle GUI config
+# Ignore Gradle GUI pluginConfig
 gradle-app.setting
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
@@ -277,7 +277,7 @@ gradle-app.setting
 # End of https://www.gitignore.io/api/java,linux,macos,maven,gradle,windows,intellij,intellij+all
 
 #Make sure to not upload import files
-app/config.json
+app/config/config.json
 app/Core.db
 
 ### Node ###
@@ -387,4 +387,7 @@ tmp/
 temp/
 
 # End of https://www.gitignore.io/api/node
-PluginDevelopmentImprovements
+./PluginDevelopmentImprovements
+
+app/plugins/
+app/config/*.config.json
