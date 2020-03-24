@@ -1,6 +1,6 @@
 package uk.co.bjdavies.api.config;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * BabbleBot, open-source Discord Bot
@@ -47,8 +47,8 @@ public interface IConfig {
     /**
      * This will return the config for the plugins used in this bot.
      *
-     * @return {@link Collection<IPluginConfig>}
+     * @return {@link List<IPluginConfig>}
      */
-    Collection<IPluginConfig> getPlugins();
+    List<IPluginConfig> getPlugins();
 
 }

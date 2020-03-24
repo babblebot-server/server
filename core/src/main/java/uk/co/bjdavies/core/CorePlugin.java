@@ -9,6 +9,7 @@ import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.api.db.Model;
 import uk.co.bjdavies.api.plugins.IPlugin;
+import uk.co.bjdavies.api.plugins.PluginConfig;
 
 import java.util.Optional;
 
@@ -31,6 +32,9 @@ public class CorePlugin implements IPlugin {
     private final IApplication application;
 
     private final IDiscordConfig config;
+
+    @PluginConfig
+    private CorePluginConfig pluginConfig;
 
     @Inject
     public CorePlugin(ICommandDispatcher commandDispatcher, IApplication application, IDiscordConfig config) {
@@ -101,6 +105,8 @@ public class CorePlugin implements IPlugin {
         commandDispatcher.registerGlobalMiddleware(context ->
                 Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
                         || context.getCommandName().equals("listen"));
+
+        log.info("Plugin config: " + pluginConfig);
     }
 
     @Override

@@ -78,7 +78,9 @@ public class Application implements IApplication {
                 variableModule, pluginModule);
         discordModule.startDiscordBot();
 
+
         pluginContainer.addPlugin("core", get(CorePlugin.class));
+
 
         get(WebServer.class).start();
 
