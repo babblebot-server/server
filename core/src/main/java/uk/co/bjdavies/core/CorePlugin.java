@@ -8,7 +8,9 @@ import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.api.db.Model;
-import uk.co.bjdavies.api.plugins.IPlugin;
+import uk.co.bjdavies.api.plugins.IPluginEvents;
+import uk.co.bjdavies.api.plugins.IPluginSettings;
+import uk.co.bjdavies.api.plugins.Plugin;
 import uk.co.bjdavies.api.plugins.PluginConfig;
 
 import java.util.Optional;
@@ -20,12 +22,32 @@ import java.util.Optional;
  * <p>
  * As this is the core plugin these commands are staying on the default namespace.
  * If you try to override these commands you will get an error from the {@link ICommandDispatcher}
+ * <p>
+ * * //Should be the only plugin that runs on the default namespace.
+ * * //Please use prefix e.g. bb;
+ * * //Common convention to use is to a shorthand name for your plugin
+ * * // e.g. for a Moderation Plugin do mod-
+ * * // !mod-ban @User#3434
+ * * // !mod-kick @User#3434
+ * * <p>
+ * * //e.g. for a Colour picking plugin do col-
+ * * // !col-set #ffffff
+ * * // !col-update @User#3434 #ggfgfg
+ * * <p>
+ * * //etc..
+ * * //You can add this prefix to the config.json under your extras slot.
+ * * //like "namespace": "",
+ * * //Then load load on boot and reload.
+ * * //Store it in a local variable an reference it here.
+ * * //Please refer to the documentation for using your own custom plugin configuration.
+ * *
  *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
 @Slf4j
-public class CorePlugin implements IPlugin {
+@Plugin(author = "Ben Davies <ben.davies99@outlook.com>", namespace = "")
+public class CorePlugin implements IPluginEvents {
 
     private final ICommandDispatcher commandDispatcher;
 
@@ -44,63 +66,12 @@ public class CorePlugin implements IPlugin {
     }
 
     @Override
-    public String getName() {
-        return "core";
-    }
-
-    @Override
-    public String getVersion() {
-        return application.getServerVersion();
-    }
-
-    @Override
-    public String getAuthor() {
-        return "Ben Davies (ben.davies99@outlook.com)";
-    }
-
-    @Override
-    public String getMinimumServerVersion() {
-        return application.getServerVersion();
-    }
-
-    @Override
-    public String getMaximumServerVersion() {
-        return "0";
-    }
-
-    /**
-     * //Should be the only plugin that runs on the default namespace.
-     * //Please use prefix e.g. bb;
-     * //Common convention to use is to a shorthand name for your plugin
-     * // e.g. for a Moderation Plugin do mod-
-     * // !mod-ban @User#3434
-     * // !mod-kick @User#3434
-     * <p>
-     * //e.g. for a Colour picking plugin do col-
-     * // !col-set #ffffff
-     * // !col-update @User#3434 #ggfgfg
-     * <p>
-     * //etc..
-     * //You can add this prefix to the config.json under your extras slot.
-     * //like "namespace": "",
-     * //Then load load on boot and reload.
-     * //Store it in a local variable an reference it here.
-     * //Please refer to the documentation for using your own custom plugin configuration.
-     *
-     * @return String
-     */
-    @Override
-    public String getNamespace() {
-        return "";
-    }
-
-    @Override
     public void onReload() {
         log.info("Plugin reload");
     }
 
     @Override
-    public void onBoot() {
+    public void onBoot(IPluginSettings settings) {
         log.info("Booting Core Plugin");
         commandDispatcher.registerGlobalMiddleware(context ->
                 Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()

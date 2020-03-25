@@ -12,7 +12,7 @@ public interface IPluginContainer {
      * @param name   - The name of the plugin.
      * @param plugin - The plugin itself.
      */
-    void addPlugin(String name, IPlugin plugin);
+    void addPlugin(String name, Object plugin);
 
 
     /**
@@ -21,15 +21,6 @@ public interface IPluginContainer {
      * @param name - This is the module that you want to remove.
      */
     void removePlugin(String name);
-
-
-    /**
-     * This method allows you to get a plugin from the container.
-     *
-     * @param name - This is the plugin that you want to get from the container.
-     * @return {@link IPlugin}
-     */
-    IPlugin getPlugin(String name);
 
 
     /**

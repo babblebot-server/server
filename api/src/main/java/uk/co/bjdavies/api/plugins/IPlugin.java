@@ -4,7 +4,7 @@ package uk.co.bjdavies.api.plugins;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IPlugin {
+public interface IPlugin extends IPluginEvents {
     /**
      * This is the name of the Plugin.
      *
@@ -50,20 +50,4 @@ public interface IPlugin {
      * @return String
      */
     String getNamespace();
-
-    /**
-     * This will run on a Babblebot-Server Agent HotSwap.
-     */
-    void onReload();
-
-    /**
-     * This will run when the plugin is installed.
-     * Runs before the commands are installed, so you can do setup code here.
-     */
-    void onBoot();
-
-    /**
-     * This will run the plugin is removed from the app or the application has shutdown.
-     */
-    void onShutdown();
 }
