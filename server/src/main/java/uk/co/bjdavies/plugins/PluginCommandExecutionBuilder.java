@@ -1,7 +1,5 @@
 package uk.co.bjdavies.plugins;
 
-import uk.co.bjdavies.api.plugins.IPlugin;
-
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
@@ -9,18 +7,18 @@ import uk.co.bjdavies.api.plugins.IPlugin;
 public class PluginCommandExecutionBuilder {
     private String name;
 
-    private Class<? extends IPlugin> pluginClass;
+    private Class<?> pluginClass;
 
     private Object[] args = new Object[0];
 
     private Class<?>[] parameterTypes = new Class[0];
 
-    public PluginCommandExecutionBuilder(String name, Class<? extends IPlugin> pluginClass) {
+    public PluginCommandExecutionBuilder(String name, Class<?> pluginClass) {
         this.name = name;
         this.pluginClass = pluginClass;
     }
 
-    public PluginCommandExecutionBuilder setModuleClass(Class<? extends IPlugin> pluginClass) {
+    public PluginCommandExecutionBuilder setPluginClass(Class<?> pluginClass) {
         this.pluginClass = pluginClass;
         return this;
     }
@@ -54,7 +52,7 @@ public class PluginCommandExecutionBuilder {
                 return PluginCommandExecutionBuilder.this.parameterTypes;
             }
 
-            public Class<? extends IPlugin> getPluginClass() {
+            public Class<?> getPluginClass() {
                 return PluginCommandExecutionBuilder.this.pluginClass;
             }
         };

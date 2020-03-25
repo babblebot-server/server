@@ -18,7 +18,7 @@ import java.util.Arrays;
 @Slf4j
 public class PluginConfigParser {
 
-    public static void parsePlugin(IApplication application, IPlugin plugin) {
+    public static void parsePlugin(IApplication application, IPlugin settings, Object plugin) {
         Field[] fields = plugin.getClass().getDeclaredFields();
         Arrays.stream(fields).forEach(field -> {
             if (field.isAnnotationPresent(PluginConfig.class)) {
@@ -30,14 +30,15 @@ public class PluginConfigParser {
                     clazz = field.getType();
                 }
 
+                log.info("Parsing Config class: " + clazz.getSimpleName());
+
                 String fileName = "";
                 boolean autoGenerate = true;
 
                 if (clazz.isAnnotationPresent(PluginConfig.Setup.class)) {
-                    log.info("Handleing a setup annotation");
                     //Then handle a setup class
                     PluginConfig.Setup setup = clazz.getAnnotationsByType(PluginConfig.Setup.class)[0];
-                    fileName = setup.fileName().equals("") ? plugin.getName() : setup.fileName();
+                    fileName = setup.fileName().equals("") ? settings.getName() : setup.fileName();
                     autoGenerate = setup.autoGenerate();
                 } else {
                     //Handle a interface

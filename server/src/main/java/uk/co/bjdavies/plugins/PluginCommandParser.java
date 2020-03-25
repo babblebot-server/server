@@ -5,7 +5,7 @@ import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.Command;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
-import uk.co.bjdavies.api.plugins.IPlugin;
+import uk.co.bjdavies.api.plugins.IPluginSettings;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,18 +20,20 @@ import java.util.List;
 @Log4j2
 public final class PluginCommandParser {
 
-    private final IPlugin plugin;
+    private final IPluginSettings pluginSettings;
+    private final Object pluginObj;
 
 
-    public PluginCommandParser(IPlugin plugin) {
-        this.plugin = plugin;
+    public PluginCommandParser(IPluginSettings pluginSettings, Object pluginObj) {
+        this.pluginSettings = pluginSettings;
+        this.pluginObj = pluginObj;
     }
 
     public List<ICommand> parseCommands() {
 
         List<ICommand> commands = new ArrayList<>();
 
-        for (final Method method : plugin.getClass().getDeclaredMethods()) {
+        for (final Method method : pluginObj.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(Command.class)) {
                 if (Arrays.asList(method.getParameterTypes()).contains(ICommandContext.class) && method.getParameterTypes().length == 1) {
                     Command command = method.getAnnotation(Command.class);
@@ -70,13 +72,13 @@ public final class PluginCommandParser {
                         @Override
                         public void exec(IApplication application, ICommandContext commandContext) {
                             PluginCommandDefinition cd = new PluginCommandExecutionBuilder(method.getName(),
-                                    plugin.getClass()).setParameterTypes(ICommandContext.class)
+                                    pluginObj.getClass()).setParameterTypes(ICommandContext.class)
                                     .setArgs(commandContext).build();
                             if (method.getReturnType().equals(Void.class)) {
                                 executePluginCommand(cd);
                             } else {
                                 if (!commandContext.getCommandResponse().send(method.getGenericReturnType(), executePluginCommand(cd))) {
-                                    log.error("Plugin command: " + plugin.getName() + "#" + method.getName() +
+                                    log.error("Plugin command: " + pluginSettings.getName() + "#" + method.getName() +
                                             " is not supported, command will not run please return a valid response type or use void and use commandContext.getCommandResponse()" +
                                             ".send(Data)");
                                 }
@@ -115,15 +117,16 @@ public final class PluginCommandParser {
      * @return Object
      */
     public Object executePluginCommand(PluginCommandDefinition pluginCommandDefinition) {
-        Class<? extends IPlugin> pluginClass = pluginCommandDefinition.getPluginClass();
+        Class<?> pluginClass = pluginCommandDefinition.getPluginClass();
         try {
 
-            Method method = pluginClass.getDeclaredMethod(pluginCommandDefinition.getName(), pluginCommandDefinition.getParameterTypes());
+            Method method = pluginClass.getDeclaredMethod(pluginCommandDefinition.getName(),
+                    pluginCommandDefinition.getParameterTypes());
             method.setAccessible(true);
 
 
             if (method.isAnnotationPresent(Command.class)) {
-                return method.invoke(plugin, pluginCommandDefinition.getArgs());
+                return method.invoke(pluginObj, pluginCommandDefinition.getArgs());
             }
 
         } catch (NoSuchMethodException e) {
