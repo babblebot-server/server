@@ -2,10 +2,7 @@ package uk.co.bjdavies.plugins;
 
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.command.Command;
-import uk.co.bjdavies.api.command.CommandParam;
-import uk.co.bjdavies.api.command.ICommand;
-import uk.co.bjdavies.api.command.ICommandContext;
+import uk.co.bjdavies.api.command.*;
 import uk.co.bjdavies.api.plugins.IPluginSettings;
 
 import java.lang.reflect.InvocationTargetException;
@@ -207,6 +204,10 @@ public final class PluginCommandParser {
         String finalExampleValue = exampleValue;
         optionalParams.forEach(op -> examples.add(finalDefaultCommand + op + " " + finalExampleValue));
         examples.add(finalDefaultCommand + exampleValue);
+
+        Arrays.stream(method.getAnnotationsByType(CommandExample.class))
+                .map(CommandExample::value)
+                .forEach(examples::add);
 
         return examples.toArray(new String[0]);
     }
