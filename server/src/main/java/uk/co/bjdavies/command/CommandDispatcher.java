@@ -181,6 +181,7 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing middleware");
+                return;
             }
 
 
@@ -195,6 +196,7 @@ public class CommandDispatcher implements ICommandDispatcher {
 
             if (!canRun.get()) {
                 log.info("Cannot run command due to failing plugin middleware");
+                return;
             }
 
             String commandName = commandContext.getCommandName().replace(namespace, "");
