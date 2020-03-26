@@ -137,6 +137,14 @@ public class CommandDispatcher implements ICommandDispatcher {
         });
     }
 
+    @Override
+    public Flux<String> getRegisteredNamespaces() {
+        return Flux.create(sink -> {
+            commands.keySet().forEach(sink::next);
+            sink.complete();
+        });
+    }
+
     /**
      * This will try and return a command based on a name and type of command.
      *

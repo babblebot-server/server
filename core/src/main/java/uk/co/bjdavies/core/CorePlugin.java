@@ -1,9 +1,12 @@
 package uk.co.bjdavies.core;
 
 import com.google.inject.Inject;
+import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.Command;
+import uk.co.bjdavies.api.command.CommandParam;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
@@ -13,7 +16,13 @@ import uk.co.bjdavies.api.plugins.IPluginSettings;
 import uk.co.bjdavies.api.plugins.Plugin;
 import uk.co.bjdavies.api.plugins.PluginConfig;
 
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * This will implement the core Terminal and Discord Commands such as Exit, Help, Ignore, Listen.
@@ -112,79 +121,95 @@ public class CorePlugin implements IPluginEvents {
         commandContext.getCommandResponse().sendString("BabbleBot is now ignoring this channel");
     }
 
-    @Command(description = "This will help you to discover all the commands and their features.",
-            usage = "help (-cmd=CommandName)",
-            type = "All")
-    public String help(ICommandContext commandContext) {
+    @Command(description = "This will help you to discover all the commands and their features.", type = "All",
+            exampleValue = "ignore")
+    @CommandParam(value = "cmd", canBeEmpty = false,
+            exampleValue = "ignore")
+    public Mono<Consumer<EmbedCreateSpec>> help(ICommandContext commandContext) {
 
-        //TODO: Separate Namespaces
-        //TODO: Fix not being to see !help bbtest
-        //TODO: add namespace as a field in the help menu
-        return null;
-//        if (commandContext.getValue().equals("") && !commandContext.hasParameter("cmd")) {
-//            StringBuilder sb = new StringBuilder(commandContext.getType().equals("Discord") ? "```" : "");
-//
-//            for (ICommand command : commandDispatcher.getCommands(commandContext.getType())) {
-//                sb.append(config.getCommandPrefix()).append(command.getAliases()[0]).append(" - ").append(command.getDescription()).append("\n\n");
-//            }
-//
-//            sb.append(commandContext.getType().equals("Discord") ? "```" : "");
-//
-//            if (commandContext.getType().equals("Discord")) {
-//                commandContext.getCommandUtils().sendPrivateMessage("List of all commands: use !help {command} for more\n" + sb.toString());
-//                return "Check your DMs I would have sent you a message :)";
-//            } else {
-//                return "List of all commands: use !help {command} for more\n" + sb.toString();
-//            }
-//
-//
-//        } else {
-//
-//            String commandName;
-//
-//            if (commandContext.hasParameter("cmd")) {
-//
-//                commandName = commandContext.getParameter("cmd");
-//
-//            } else {
-//                commandName = commandContext.getValue();
-//            }
-//
-//            Optional<ICommand> command = commandDispatcher
-//                    .getCommandByAlias(commandDispatcher.getNamespaceFromCommandName(commandName), commandName,
-//                            commandContext.getType());
-//            if (command.isPresent()) {
-//
-//                ICommand commandFound = command.get();
-//
-//                StringBuilder stringBuilder = new StringBuilder();
-//
-//                stringBuilder.append("Help for Command: ").append(commandName).append("\n");
-//
-//                stringBuilder.append("\nAlias(es):\n").append(commandContext.getType().equals("Discord") ? "```" : "");
-//
-//                List<String> aliases = Arrays.asList(commandFound.getAliases());
-//
-//                aliases.forEach(e -> {
-//                    stringBuilder.append(e);
-//                    if (!(aliases.indexOf(e) == aliases.size() - 1)) {
-//                        stringBuilder.append("/");
-//                    }
-//                });
-//
-//                stringBuilder.append(commandContext.getType().equals("Discord") ? "```" : "")
-//                        .append("\nDescription: \n").append(commandContext.getType().equals("Discord") ? "```" : "")
-//                        .append(commandFound.getDescription());
-//
-//                stringBuilder.append(commandContext.getType().equals("Discord") ? "```" : "").append("\nUsage: \n")
-//                        .append(commandContext.getType().equals("Discord") ? "```" : "").append(commandFound.getUsage())
-//                        .append(commandContext.getType().equals("Discord") ? "```" : "");
-//
-//                return stringBuilder.toString();
-//
-//            } else {
-//                return "The command entered does not exist.";
-//            }
-//        }
+        if (commandContext.hasNonEmptyParameter("cmd") || !commandContext.getValue().equals("")) {
+            String command = commandContext.hasNonEmptyParameter("cmd")
+                    ? commandContext.getParameter("cmd")
+                    : commandContext.getValue();
+
+            return Mono.just(spec -> {
+                spec.setTimestamp(Instant.now());
+                AtomicBoolean hasFoundCommand = new AtomicBoolean(false);
+                String namespace = commandDispatcher.getNamespaceFromCommandName(command);
+                String alias = command.replace(namespace, "");
+                commandDispatcher.getCommandByAlias(namespace, alias, commandContext.getType())
+                        .subscribe(cmd -> {
+                            hasFoundCommand.set(true);
+                            Optional<IPluginSettings> settings = application.getPluginContainer()
+                                    .getPluginSettingsFromNamespace(namespace);
+                            String author = command;
+                            if (settings.isPresent()) {
+                                author = settings.get().getName();
+                                author = author.substring(0, 1).toUpperCase() + author.substring(1);
+                                author = author + " Plugin";
+                                spec.setFooter("Please refer to plugin documentation for further information",
+                                        null);
+                            }
+                            spec.setAuthor(author, null, null);
+                            spec.setTitle(alias.substring(0, 1).toUpperCase() + alias.substring(1) + " Command");
+                            spec.addField("Key", "```css\n" +
+                                    "[!(alias|alias2....)] : This is displaying the commands aliases.\n" +
+                                    "[-(param?)]: This is an optional empty parameter\n" +
+                                    "[-(param*)]: Required empty parameter\n" +
+                                    "[-(param?)=*]: Optional value based parameter\n" +
+                                    "[-(param*)=*]: Required value based parameter\n" +
+                                    "[(value?)]: Optional value\n" +
+                                    "[(value*)]: Required value\n" +
+                                    "```", false);
+
+                            spec.addField("Usage", "```\n" + cmd.getUsage() + "\n```", false);
+                            StringBuilder examples = new StringBuilder("```md\n");
+                            AtomicInteger index = new AtomicInteger(1);
+                            Arrays.stream(cmd.getExamples()).forEach(e -> {
+                                examples.append("[")
+                                        .append(index.getAndIncrement())
+                                        .append("]: ")
+                                        .append(e)
+                                        .append("\n");
+                            });
+                            examples.append("```");
+                            spec.addField("Examples", examples.toString(), false);
+                        }, null, () -> {
+                            if (!hasFoundCommand.get()) {
+                                spec.setTitle("Command Not found");
+                            }
+                        });
+            });
+        } else {
+            return Mono.just(spec -> {
+                spec.setTitle("Commands");
+                spec.setDescription("This is all the commands available to babblebot. Please use **!help** {command-name} for more information");
+                spec.setTimestamp(Instant.now());
+
+                commandDispatcher.getRegisteredNamespaces().subscribe(namespace -> {
+                    AtomicReference<StringBuilder> sb = new AtomicReference<>(new StringBuilder("```css\n"));
+                    commandDispatcher.getCommandsFromNamespace(namespace)
+                            .subscribe(cmd -> sb.get().append("[")
+                                    .append(config.getCommandPrefix())
+                                    .append(namespace)
+                                    .append(cmd.getAliases()[0])
+                                    .append("]: ")
+                                    .append(cmd.getDescription())
+                                    .append("\n"), null, () -> {
+                                sb.get().append("```");
+                                Optional<IPluginSettings> settings = application.getPluginContainer()
+                                        .getPluginSettingsFromNamespace(namespace);
+                                String name = namespace + " Commands";
+                                if (settings.isPresent()) {
+                                    name = settings.get().getName();
+                                    name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                                    name = name + " Commands";
+                                }
+                                spec.addField(name, sb.get().toString(), false);
+                            });
+                });
+
+            });
+        }
     }
 }

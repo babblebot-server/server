@@ -3,6 +3,7 @@ package uk.co.bjdavies.plugins;
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.Command;
+import uk.co.bjdavies.api.command.CommandParam;
 import uk.co.bjdavies.api.command.ICommand;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.plugins.IPluginSettings;
@@ -12,6 +13,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -22,11 +24,13 @@ public final class PluginCommandParser {
 
     private final IPluginSettings pluginSettings;
     private final Object pluginObj;
+    private final IApplication application;
 
 
-    public PluginCommandParser(IPluginSettings pluginSettings, Object pluginObj) {
+    public PluginCommandParser(IApplication application, IPluginSettings pluginSettings, Object pluginObj) {
         this.pluginSettings = pluginSettings;
         this.pluginObj = pluginObj;
+        this.application = application;
     }
 
     public List<ICommand> parseCommands() {
@@ -49,13 +53,18 @@ public final class PluginCommandParser {
                         }
 
                         @Override
+                        public String[] getExamples() {
+                            return generateExamples(method);
+                        }
+
+                        @Override
                         public String getDescription() {
                             return command.description();
                         }
 
                         @Override
                         public String getUsage() {
-                            return command.usage().equals("") ? newAliases.get(0) : command.usage();
+                            return command.usage().equals("") ? generateUsage(method) : command.usage();
                         }
 
                         @Override
@@ -89,6 +98,7 @@ public final class PluginCommandParser {
                         public boolean validateUsage(ICommandContext commandContext) {
                             boolean[] isValid = new boolean[]{true};
 
+                            //TODO: Remove this as is deprecated.
                             Arrays.stream(command.requiredParams()).forEach(e -> {
                                 if (!commandContext.hasParameter(e) && !e.isEmpty()) {
                                     if (isValid[0]) {
@@ -97,7 +107,8 @@ public final class PluginCommandParser {
                                 }
                             });
 
-                            return isValid[0];
+                            return isValid[0] && (!command.requiresValue() || !commandContext.getValue().equals("")) &&
+                                    hasRequiredParams(commandContext, method);
                         }
                     });
                 }
@@ -105,6 +116,114 @@ public final class PluginCommandParser {
         }
 
         return commands;
+    }
+
+    private boolean hasRequiredParams(ICommandContext commandContext, Method method) {
+        AtomicBoolean isValid = new AtomicBoolean(true);
+        Arrays.stream(method.getAnnotationsByType(CommandParam.class))
+                .filter(cp -> !cp.optional())
+                .forEach(cp -> {
+                    if (isValid.get()) {
+                        if (cp.canBeEmpty()) {
+                            isValid.set(commandContext.hasParameter(cp.value()));
+                        } else {
+                            isValid.set(commandContext.hasNonEmptyParameter(cp.value()));
+                        }
+                    }
+                });
+        return isValid.get();
+    }
+
+    private String generateUsage(Method method) {
+        StringBuilder stringBuilder = new StringBuilder(application.getConfig().getDiscordConfig().getCommandPrefix());
+        Command command = method.getAnnotation(Command.class);
+        if (command.aliases().length == 0) {
+            stringBuilder.append(method.getName()).append(" ");
+        } else {
+            stringBuilder.append("(");
+            for (int i = 0; i < command.aliases().length; i++) {
+                if (i != command.aliases().length - 1) {
+                    stringBuilder.append(command.aliases()[i]).append("|");
+                } else {
+                    stringBuilder.append(command.aliases()[i]);
+                }
+            }
+            stringBuilder.append(") ");
+        }
+
+        Arrays.stream(method.getAnnotationsByType(CommandParam.class)).forEach(cp -> {
+            stringBuilder.append("-(").append(cp.value());
+            if (cp.optional()) {
+                stringBuilder.append("?)");
+            } else {
+                stringBuilder.append("*)");
+            }
+
+            if (!cp.canBeEmpty()) {
+                stringBuilder.append("=*");
+            }
+            stringBuilder.append(" ");
+        });
+        stringBuilder.append("(value");
+        if (command.requiresValue()) {
+            stringBuilder.append("*)");
+        } else {
+            stringBuilder.append("?)");
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private String[] generateExamples(Method method) {
+        List<String> examples = new ArrayList<>();
+        List<String> requiredParams = new ArrayList<>();
+        List<String> optionalParams = new ArrayList<>();
+
+        Arrays.stream(method.getAnnotationsByType(CommandParam.class))
+                .forEach(cp -> {
+                    if (!cp.optional()) {
+                        addToExamplesParamList(requiredParams, cp);
+                    } else {
+                        addToExamplesParamList(optionalParams, cp);
+                    }
+                });
+
+        Command command = method.getAnnotation(Command.class);
+        StringBuilder sb = new StringBuilder(application.getConfig().getDiscordConfig().getCommandPrefix());
+        String defaultCommand = "";
+
+        if (command.aliases().length == 0) {
+            sb.append(method.getName()).append(" ");
+        } else {
+            sb.append(command.aliases()[0]).append(" ");
+        }
+
+        requiredParams.forEach(sb::append);
+        defaultCommand = sb.toString();
+
+        String finalDefaultCommand = defaultCommand;
+        String exampleValue = !command.exampleValue().equals("") ? command.exampleValue() : "example-value";
+        exampleValue = command.requiresValue() ? exampleValue : "";
+        String finalExampleValue = exampleValue;
+        optionalParams.forEach(op -> examples.add(finalDefaultCommand + op + " " + finalExampleValue));
+        examples.add(finalDefaultCommand + exampleValue);
+
+        return examples.toArray(new String[0]);
+    }
+
+    private void addToExamplesParamList(List<String> params, CommandParam cp) {
+        if (cp.canBeEmpty()) {
+            params.add("-" + cp.value() + " ");
+        } else {
+            if (!cp.exampleValue().equals("")) {
+                String exampleValue = cp.exampleValue().split(" ").length == 0
+                        ? cp.exampleValue()
+                        : "\"" + cp.exampleValue() + "\"";
+                params.add("-" + cp.value() + "=" + exampleValue + " ");
+            } else {
+                params.add("-" + cp.value() + "=value ");
+            }
+        }
     }
 
     /**

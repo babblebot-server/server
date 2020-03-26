@@ -36,13 +36,18 @@ public final class BabbleBot {
             }
 
             @Override
+            public String[] getExamples() {
+                return new String[]{"bbtest -param=true"};
+            }
+
+            @Override
             public String getDescription() {
                 return "Test Command";
             }
 
             @Override
             public String getUsage() {
-                return "bbtest -param";
+                return application.getConfig().getDiscordConfig().getCommandPrefix() + "bbtest -(param*)=*";
             }
 
             @Override
@@ -57,11 +62,6 @@ public final class BabbleBot {
 
             @Override
             public void exec(IApplication application, ICommandContext commandContext) {
-//                commandContext.getCommandResponse()
-//                        .sendString(Mono.just("Test from the command dispatcher, $(getRandomGIF(1.14))"));
-//
-//                commandContext.getCommandResponse()
-//                        .sendString("Also, babblebot can have multiple responses for commands now?");
 
                 commandContext.getCommandResponse().sendString(Flux.just("$(getRandomGIF(1.14))",
                         "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))", "$(getRandomGIF(1.14))"));

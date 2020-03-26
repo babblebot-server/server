@@ -1,5 +1,7 @@
 package uk.co.bjdavies.api.plugins;
 
+import java.util.Optional;
+
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
@@ -38,4 +40,12 @@ public interface IPluginContainer {
      */
     @Override
     String toString();
+
+    /**
+     * Get a plugin settings from a namespace
+     *
+     * @param namespace - the namespace
+     * @return {@link IPluginSettings}
+     */
+    Optional<IPluginSettings> getPluginSettingsFromNamespace(String namespace);
 }
