@@ -14,6 +14,12 @@ public interface ICommand {
      */
     String[] getAliases();
 
+    /**
+     * This will return the commands examples
+     *
+     * @return String
+     */
+    String[] getExamples();
 
     /**
      * The Description for the command.

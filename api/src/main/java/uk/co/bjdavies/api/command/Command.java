@@ -40,9 +40,23 @@ public @interface Command {
      * The Usage for the command.
      *
      * @return String
+     * @deprecated automatically generated
      */
     String usage() default "";
 
+    /**
+     * This determines where the command requires a value or not
+     *
+     * @return boolean
+     */
+    boolean requiresValue() default false;
+
+    /**
+     * This will be used for the examples generator.
+     *
+     * @return String
+     */
+    String exampleValue() default "";
 
     /**
      * The type of command (Terminal, Discord, All).
@@ -55,6 +69,7 @@ public @interface Command {
      * A list of required params for the command.
      *
      * @return String[]
+     * @deprecated please use {@link CommandParam}
      */
     String[] requiredParams() default "";
 }

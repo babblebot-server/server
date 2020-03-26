@@ -4,8 +4,9 @@ import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.plugins.*;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -17,10 +18,12 @@ public class PluginContainer implements IPluginContainer {
     private final IApplication application;
 
     private final Map<String, Object> plugins;
+    private final Map<String, IPluginSettings> settings;
 
     public PluginContainer(IApplication application) {
         this.application = application;
-        plugins = new Hashtable<>();
+        plugins = new HashMap<>();
+        settings = new HashMap<>();
     }
 
     @Override
@@ -65,10 +68,11 @@ public class PluginContainer implements IPluginContainer {
                 if (obj instanceof IPluginEvents) {
                     ((IPluginEvents) obj).onBoot(settings);
                 }
-                PluginCommandParser commandParser = new PluginCommandParser(settings, obj);
+                PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
                 application.getCommandDispatcher().addNamespace(settings.getNamespace(),
                         commandParser.parseCommands());
                 log.info("Added plugin: " + settings.getName() + ", using namespace: \"" + settings.getNamespace() + "\"");
+                this.settings.put(name, settings);
                 plugins.put(name, obj);
             }
         }
@@ -129,5 +133,14 @@ public class PluginContainer implements IPluginContainer {
         return "PluginContainer{" +
                 "plugins=" + plugins +
                 '}';
+    }
+
+    @Override
+    public Optional<IPluginSettings> getPluginSettingsFromNamespace(String namespace) {
+        return settings.values()
+                .stream()
+                .filter(pluginSettings -> pluginSettings.getNamespace()
+                        .equals(namespace))
+                .findFirst();
     }
 }

@@ -67,6 +67,8 @@ public interface ICommandDispatcher {
 
     Flux<ICommand> getCommandsFromNamespace(String namespace);
 
+    Flux<String> getRegisteredNamespaces();
+
     String getNamespaceFromCommandName(String commandName);
 
     void registerGlobalMiddleware(ICommandMiddleware middleware);
