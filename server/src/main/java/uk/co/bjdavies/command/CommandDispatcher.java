@@ -15,6 +15,7 @@ import uk.co.bjdavies.command.errors.UsageException;
 import uk.co.bjdavies.command.parser.MessageParser;
 import uk.co.bjdavies.variables.VariableParser;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -258,7 +259,16 @@ public class CommandDispatcher implements ICommandDispatcher {
                             hasSentMessage.set(true);
                         } else if (s.getEmbedCreateSpecResponse() != null) {
                             m.getChannel().subscribe(c ->
-                                    c.createEmbed(s.getEmbedCreateSpecResponse())
+                                    c.createEmbed(spec -> {
+                                        spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
+                                        spec.setTimestamp(Instant.now());
+                                        m.getGuild().subscribe(g -> m.getClient().getSelf()
+                                                .subscribe(u -> u.asMember(g.getId())
+                                                        .subscribe(mem -> mem.getColor()
+                                                                .subscribe(spec::setColor))));
+
+                                        s.getEmbedCreateSpecResponse().accept(spec);
+                                    })
                                             .subscribe());
                             hasSentMessage.set(true);
                         }
@@ -273,43 +283,6 @@ public class CommandDispatcher implements ICommandDispatcher {
         } else {
             log.error("Command could not be parsed: " + message);
         }
-
-//            if (command[0] != null) {
-//                boolean isValid = command[0].validateUsage(commandContext);
-//                if (isValid) {
-//                    log.debug("Running Command:" + commandContext.getCommandName() + " In Guild: " +
-//                            Objects.requireNonNull(commandContext.getMessage().getGuild().block()).getName());
-//                    return new VariableParser(command[0].run(application, commandContext), application).toString();
-//                } else {
-//                    return command[0].getUsage();
-//                }
-//            } else {
-//
-//                List<ICommand> commandsFilter = getCommandsLike(commandName,
-//                        commandContext.getType());
-//
-//                if (commandsFilter.size() == 0) {
-//                    return "The command couldn't be found.";
-//                } else {
-//
-//                    StringBuilder sb = new StringBuilder("```markdown\n# Command Not Found\n\nDid You mean?\n");
-//
-//                    commandsFilter.forEach(c -> {
-//                        sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append("? - ").append(c.getDescription()).append("\n");
-//                    });
-//
-//                    sb.append("```");
-//
-//                    Objects.requireNonNull(commandContext.getMessage().getChannel().block())
-//                            .createMessage(sb.toString()).block();
-//                }
-//
-//                return "";
-//            }
-//
-//        } else {
-//            return "Command could not be parsed.";
-//        }
 
     }
 
