@@ -4,7 +4,7 @@ package uk.co.bjdavies.api.plugins;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IPlugin extends IPluginEvents {
+public interface IPlugin {
     /**
      * This is the name of the Plugin.
      *
