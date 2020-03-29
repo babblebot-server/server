@@ -53,19 +53,4 @@ public class PluginSettings implements IPluginSettings {
     public void setNamespace(String namespace) {
         this.namespace = namespace;
     }
-
-    @Override
-    public void onReload() {
-
-    }
-
-    @Override
-    public void onBoot(IPluginSettings settings) {
-
-    }
-
-    @Override
-    public void onShutdown() {
-
-    }
 }
