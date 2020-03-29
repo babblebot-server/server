@@ -5,19 +5,15 @@ package uk.co.bjdavies.api.config;
  * @since 1.0.0
  */
 public interface ISystemConfig {
-    /**
-     * This will return the JWTTokenPassword.
-     *
-     * @return String
-     */
-    String getJWTTokenPassword();
 
     /**
-     * This will return the serverVersion
+     * This will return if the server will auto-update based on github. If turned off the user will manually have to update.
+     * Default: On
      *
-     * @return String
+     * @return boolean
      */
-    String getServerVersion();
+    boolean isAutoUpdateOn();
+
 
     /**
      * This will return if debug is on.

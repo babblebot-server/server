@@ -3,6 +3,9 @@
     "token": "Your discord token",
     "commandPrefix": "!"
   },
+  "system": {
+    "autoUpdate": true
+  },
   "http": {
     "port": 25565,
     "maxWorkerThreads": 3
