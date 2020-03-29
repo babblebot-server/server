@@ -66,7 +66,7 @@ public class PluginContainer implements IPluginContainer {
             if (settings != null) {
                 PluginConfigParser.parsePlugin(application, settings, obj);
                 if (obj instanceof IPluginEvents) {
-                    ((IPluginEvents) obj).onBoot(settings);
+//                    ((IPluginEvents) obj).onBoot(settings);
                 }
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
                 application.getCommandDispatcher().addNamespace(settings.getNamespace(),
@@ -76,6 +76,11 @@ public class PluginContainer implements IPluginContainer {
                 plugins.put(name, obj);
             }
         }
+    }
+
+    @Override
+    public void addPlugin(Object plugin) {
+        addPlugin(plugin.getClass().getSimpleName().toLowerCase().replace("plugin", ""), plugin);
     }
 
     private IPluginSettings getPluginSettings(String name,
