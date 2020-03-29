@@ -59,6 +59,7 @@ public class Agent {
                         scanLoader(loader);
                         loaders.add(loader);
                     }
+
                     CtClass clazz = cp.get(className.replace('/', '.'));
 
                     if (clazz != null && notAbstract(clazz) && clazz.subclassOf(finalModelClass) &&
@@ -70,7 +71,6 @@ public class Agent {
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
                 }
                 return null;
             }

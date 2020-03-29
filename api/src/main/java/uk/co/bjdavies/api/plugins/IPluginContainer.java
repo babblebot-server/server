@@ -16,6 +16,13 @@ public interface IPluginContainer {
      */
     void addPlugin(String name, Object plugin);
 
+    /**
+     * This method will allow you to add a plugin to the container.
+     *
+     * @param plugin - The plugin itself.
+     */
+    void addPlugin(Object plugin);
+
 
     /**
      * This method allows you to remove a plugin from the container.

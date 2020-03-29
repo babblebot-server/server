@@ -7,6 +7,7 @@ package uk.co.bjdavies.api.config;
 public interface IPluginConfig {
     /**
      * This will return the plugin's location.
+     * e.g. audiobot -> plugins/audiobot/....
      *
      * @return String
      */

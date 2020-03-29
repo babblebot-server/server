@@ -16,6 +16,7 @@ import uk.co.bjdavies.db.DB;
 import uk.co.bjdavies.discord.DiscordModule;
 import uk.co.bjdavies.http.WebServer;
 import uk.co.bjdavies.plugins.PluginModule;
+import uk.co.bjdavies.plugins.importing.ImportPluginFactory;
 import uk.co.bjdavies.variables.VariableContainer;
 import uk.co.bjdavies.variables.VariableModule;
 
@@ -80,6 +81,9 @@ public class Application implements IApplication {
 
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
+
+        config.getPlugins().forEach(pluginConfig -> ImportPluginFactory.importPlugin(pluginConfig, this).log("Plugins")
+                .subscribe(pluginContainer::addPlugin));
 
 
         get(WebServer.class).start();
