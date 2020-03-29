@@ -10,7 +10,9 @@ import uk.co.bjdavies.api.plugins.IPlugin;
 import uk.co.bjdavies.api.plugins.Plugin;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -46,13 +48,23 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy {
                 //Load All
                 return Flux.create(sink -> {
                     log.info("Loading plugins: ");
+                    List<String> check = Arrays.asList("Proxy", "java/lang", "com/sun", "Guice", "google",
+                            "GeneratedMethodAccessor", "GeneratedConstructorAccessor", "javax");
                     jcl.getLoadedResources().keySet().stream()
                             .map(c -> {
-                                try {
-                                    return jcl.loadClass(c.replaceAll("/", ".").replace(".class", ""));
-                                } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                                    return null;
+                                if (c.endsWith(".class") && !c.contains("module-info")) {
+                                    try {
+                                        return jcl.loadClass(c.replaceAll("/", ".").replace(".class", ""));
+                                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                                        if (contains(c, e.getMessage(), check)) {
+                                            return null;
+                                        } else {
+                                            log.error("Failed to load class: " + c + ", please ensure that is is included in the libs.", e);
+                                        }
+                                        return null;
+                                    }
                                 }
+                                return null;
                             })
                             .filter(Objects::nonNull)
                             .filter(c -> c.isAnnotationPresent(Plugin.class) ||
@@ -74,5 +86,19 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy {
         }
 
         return Flux.empty();
+    }
+
+    private boolean contains(String s, String s1, List<String> contains) {
+        AtomicBoolean b = new AtomicBoolean(false);
+
+        contains.forEach(c -> {
+            if (!b.get()) {
+                if (s.contains(c) || s1.contains(c)) {
+                    b.set(true);
+                }
+            }
+        });
+
+        return b.get();
     }
 }

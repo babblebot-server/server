@@ -82,7 +82,7 @@ public class Application implements IApplication {
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
 
-        config.getPlugins().forEach(pluginConfig -> ImportPluginFactory.importPlugin(pluginConfig, this).log("Plugins")
+        config.getPlugins().forEach(pluginConfig -> ImportPluginFactory.importPlugin(pluginConfig, this)
                 .subscribe(pluginContainer::addPlugin));
 
 
