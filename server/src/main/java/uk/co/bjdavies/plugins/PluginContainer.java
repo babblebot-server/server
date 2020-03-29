@@ -66,7 +66,11 @@ public class PluginContainer implements IPluginContainer {
             if (settings != null) {
                 PluginConfigParser.parsePlugin(application, settings, obj);
                 if (obj instanceof IPluginEvents) {
-//                    ((IPluginEvents) obj).onBoot(settings);
+                    try {
+                        ((IPluginEvents) obj).onBoot(settings);
+                    } catch (AbstractMethodError e) {
+                        log.warn("Old Plugin version, please consider upgrading. onBoot will not run. Plugin: " + name);
+                    }
                 }
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
                 application.getCommandDispatcher().addNamespace(settings.getNamespace(),
