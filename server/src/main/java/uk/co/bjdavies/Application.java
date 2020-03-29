@@ -103,6 +103,7 @@ public class Application implements IApplication {
 
     /**
      * This will make a Application and ensure that only one application can be made.
+     * 2.0.0
      *
      * @param args  The Arguments passed in by the cli.
      * @param clazz Bootstrap your own application useful for developing plugins.
