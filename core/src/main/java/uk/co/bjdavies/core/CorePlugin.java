@@ -1,6 +1,7 @@
 package uk.co.bjdavies.core;
 
 import com.google.inject.Inject;
+import discord4j.core.object.entity.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -11,6 +12,7 @@ import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.api.db.Model;
+import uk.co.bjdavies.api.db.WhereStatement;
 import uk.co.bjdavies.api.plugins.IPluginEvents;
 import uk.co.bjdavies.api.plugins.IPluginSettings;
 import uk.co.bjdavies.api.plugins.Plugin;
@@ -63,11 +65,14 @@ public class CorePlugin implements IPluginEvents {
 
     private final IDiscordConfig config;
 
+    private final AnnouncementService announcementService;
+
     @Inject
     public CorePlugin(ICommandDispatcher commandDispatcher, IApplication application, IDiscordConfig config) {
         this.commandDispatcher = commandDispatcher;
         this.application = application;
         this.config = config;
+        announcementService = application.get(AnnouncementService.class);
     }
 
     @Override
@@ -81,6 +86,7 @@ public class CorePlugin implements IPluginEvents {
         commandDispatcher.registerGlobalMiddleware(context ->
                 Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
                         || context.getCommandName().equals("listen"));
+        announcementService.start();
     }
 
     @Override
@@ -114,6 +120,48 @@ public class CorePlugin implements IPluginEvents {
 
         commandContext.getCommandResponse().sendString("BabbleBot is now ignoring this channel");
     }
+
+    @Command(aliases = {"register-announcement-channel", "register-ac"}, description = "Register the channel where the command is ran as a announcement channel")
+    public Mono<String> register(ICommandContext commandContext) {
+        return commandContext.getMessage().getGuild().flatMap(g -> {
+            Optional<AnnouncementChannel> model = AnnouncementChannel.
+                    where("guildId", g.getId().asString())
+                    .first();
+            if (model.isPresent()) {
+                AnnouncementChannel channel = model.get();
+                if (channel.getChannelId().equals(commandContext.getMessage().getChannelId().asString())) {
+                    return Mono.just("Already registered within this server and channel");
+                } else {
+                    return Mono.just("Already registered within this server.");
+                }
+            } else {
+                AnnouncementChannel channel = new AnnouncementChannel();
+                channel.setChannelId(commandContext.getMessage().getChannelId().asString());
+                channel.setGuildId(g.getId().asString());
+                channel.save();
+            }
+
+            return commandContext.getMessage().getChannel()
+                    .flatMap(c -> Mono.just("Registered " + ((TextChannel) c).getName() + ", as a announcement channel."));
+        });
+    }
+
+    @Command(aliases = {"remove-announcement-channel", "remove-ac"}, description = "Remove the channel where the command is ran as a announcement channel")
+    public Mono<String> remove(ICommandContext commandContext) {
+        return commandContext.getMessage().getGuild().flatMap(g -> {
+            Optional<AnnouncementChannel> model = AnnouncementChannel.
+                    where("guildId", g.getId().asString())
+                    .and(new WhereStatement("channelId", commandContext.getMessage().getChannelId().asString()))
+                    .first();
+            model.ifPresent(Model::delete);
+            if (model.isEmpty()) {
+                return Mono.just("Unable to remove this channel as a announcement channel as it is not registered");
+            }
+            return commandContext.getMessage().getChannel()
+                    .flatMap(c -> Mono.just("Removed " + ((TextChannel) c).getName() + ", as a announcement channel."));
+        });
+    }
+
 
     @Command(description = "This will help you to discover all the commands and their features.", type = "All",
             exampleValue = "ignore")
