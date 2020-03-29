@@ -260,6 +260,7 @@ public class CommandDispatcher implements ICommandDispatcher {
                         } else if (s.getEmbedCreateSpecResponse() != null) {
                             m.getChannel().subscribe(c ->
                                     c.createEmbed(spec -> {
+                                        spec.setFooter("Server Version: " + application.getServerVersion(), null);
                                         spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
                                         spec.setTimestamp(Instant.now());
                                         m.getGuild().subscribe(g -> m.getClient().getSelf()
