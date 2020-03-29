@@ -332,6 +332,7 @@ public class CommandDispatcher implements ICommandDispatcher {
 
     public String getNamespaceFromCommandName(String commandName) {
         AtomicReference<String> namespace = new AtomicReference<>("");
+        log.info(commandName);
         this.commands.keySet().forEach(i -> {
             if (commandName.startsWith(i)) {
                 namespace.set(i);
