@@ -12,36 +12,19 @@ import uk.co.bjdavies.api.config.ISystemConfig;
  */
 
 public class SystemConfig implements ISystemConfig {
-    /**
-     * This is the server's version that is currently running this is a preset version it cannot be changed unless changed by the developer.
-     */
-    private final String serverVersion = "1.0.0";
-    /**
-     * This is the password used to encrypt the server's JWT tokens for authentication between communication of both client and server.
-     */
-    private String JWTTokenPassword;
+
+
+    private final boolean autoUpdate = true;
+
     /**
      * This will show all the logs for the discord client and other problems that occur throughout the program and all the info.
      */
-    private boolean debug;
+    private final boolean debug = true;
 
 
-    /**
-     * This will return the JWTTokenPassword.
-     *
-     * @return String
-     */
-    public String getJWTTokenPassword() {
-        return JWTTokenPassword;
-    }
-
-    /**
-     * This will return the serverVersion
-     *
-     * @return String
-     */
-    public String getServerVersion() {
-        return serverVersion;
+    @Override
+    public boolean isAutoUpdateOn() {
+        return autoUpdate;
     }
 
     /**

@@ -1,11 +1,11 @@
 package uk.co.bjdavies.core;
 
+import com.github.zafarkhaja.semver.Version;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
-import de.skuzzle.semantic.Version;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.util.Snowflake;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +32,7 @@ public class AnnouncementService {
     private final IApplication application;
     private final ExecutorService service;
     private final Timer timer;
+    private Version currentVersion;
 
     @Inject
     public AnnouncementService(IDiscordFacade facade, IApplication application) {
@@ -39,6 +40,7 @@ public class AnnouncementService {
         this.application = application;
         this.service = Executors.newFixedThreadPool(10, new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
         timer = new Timer();
+        currentVersion = Version.valueOf(application.getServerVersion());
     }
 
     public synchronized void start() {
@@ -49,7 +51,7 @@ public class AnnouncementService {
                     String response =
                             HttpClient.create()
                                     .get()
-                                    .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/tags")
+                                    .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/releases")
                                     .responseContent()
                                     .aggregate()
                                     .asString()
@@ -61,25 +63,32 @@ public class AnnouncementService {
                     }.getType());
                     assert res != null;
                     TagItem first = res.get(0);
-                    log.info(application.getServerVersion());
-                    String versionName = first.name.toLowerCase().replace("v", "");
-                    Version tagVersion = Version.parseVersion(versionName);
-                    Version applicationVersion = Version.parseVersion(versionName);
-                    if (tagVersion.isGreaterThan(applicationVersion)) {
-                        AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
-                                facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
-                                        g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
-                                                .subscribe(c -> c.createEmbed(spec -> {
-                                                    spec.setFooter("Server Version: " + application.getServerVersion(), null);
-                                                    spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
-                                                    spec.setTimestamp(Instant.now());
-                                                    facade.getClient().getSelf()
-                                                            .subscribe(u -> u.asMember(g.getId())
-                                                                    .subscribe(mem -> mem.getColor()
-                                                                            .subscribe(spec::setColor)));
-                                                    spec.setTitle("New server update to: " + versionName);
-                                                    spec.setDescription("To update server please use " + application.getConfig().getDiscordConfig().getCommandPrefix() + "update-server command");
-                                                }).subscribe())));
+                    String versionName = first.tag_name.toLowerCase().replace("v", "");
+                    Version tagVersion = Version.valueOf(versionName);
+                    if (tagVersion.greaterThan(currentVersion)) {
+                        if (application.getConfig().getSystemConfig().isAutoUpdateOn()) {
+                            log.info("Updating....");
+                            application.get(UpdateService.class).updateTo(first).subscribe((b) -> {
+
+                            }, (t) -> log.error("Error", t), () -> {
+                                currentVersion = tagVersion;
+                                AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
+                                        facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
+                                                g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
+                                                        .subscribe(c -> c.createEmbed(spec -> {
+                                                            spec.setFooter("Server Version: " + application.getServerVersion(), null);
+                                                            spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
+                                                            spec.setTimestamp(Instant.now());
+                                                            facade.getClient().getSelf()
+                                                                    .subscribe(u -> u.asMember(g.getId())
+                                                                            .subscribe(mem -> mem.getColor()
+                                                                                    .subscribe(spec::setColor)));
+                                                            spec.setTitle("New server update to: " + versionName);
+                                                            spec.setDescription("```\nServer has updated please use: " +
+                                                                    application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update.\n```");
+                                                        }).subscribe())));
+                            });
+                        }
                     } else {
                         log.info("Up to date");
                     }
@@ -88,7 +97,12 @@ public class AnnouncementService {
         }, 3000, 1000 * 60 * 60);
     }
 
-    private static class TagItem {
-        public String name;
+    public static class TagItem {
+        public String tag_name;
+        public List<Asset> assets;
+    }
+
+    public static class Asset {
+        public String browser_download_url;
     }
 }
