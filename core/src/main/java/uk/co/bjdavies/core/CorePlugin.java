@@ -14,7 +14,6 @@ import uk.co.bjdavies.api.db.Model;
 import uk.co.bjdavies.api.plugins.IPluginEvents;
 import uk.co.bjdavies.api.plugins.IPluginSettings;
 import uk.co.bjdavies.api.plugins.Plugin;
-import uk.co.bjdavies.api.plugins.PluginConfig;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -64,9 +63,6 @@ public class CorePlugin implements IPluginEvents {
 
     private final IDiscordConfig config;
 
-    @PluginConfig
-    private CorePluginConfig pluginConfig;
-
     @Inject
     public CorePlugin(ICommandDispatcher commandDispatcher, IApplication application, IDiscordConfig config) {
         this.commandDispatcher = commandDispatcher;
@@ -85,8 +81,6 @@ public class CorePlugin implements IPluginEvents {
         commandDispatcher.registerGlobalMiddleware(context ->
                 Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
                         || context.getCommandName().equals("listen"));
-
-        log.info("Plugin config: " + pluginConfig);
     }
 
     @Override
