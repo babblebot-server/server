@@ -1,6 +1,7 @@
 package uk.co.bjdavies.command.parser;
 
 import discord4j.core.object.entity.Message;
+import lombok.extern.slf4j.Slf4j;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.command.CommandContext;
 
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
+@Slf4j
 public class DiscordMessageParser implements MessageParser {
     /**
      * This is the message that was created when the message was sent.
@@ -51,13 +53,15 @@ public class DiscordMessageParser implements MessageParser {
         Matcher matcher = getParameterMatcher(message);
         message = message.replace(parseCommandName(message), "");
         while (matcher.find()) {
-            message = message.replace(matcher.group(), "");
+            message = message.replace(matcher.group().trim(), "");
         }
+
 
         matcher = getRawParameters(message);
         while (matcher.find()) {
-            message = message.replace(matcher.group(), "");
+            message = message.replace(matcher.group().trim(), "");
         }
+
 
         message = message.trim();
         return message;
@@ -92,16 +96,16 @@ public class DiscordMessageParser implements MessageParser {
         Matcher matcher = getParameterMatcher(message);
         String copy = new String(message.getBytes());
         while (matcher.find()) {
-            String name = matcher.group(1);
-            String value = matcher.group(2).replaceAll("\"", "");
+            String name = matcher.group(1).trim();
+            String value = matcher.group(2).replaceAll("\"", "").trim();
             params.put(name, value);
-            copy = copy.replace(matcher.group(), "");
+            copy = copy.replace(matcher.group().trim(), "");
         }
 
         matcher = getRawParameters(copy);
 
         while (matcher.find()) {
-            String name = matcher.group(1);
+            String name = matcher.group(1).trim();
             params.put(name, "");
         }
 
@@ -116,7 +120,7 @@ public class DiscordMessageParser implements MessageParser {
      * @return Matcher
      */
     private Matcher getParameterMatcher(String message) {
-        String parameterRegex = "-([a-zA-Z0-9]+)=(([a-zA-Z0-9:/?=&_.]+)|(\"([a-zA-Z0-9:/?=&_.]+)\"))";
+        String parameterRegex = " -([a-zA-Z0-9]+)=(([a-zA-Z0-9:/?=&_.\\-]+)|(\"([a-zA-Z0-9:/?=&_.\\-]+)\"))";
 
         Pattern pattern = Pattern.compile(parameterRegex);
 
@@ -124,7 +128,7 @@ public class DiscordMessageParser implements MessageParser {
     }
 
     private Matcher getRawParameters(String message) {
-        String parameterRegex = "-([a-zA-Z0-9]+)";
+        String parameterRegex = " -([a-zA-Z0-9]+)";
 
         Pattern pattern = Pattern.compile(parameterRegex);
 

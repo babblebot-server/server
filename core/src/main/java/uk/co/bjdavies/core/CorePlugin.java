@@ -132,11 +132,13 @@ public class CorePlugin implements IPluginEvents {
                     ? commandContext.getParameter("cmd")
                     : commandContext.getValue();
 
+
             return Mono.just(spec -> {
                 spec.setTimestamp(Instant.now());
                 AtomicBoolean hasFoundCommand = new AtomicBoolean(false);
                 String namespace = commandDispatcher.getNamespaceFromCommandName(command);
                 String alias = command.replace(namespace, "");
+                log.info(command);
                 commandDispatcher.getCommandByAlias(namespace, alias, commandContext.getType())
                         .subscribe(cmd -> {
                             hasFoundCommand.set(true);
@@ -153,7 +155,7 @@ public class CorePlugin implements IPluginEvents {
                             spec.setAuthor(author, null, null);
                             spec.setTitle(alias.substring(0, 1).toUpperCase() + alias.substring(1) + " Command");
                             spec.addField("Key", "```css\n" +
-                                    "[!(alias|alias2....)] : This is displaying the commands aliases.\n" +
+                                    "[" + config.getCommandPrefix() + "(alias|alias2....)] : This is displaying the commands aliases.\n" +
                                     "[-(param?)]: This is an optional empty parameter\n" +
                                     "[-(param*)]: Required empty parameter\n" +
                                     "[-(param?)=*]: Optional value based parameter\n" +
