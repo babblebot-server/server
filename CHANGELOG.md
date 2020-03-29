@@ -1,3 +1,51 @@
+# [2.0.0](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.7...v2.0.0) (2020-03-29)
+
+
+### Bug Fixes
+
+* **agent:** Stopped using System.out.println and us now using slf4j ([1796981](https://github.com/bendavies99/BabbleBot-Server/commit/17969816ffd64d2b15f434595092645a01c140a3))
+* **command-dispatcher:** Added commands like back ([a149056](https://github.com/bendavies99/BabbleBot-Server/commit/a149056975a0f8bf9a673521449227bca1b4f731))
+* **command-dispatcher:** Failing middleware now stops command ([c2bee8e](https://github.com/bendavies99/BabbleBot-Server/commit/c2bee8e677b69cd9702a0cdf3014e4b5e375b4b8))
+* **command-dispatcher:** Fix on usage error not showing up ([ad19669](https://github.com/bendavies99/BabbleBot-Server/commit/ad196695bc0b69e715d40385e9788095a44ff634))
+* **core:** Removed failing middleware error ([7009ffd](https://github.com/bendavies99/BabbleBot-Server/commit/7009ffd9664d0ef665f33650247878e5d76967de))
+* **message-parser:** Remove namespaces with - in value ([27650b2](https://github.com/bendavies99/BabbleBot-Server/commit/27650b2d52cdf791ac0d38faa8010c9dc988218d))
+* **plugins:** Added ability to use root namespace ([1c87de8](https://github.com/bendavies99/BabbleBot-Server/commit/1c87de8cb89b5bf63116dd89e6e016f1ba2f7990))
+* **plugins:** Added commandexample decorator to generate examples ([ca1bf50](https://github.com/bendavies99/BabbleBot-Server/commit/ca1bf50e4bfd7b1e79f85587a37b85cae4a90d02))
+* **plugins:** Fixed Ignoring system broke on fresh install ([8f628c9](https://github.com/bendavies99/BabbleBot-Server/commit/8f628c9cc198d0ffc79a9487787cd795567ad27b))
+* **plugins:** Loading plugins, no class errors ([a92b873](https://github.com/bendavies99/BabbleBot-Server/commit/a92b8736983d56e214d440775ba2cb66ce5f9613))
+* **plugins:** Removed events being required ([b14a45f](https://github.com/bendavies99/BabbleBot-Server/commit/b14a45fa64851c4ea55ba283f1a90bd20829a627))
+* Allow for empty parameters ([f7eff91](https://github.com/bendavies99/BabbleBot-Server/commit/f7eff919d8aa9893a54367b54db24fc39aa48a09))
+* bot not saying command not found ([70a18b1](https://github.com/bendavies99/BabbleBot-Server/commit/70a18b14f1e5112558dc4c794ed27981f62b4c70))
+* Handle null responses correctly ([481387f](https://github.com/bendavies99/BabbleBot-Server/commit/481387f6486d65491f9a4ad81bf26d134488aaea))
+
+
+### Code Refactoring
+
+* **core:** added a new version to docs ([0de0d44](https://github.com/bendavies99/BabbleBot-Server/commit/0de0d44cf911f7de5feeb4eb06bedaa83cd071e0))
+
+
+### Features
+
+* **announcements:** Added a update announcement service ([74864b7](https://github.com/bendavies99/BabbleBot-Server/commit/74864b7b5a5dfe339d47cdafe8df789728ff460b))
+* **command-response:** added ability to respond to commands ([8d4027a](https://github.com/bendavies99/BabbleBot-Server/commit/8d4027a50027335910237f9d22a54c39647a363e))
+* **commands:** Allow to test for non-empty parameter ([48196e4](https://github.com/bendavies99/BabbleBot-Server/commit/48196e440603ad3e85a0faffb1093131671e9a4d))
+* **commands:** Default properties for embed response ([29e7057](https://github.com/bendavies99/BabbleBot-Server/commit/29e7057424ef247475802dae33ba90b267c81fb2))
+* **commands:** Refactored Commands system ([067f3a4](https://github.com/bendavies99/BabbleBot-Server/commit/067f3a4bac9f63ef7577a3bb0c1781323e9ebe0f))
+* **core:** Refactored help, command and added new command annotations ([dd2a6be](https://github.com/bendavies99/BabbleBot-Server/commit/dd2a6be6f2fc43bdaa966ca8622ba5e79ef217e1))
+* **gitcz:** Added conventional commits cli ([4c0ea41](https://github.com/bendavies99/BabbleBot-Server/commit/4c0ea4186f6e63c5edc25309f51e7f9912beb04a))
+* **plugin:** Added plugin middleware ([7d2af4c](https://github.com/bendavies99/BabbleBot-Server/commit/7d2af4cad4d95e87fdc26393fd6ae76c7cb2ce75))
+* **plugins:**  Refactored plugins to match new command system ([a31f90d](https://github.com/bendavies99/BabbleBot-Server/commit/a31f90dfc130c8c020b4ffcae5a70c9caf4d4d5a))
+* **plugins:** Added a plugin decorator to make plugin creation easier ([8bb39e0](https://github.com/bendavies99/BabbleBot-Server/commit/8bb39e027d83587859155f2dc6f7a40daaca8969))
+* **plugins:** Added ability to import plugins ([21133c9](https://github.com/bendavies99/BabbleBot-Server/commit/21133c9f18531c34ef86143359f7f9688b77d19a))
+* **plugins:** Added an easy to make plugin-specific config ([f7fc32f](https://github.com/bendavies99/BabbleBot-Server/commit/f7fc32f85ed04936ab2ba006f0c93542a0979409))
+* **plugins:** Added semantic version library for testing ([568fa8b](https://github.com/bendavies99/BabbleBot-Server/commit/568fa8b21ef65cacedfab00d14d6994f89e76578))
+* **updating:** Added a autoupdate service ([05453d7](https://github.com/bendavies99/BabbleBot-Server/commit/05453d7f085d9119871f533446d30b26e45e1449))
+
+
+### BREAKING CHANGES
+
+* **core:** Command System Refactor, Plugin System overhaul, Automatic updates
+
 ## [1.2.7](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.6...v1.2.7) (2020-03-20)
 
 
