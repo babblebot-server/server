@@ -1,5 +1,6 @@
 package uk.co.bjdavies.plugins;
 
+import de.skuzzle.semantic.Version;
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.plugins.*;
@@ -93,24 +94,24 @@ public class PluginContainer implements IPluginContainer {
                                               String minimumServerVersion,
                                               String maximumServerVersion) {
 
-        //TODO: Use SemVer library
-        String serverVersion = application.getServerVersion();
-        String[] serverTokens = serverVersion.split("\\.");
+        Version serverVersion = Version.parseVersion(application.getServerVersion());
+        Version minVersion = Version.parseVersion(minimumServerVersion);
 
-        int major = Integer.parseInt(serverTokens[0]);
-        int minor = Integer.parseInt(serverTokens[1]);
-        int patch = Integer.parseInt(serverTokens[2]);
-
-        String[] minTokens = minimumServerVersion.split("\\.");
-
-        int minMajor = Integer.parseInt(minTokens[0]);
-        int minMinor = Integer.parseInt(minTokens[1]);
-        int minPatch = Integer.parseInt(minTokens[2]);
-
-
-        if (major >= minMajor && minor >= minMinor && patch >= minPatch) {
-            return new PluginSettings(name, author, namespace,
-                    minimumServerVersion, maximumServerVersion);
+        if (serverVersion.isGreaterThanOrEqualTo(minVersion)) {
+            if (maximumServerVersion.equals("0")) {
+                return new PluginSettings(name, author, namespace,
+                        minimumServerVersion, maximumServerVersion);
+            } else {
+                Version maxVersion = Version.parseVersion(maximumServerVersion);
+                if (serverVersion.isLowerThanOrEqualTo(maxVersion)) {
+                    return new PluginSettings(name, author, namespace,
+                            minimumServerVersion, maximumServerVersion);
+                } else {
+                    log.error("Plugin not supported for this server version please downgrade server version is too high, please refer to the documentation" +
+                            " for further help.");
+                    return null;
+                }
+            }
         } else {
             log.error("Plugin not supported for this server version please update, please refer to the documentation" +
                     " for further help.");
