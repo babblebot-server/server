@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.1...v2.0.2) (2020-03-30)
+
+
+### Bug Fixes
+
+* **update:** Delete old files on exit ([5353e39](https://github.com/bendavies99/BabbleBot-Server/commit/5353e396ae59bd50f8734693696ebaf2e31694f4))
+
 ## [2.0.1](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.0...v2.0.1) (2020-03-30)
 
 
