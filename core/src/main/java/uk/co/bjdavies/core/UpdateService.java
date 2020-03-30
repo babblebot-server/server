@@ -94,6 +94,10 @@ public class UpdateService {
         if (appSh.delete()) {
             try {
                 FileUtils.copyFile(unzippedApp, appSh);
+                if (!appSh.setExecutable(true)) {
+                    log.error("Cannot set file to executable..");
+                    return false;
+                }
             } catch (IOException e) {
                 log.error("Cant copy", e);
                 return false;
@@ -106,7 +110,7 @@ public class UpdateService {
     private boolean swapLibs(File unZipTmp) {
         File libsFolder = new File(unZipTmp + File.separator + "lib/");
         File ourLibsFolder = new File("../lib/");
-        log.info(ourLibsFolder.getAbsolutePath());
+        log.info("Lib folder: " + ourLibsFolder.getAbsolutePath());
 
         if (!ourLibsFolder.exists()) {
             if (!ourLibsFolder.mkdirs()) {
