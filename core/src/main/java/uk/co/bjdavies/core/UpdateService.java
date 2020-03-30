@@ -8,6 +8,9 @@ import uk.co.bjdavies.api.IApplication;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -103,6 +106,7 @@ public class UpdateService {
     private boolean swapLibs(File unZipTmp) {
         File libsFolder = new File(unZipTmp + File.separator + "lib/");
         File ourLibsFolder = new File("../lib/");
+        log.info(ourLibsFolder.getAbsolutePath());
 
         if (!ourLibsFolder.exists()) {
             if (!ourLibsFolder.mkdirs()) {
@@ -117,22 +121,24 @@ public class UpdateService {
                 return false;
             }
         }
-
-        if (ourLibsFolder.delete()) {
-            if (ourLibsFolder.mkdirs()) {
+        AtomicBoolean copy = new AtomicBoolean(true);
+        try {
+            Arrays.stream(Objects.requireNonNull(ourLibsFolder.listFiles())).forEach(File::deleteOnExit);
+            Arrays.stream(Objects.requireNonNull(libsFolder.listFiles())).forEach(f -> {
                 try {
-                    FileUtils.copyDirectory(libsFolder, ourLibsFolder, true);
+                    FileUtils.copyFileToDirectory(f, ourLibsFolder);
                 } catch (IOException e) {
                     log.error("Cant copy", e);
-                    return false;
+                    copy.set(false);
                 }
-            } else {
-                return false;
-            }
+            });
+        } catch (NullPointerException e) {
+            log.error("Cant copy", e);
+            return false;
         }
 
 
-        return true;
+        return copy.get();
     }
 
     private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
