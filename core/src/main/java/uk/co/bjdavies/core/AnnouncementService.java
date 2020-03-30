@@ -38,7 +38,7 @@ public class AnnouncementService {
     public AnnouncementService(IDiscordFacade facade, IApplication application) {
         this.facade = facade;
         this.application = application;
-        this.service = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
+        this.service = Executors.newFixedThreadPool(2, new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
         timer = new Timer();
         currentVersion = Version.valueOf(application.getServerVersion());
     }
@@ -102,7 +102,7 @@ public class AnnouncementService {
                             log.info("Up to date");
                         }
                     } catch (Exception e) {
-                        log.error("Checking for update failed....");
+                        log.error("Checking for update failed.... Probably a rate limit.. please wait an hour.");
                     }
                 });
             }
