@@ -1,3 +1,11 @@
+## [2.0.3](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.2...v2.0.3) (2020-03-30)
+
+
+### Bug Fixes
+
+* **app:** Added ability to shutdown bot for updates ([74762d9](https://github.com/bendavies99/BabbleBot-Server/commit/74762d967956f59af1bf0456d72586c8bb483c05))
+* **update:** Set copied file as executable ([0dc364f](https://github.com/bendavies99/BabbleBot-Server/commit/0dc364f32c9b9723b5093a30405a27b9ecff90b7))
+
 ## [2.0.2](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.1...v2.0.2) (2020-03-30)
 
 
