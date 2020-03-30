@@ -44,53 +44,65 @@ public class AnnouncementService {
     }
 
     public synchronized void start() {
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                log.info("Active Threads: " + Thread.activeCount());
+            }
+        }, 1000, 1000 * 60);
+
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 service.submit(() -> {
-                    String response =
-                            HttpClient.create()
-                                    .get()
-                                    .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/releases")
-                                    .responseContent()
-                                    .aggregate()
-                                    .asString()
-                                    .block();
+                    try {
+                        String response =
+                                HttpClient.create()
+                                        .get()
+                                        .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/releases")
+                                        .responseContent()
+                                        .aggregate()
+                                        .asString()
+                                        .block();
 
-                    Gson gson = new GsonBuilder().create();
+                        Gson gson = new GsonBuilder().create();
 
-                    List<TagItem> res = gson.fromJson(response, new TypeToken<List<TagItem>>() {
-                    }.getType());
-                    assert res != null;
-                    TagItem first = res.get(0);
-                    String versionName = first.tag_name.toLowerCase().replace("v", "");
-                    Version tagVersion = Version.valueOf(versionName);
-                    if (tagVersion.greaterThan(currentVersion)) {
-                        if (application.getConfig().getSystemConfig().isAutoUpdateOn()) {
-                            log.info("Updating....");
-                            application.get(UpdateService.class).updateTo(first).subscribe((b) -> {
+                        List<TagItem> res = gson.fromJson(response, new TypeToken<List<TagItem>>() {
+                        }.getType());
+                        assert res != null;
+                        TagItem first = res.get(0);
+                        String versionName = first.tag_name.toLowerCase().replace("v", "");
+                        Version tagVersion = Version.valueOf(versionName);
+                        if (tagVersion.greaterThan(currentVersion)) {
+                            if (application.getConfig().getSystemConfig().isAutoUpdateOn()) {
+                                log.info("Updating....");
+                                application.get(UpdateService.class).updateTo(first).subscribe((b) -> {
 
-                            }, (t) -> log.error("Error", t), () -> {
-                                currentVersion = tagVersion;
-                                AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
-                                        facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
-                                                g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
-                                                        .subscribe(c -> c.createEmbed(spec -> {
-                                                            spec.setFooter("Server Version: " + application.getServerVersion(), null);
-                                                            spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
-                                                            spec.setTimestamp(Instant.now());
-                                                            facade.getClient().getSelf()
-                                                                    .subscribe(u -> u.asMember(g.getId())
-                                                                            .subscribe(mem -> mem.getColor()
-                                                                                    .subscribe(spec::setColor)));
-                                                            spec.setTitle("New server update to: " + versionName);
-                                                            spec.setDescription("```\nServer has updated please use: " +
-                                                                    application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update.\n```");
-                                                        }).subscribe())));
-                            });
+                                }, (t) -> log.error("Error", t), () -> {
+                                    currentVersion = tagVersion;
+                                    AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
+                                            facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
+                                                    g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
+                                                            .subscribe(c -> c.createEmbed(spec -> {
+                                                                spec.setFooter("Server Version: " + application.getServerVersion(), null);
+                                                                spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
+                                                                spec.setTimestamp(Instant.now());
+                                                                facade.getClient().getSelf()
+                                                                        .subscribe(u -> u.asMember(g.getId())
+                                                                                .subscribe(mem -> mem.getColor()
+                                                                                        .subscribe(spec::setColor)));
+                                                                spec.setTitle("New server update to: " + versionName);
+                                                                spec.setDescription("```\nServer has updated please use: " +
+                                                                        application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update.\n```");
+                                                            }).subscribe())));
+                                });
+                            }
+                        } else {
+                            log.info("Up to date");
                         }
-                    } else {
-                        log.info("Up to date");
+                    } catch (Exception e) {
+                        log.error("Checking for update failed....");
                     }
                 });
             }
