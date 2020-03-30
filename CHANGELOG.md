@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.0...v2.0.1) (2020-03-30)
+
+
+### Bug Fixes
+
+* High cpu usage on 8+ threads open for announcement service ([2ca97ab](https://github.com/bendavies99/BabbleBot-Server/commit/2ca97abbb86ca45ff282d760d6e7c4033accc2d9))
+
 # [2.0.0](https://github.com/bendavies99/BabbleBot-Server/compare/v1.2.7...v2.0.0) (2020-03-29)
 
 
