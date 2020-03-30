@@ -1,7 +1,8 @@
 {
   "discord": {
     "token": "Your discord token",
-    "commandPrefix": "!"
+    "commandPrefix": "!",
+    "shutdownPassword": "password"
   },
   "system": {
     "autoUpdate": true
@@ -13,5 +14,6 @@
   "database": {
     "type": "sqlite",
     "database": "Core.db"
-  }
+  },
+  "plugins": []
 }

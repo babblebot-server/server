@@ -43,6 +43,11 @@ public class AnnouncementService {
         currentVersion = Version.valueOf(application.getServerVersion());
     }
 
+    public synchronized void stop() {
+        timer.cancel();
+        this.service.shutdown();
+    }
+
     public synchronized void start() {
 
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -81,21 +86,10 @@ public class AnnouncementService {
 
                                 }, (t) -> log.error("Error", t), () -> {
                                     currentVersion = tagVersion;
-                                    AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
-                                            facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
-                                                    g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
-                                                            .subscribe(c -> c.createEmbed(spec -> {
-                                                                spec.setFooter("Server Version: " + application.getServerVersion(), null);
-                                                                spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
-                                                                spec.setTimestamp(Instant.now());
-                                                                facade.getClient().getSelf()
-                                                                        .subscribe(u -> u.asMember(g.getId())
-                                                                                .subscribe(mem -> mem.getColor()
-                                                                                        .subscribe(spec::setColor)));
-                                                                spec.setTitle("New server update to: " + versionName);
-                                                                spec.setDescription("```\nServer has updated please use: " +
-                                                                        application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update.\n```");
-                                                            }).subscribe())));
+                                    sendMessage("New server update to: " + versionName,
+                                            "Server has updated please use: " +
+                                                    application.getConfig().getDiscordConfig().getCommandPrefix() + "shutdown to update");
+
                                 });
                             }
                         } else {
@@ -107,6 +101,27 @@ public class AnnouncementService {
                 });
             }
         }, 3000, 1000 * 60 * 60);
+    }
+
+    public synchronized void sendMessage(String title, String message) {
+        AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
+                facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
+                        g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
+                                .subscribe(c -> c.createEmbed(spec -> {
+                                    spec.setFooter("Server Version: " + application.getServerVersion(), null);
+                                    spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
+                                    spec.setTimestamp(Instant.now());
+                                    facade.getClient().getSelf()
+                                            .subscribe(u -> u.asMember(g.getId())
+                                                    .subscribe(mem -> mem.getColor()
+                                                            .subscribe(spec::setColor)));
+                                    spec.setTitle(title);
+                                    spec.setDescription("```\n" + message + "```");
+                                }).subscribe())));
+    }
+
+    public synchronized void sendMessage(String message) {
+        sendMessage("New announcement", message);
     }
 
     public static class TagItem {

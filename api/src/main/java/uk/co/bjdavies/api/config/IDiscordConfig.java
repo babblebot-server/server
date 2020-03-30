@@ -26,4 +26,11 @@ public interface IDiscordConfig {
      * @return String
      */
     String getPlayingText();
+
+    /**
+     * This is the password required for the bot to be shutdown.
+     *
+     * @return String
+     */
+    String getShutdownPassword();
 }

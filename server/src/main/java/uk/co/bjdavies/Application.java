@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IConfig;
+import uk.co.bjdavies.api.discord.IDiscordFacade;
 import uk.co.bjdavies.api.plugins.IPluginContainer;
 import uk.co.bjdavies.api.variables.IVariableContainer;
 import uk.co.bjdavies.command.CommandDispatcher;
@@ -22,6 +23,8 @@ import uk.co.bjdavies.variables.VariableModule;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Main Application Class for BabbleBot where all the services and providers get executed.
@@ -44,6 +47,7 @@ public class Application implements IApplication {
     private final IVariableContainer variableContainer;
     private final IPluginContainer pluginContainer;
     private String serverVersion;
+    private final WebServer webServer;
 
     /**
      * Create a {@link Application} for BabbleBot
@@ -86,7 +90,8 @@ public class Application implements IApplication {
                 .subscribe(pluginContainer::addPlugin));
 
 
-        get(WebServer.class).start();
+        webServer = get(WebServer.class);
+        webServer.start();
 
     }
 
@@ -175,5 +180,26 @@ public class Application implements IApplication {
     @Override
     public String getServerVersion() {
         return serverVersion;
+    }
+
+    @Override
+    public void shutdown(int timeout) {
+        Timer timer = new Timer();
+
+        getPluginContainer().shutDownPlugins();
+        IDiscordFacade facade = get(IDiscordFacade.class);
+        facade.logoutBot().block();
+        webServer.stop();
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    Thread.currentThread().join(timeout);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, timeout);
     }
 }

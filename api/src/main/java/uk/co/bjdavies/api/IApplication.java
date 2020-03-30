@@ -55,4 +55,9 @@ public interface IApplication {
      * @return String
      */
     String getServerVersion();
+
+    /**
+     * @param timeout - This will attempt to shutdown babblebot
+     */
+    void shutdown(int timeout);
 }

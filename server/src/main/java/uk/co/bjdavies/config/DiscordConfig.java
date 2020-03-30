@@ -29,6 +29,9 @@ public class DiscordConfig implements IDiscordConfig {
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
     private String playingText = "BabbleBot 2020. Ben Davies";
 
+    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
+    private String shutdownPassword = "password";
+
 
     /**
      * This will return the token.
@@ -51,5 +54,10 @@ public class DiscordConfig implements IDiscordConfig {
     @Override
     public String getPlayingText() {
         return playingText;
+    }
+
+    @Override
+    public String getShutdownPassword() {
+        return shutdownPassword;
     }
 }

@@ -139,6 +139,15 @@ public class PluginContainer implements IPluginContainer {
     }
 
     @Override
+    public void shutDownPlugins() {
+        this.plugins.forEach((k, v) -> {
+            if (v instanceof IPluginEvents) {
+                ((IPluginEvents) v).onShutdown();
+            }
+        });
+    }
+
+    @Override
     public String toString() {
         return "PluginContainer{" +
                 "plugins=" + plugins +

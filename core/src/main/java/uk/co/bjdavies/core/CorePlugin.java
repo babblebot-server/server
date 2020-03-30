@@ -91,6 +91,7 @@ public class CorePlugin implements IPluginEvents {
 
     @Override
     public void onShutdown() {
+        announcementService.stop();
     }
 
     @Command(description = "Start listening again to a channel the bot will then start responding again.")
@@ -162,6 +163,25 @@ public class CorePlugin implements IPluginEvents {
         });
     }
 
+    @Command(description = "Shutdown bot you will have to start the bot again manually")
+    @CommandParam(value = "password", optional = false, canBeEmpty = false, exampleValue = "password123")
+    public Mono<String> shutdown(ICommandContext commandContext) {
+        if (commandContext.hasParameter("password")) {
+            String password = commandContext.getParameter("password");
+            String serverPassword = config.getShutdownPassword();
+            if (password.equals(serverPassword)) {
+                announcementService.sendMessage("Shutting down bot, please manually start bot again.");
+                return Mono.create(sink -> {
+                    application.shutdown(5000);
+                    sink.success();
+                });
+            } else {
+                return Mono.just("Password incorrect...");
+            }
+        } else {
+            return Mono.just("You require a password to ru this command.");
+        }
+    }
 
     @Command(description = "This will help you to discover all the commands and their features.", type = "All",
             exampleValue = "ignore")

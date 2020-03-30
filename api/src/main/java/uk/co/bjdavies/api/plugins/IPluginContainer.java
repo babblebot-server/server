@@ -41,6 +41,11 @@ public interface IPluginContainer {
     boolean doesPluginExist(String name);
 
     /**
+     * This will attempt to shut down all plugins if they implement {@link IPluginEvents}
+     */
+    void shutDownPlugins();
+
+    /**
      * This is the toString of the class will show the classes contents.
      *
      * @return String
