@@ -6,8 +6,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.util.Snowflake;
+import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
 import uk.co.bjdavies.api.IApplication;
@@ -19,6 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -113,20 +116,39 @@ public class AnnouncementService {
     }
 
     public synchronized void sendMessage(String title, String message) {
+
+        BiConsumer<EmbedCreateSpec, Guild> specConsumer = (spec, g) -> {
+            spec.setFooter("Server Version: " + application.getServerVersion(), null);
+            spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
+            spec.setTimestamp(Instant.now());
+            facade.getClient().getSelf()
+                    .subscribe(u -> u.asMember(g.getId())
+                            .subscribe(mem -> mem.getColor()
+                                    .subscribe(spec::setColor)));
+            spec.setTitle(title);
+            spec.setDescription("```\n" + message + "```");
+        };
+
+        if (AnnouncementChannel.all().size() == 0) {
+            log.info("Announcement channels are empty so choosing a channel by default use register-ac on a guild to " +
+                    "set announcement channel");
+            facade.getClient().getGuilds().subscribe(g -> {
+                g.getChannels().filter(c -> {
+                    try {
+                        TextChannel channel = (TextChannel) c;
+                        return channel != null;
+                    } catch (ClassCastException e) {
+                        return false;
+                    }
+                }).map(c -> (TextChannel) c).take(1).subscribe(c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe());
+            });
+            return;
+        }
+
         AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
                 facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
                         g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
-                                .subscribe(c -> c.createEmbed(spec -> {
-                                    spec.setFooter("Server Version: " + application.getServerVersion(), null);
-                                    spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
-                                    spec.setTimestamp(Instant.now());
-                                    facade.getClient().getSelf()
-                                            .subscribe(u -> u.asMember(g.getId())
-                                                    .subscribe(mem -> mem.getColor()
-                                                            .subscribe(spec::setColor)));
-                                    spec.setTitle(title);
-                                    spec.setDescription("```\n" + message + "```");
-                                }).subscribe())));
+                                .subscribe(c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe())));
     }
 
     public synchronized void sendMessage(String message) {
