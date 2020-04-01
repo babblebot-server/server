@@ -3,7 +3,6 @@ package uk.co.bjdavies;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
-import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
@@ -91,19 +90,13 @@ public class Application implements IApplication {
 
         applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule, commandModule,
                 variableModule, pluginModule);
-        IDiscordFacade discordFacade = get(IDiscordFacade.class);
-        discordFacade.registerEventHandler(ReadyEvent.class, (r) -> {
-            if (Arrays.asList(args).contains("-restart")) {
-
-            }
-        });
-        discordModule.startDiscordBot();
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
 
         config.getPlugins().forEach(pluginConfig -> ImportPluginFactory.importPlugin(pluginConfig, this)
                 .subscribe(pluginContainer::addPlugin));
 
+        discordModule.startDiscordBot();
 
         webServer = get(WebServer.class);
         webServer.start();
@@ -218,7 +211,12 @@ public class Application implements IApplication {
     }
 
     @Override
-    public void restart(int timeout) {
+    public boolean hasArgument(String argument) {
+        return Arrays.asList(args).contains(argument);
+    }
+
+    @Override
+    public void restart() {
         Executors.newSingleThreadExecutor().submit(() -> {
             getPluginContainer().shutDownPlugins();
             IDiscordFacade facade = get(IDiscordFacade.class);

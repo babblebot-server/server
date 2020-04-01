@@ -1,6 +1,7 @@
 package uk.co.bjdavies.core;
 
 import com.google.inject.Inject;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.api.db.Model;
 import uk.co.bjdavies.api.db.WhereStatement;
+import uk.co.bjdavies.api.discord.IDiscordFacade;
 import uk.co.bjdavies.api.plugins.IPluginEvents;
 import uk.co.bjdavies.api.plugins.IPluginSettings;
 import uk.co.bjdavies.api.plugins.Plugin;
@@ -87,6 +89,12 @@ public class CorePlugin implements IPluginEvents {
                 Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
                         || context.getCommandName().equals("listen"));
         announcementService.start();
+        IDiscordFacade discordFacade = application.get(IDiscordFacade.class);
+        discordFacade.registerEventHandler(ReadyEvent.class, (r) -> {
+            if (application.hasArgument("-restart")) {
+                announcementService.sendMessage("The bot has now restarted");
+            }
+        });
     }
 
     @Override
@@ -172,7 +180,7 @@ public class CorePlugin implements IPluginEvents {
             if (password.equals(serverPassword)) {
                 announcementService.sendMessage("Restarting bot...");
                 return Mono.create(sink -> {
-                    application.restart(5000);
+                    application.restart();
                     sink.success();
                 });
             } else {

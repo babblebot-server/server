@@ -86,9 +86,18 @@ public class AnnouncementService {
 
                                 }, (t) -> log.error("Error", t), () -> {
                                     currentVersion = tagVersion;
+
                                     sendMessage("New server update to: " + versionName,
                                             "Server has updated please use: " +
-                                                    application.getConfig().getDiscordConfig().getCommandPrefix() + "shutdown to update");
+                                                    application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update now, or the bot will restart automatically in 10 minutes...");
+
+                                    timer.schedule(new TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            sendMessage("Bot is now restarting for the update...");
+                                            application.restart();
+                                        }
+                                    }, 1000 * 60 * 10);
 
                                 });
                             }

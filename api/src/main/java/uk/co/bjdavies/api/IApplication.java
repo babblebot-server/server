@@ -62,7 +62,15 @@ public interface IApplication {
     void shutdown(int timeout);
 
     /**
-     * @param timeout - This will attempt to shutdown babblebot
+     * This will return true if babblebot has a argument basic at the moment only supports empty arguments e.g. -restart
+     *
+     * @param argument - argument to test for
+     * @return boolean
      */
-    void restart(int timeout);
+    boolean hasArgument(String argument);
+
+    /**
+     * Restart babblebot
+     */
+    void restart();
 }
