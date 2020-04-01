@@ -2,6 +2,8 @@ package uk.co.bjdavies;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import discord4j.core.event.domain.lifecycle.DisconnectEvent;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
@@ -21,10 +23,12 @@ import uk.co.bjdavies.plugins.importing.ImportPluginFactory;
 import uk.co.bjdavies.variables.VariableContainer;
 import uk.co.bjdavies.variables.VariableModule;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.concurrent.Executors;
 
 /**
  * Main Application Class for BabbleBot where all the services and providers get executed.
@@ -48,14 +52,20 @@ public class Application implements IApplication {
     private final IPluginContainer pluginContainer;
     private String serverVersion;
     private final WebServer webServer;
+    private final Class<?> mainClass;
+    private final String[] args;
 
     /**
      * Create a {@link Application} for BabbleBot
      *
-     * @param args this is the arguments passed in the by the cli.
+     * @param args      this is the arguments passed in the by the cli.
+     * @param mainClass - this is the class where the main method is
      */
-    private Application(String[] args) {
+    private Application(String[] args, Class<?> mainClass) {
+        this.mainClass = mainClass;
+        this.args = args;
         log.info("Started Application");
+        log.info("Args: " + Arrays.toString(args));
         try {
             serverVersion = new String(getClass().getResourceAsStream("/version.txt").readAllBytes()).trim();
         } catch (IOException e) {
@@ -81,8 +91,13 @@ public class Application implements IApplication {
 
         applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule, commandModule,
                 variableModule, pluginModule);
-        discordModule.startDiscordBot();
+        IDiscordFacade discordFacade = get(IDiscordFacade.class);
+        discordFacade.registerEventHandler(ReadyEvent.class, (r) -> {
+            if (Arrays.asList(args).contains("-restart")) {
 
+            }
+        });
+        discordModule.startDiscordBot();
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
 
@@ -102,8 +117,8 @@ public class Application implements IApplication {
      * @return {@link IApplication}
      * @throws RuntimeException if the application tried to made twice
      */
-    public static IApplication make(String[] args) {
-        return make(Application.class, args);
+    public static IApplication make(Class<?> mainClass, String[] args) {
+        return make(mainClass, Application.class, args);
     }
 
     /**
@@ -115,11 +130,11 @@ public class Application implements IApplication {
      * @return {@link IApplication}
      * @throws RuntimeException if the application tried to made twice
      */
-    public static <T extends Application> IApplication make(Class<T> clazz, String[] args) {
+    public static <T extends Application> IApplication make(Class<?> mainClass, Class<T> clazz, String[] args) {
         if (triedToMake == 0) {
             triedToMake++;
             try {
-                return clazz.getDeclaredConstructor(String[].class).newInstance((Object) args);
+                return clazz.getDeclaredConstructor(String[].class, Class.class).newInstance(args, mainClass);
             } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
                 log.error("Tried to bootstrap an application without having String[] args in the constructor or having a private constructor, Exiting....", e);
                 System.exit(-1);
@@ -184,22 +199,63 @@ public class Application implements IApplication {
 
     @Override
     public void shutdown(int timeout) {
-        Timer timer = new Timer();
+        Executors.newSingleThreadExecutor().submit(() -> {
+            Timer timer = new Timer();
 
-        getPluginContainer().shutDownPlugins();
-        IDiscordFacade facade = get(IDiscordFacade.class);
-        facade.logoutBot().block();
-        webServer.stop();
+            getPluginContainer().shutDownPlugins();
+            IDiscordFacade facade = get(IDiscordFacade.class);
+            facade.logoutBot().block();
+            webServer.stop();
 
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    Thread.currentThread().join(timeout);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            Runtime.getRuntime().runFinalization();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    System.exit(0);
                 }
+            }, timeout);
+        });
+    }
+
+    @Override
+    public void restart(int timeout) {
+        Executors.newSingleThreadExecutor().submit(() -> {
+            getPluginContainer().shutDownPlugins();
+            IDiscordFacade facade = get(IDiscordFacade.class);
+            facade.registerEventHandler(DisconnectEvent.class, (d) -> {
+                log.info("Bot has been logged out!!!");
+            });
+            facade.logoutBot().block();
+            webServer.stop();
+            Runtime.getRuntime().runFinalization();
+            try {
+                List<String> command = new ArrayList<>();
+
+                if (new File("Babblebot").exists()) {
+                    command.add("./Babblebot");
+                } else {
+                    String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+                    command.add(cmd);
+                    command.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
+                    command.add("-cp");
+                    command.add(ManagementFactory.getRuntimeMXBean().getClassPath());
+                    command.add(mainClass.getName());
+                    command.addAll(Arrays.asList(args));
+                    command.add("-restart");
+                }
+
+
+                ProcessBuilder pb = new ProcessBuilder();
+                log.info("Built command: {} ", command);
+                pb.command(command);
+                pb.inheritIO();
+                Process p = pb.start();
+                p.waitFor();
+                System.exit(p.exitValue());
+                //System.exit(0);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
             }
-        }, timeout);
+        });
     }
 }

@@ -56,7 +56,7 @@ public class UpdateService {
                     entry = zis.getNextEntry();
                 }
                 zis.close();
-                if (swapLibs(firstDir)) {
+                if (swapLibs(firstDir, tag.tag_name.toLowerCase().replace("v", ""))) {
                     if (swapScripts(firstDir)) {
                         unZipTmp.deleteOnExit();
                         sink.success();
@@ -107,7 +107,7 @@ public class UpdateService {
         return true;
     }
 
-    private boolean swapLibs(File unZipTmp) {
+    private boolean swapLibs(File unZipTmp, String version) {
         File libsFolder = new File(unZipTmp + File.separator + "lib/");
         File ourLibsFolder = new File("../lib/");
         log.info("Lib folder: " + ourLibsFolder.getAbsolutePath());
@@ -127,7 +127,12 @@ public class UpdateService {
         }
         AtomicBoolean copy = new AtomicBoolean(true);
         try {
-            Arrays.stream(Objects.requireNonNull(ourLibsFolder.listFiles())).forEach(File::deleteOnExit);
+            Arrays.stream(Objects.requireNonNull(ourLibsFolder.listFiles()))
+                    .filter(f -> (f.getName().toLowerCase().contains("babblebot") &&
+                            !f.getName().toLowerCase().contains(version)) /* Delete old babblebot jars */ ||
+                            Arrays.stream(Objects.requireNonNull(libsFolder.listFiles()))
+                                    .noneMatch(f1 -> f1.getName().equals(f.getName()))) /* delete outdated libraries */
+                    .forEach(File::deleteOnExit);
             Arrays.stream(Objects.requireNonNull(libsFolder.listFiles())).forEach(f -> {
                 try {
                     FileUtils.copyFileToDirectory(f, ourLibsFolder);

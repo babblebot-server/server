@@ -23,6 +23,6 @@ public final class BabbleBot {
      * @param args the {@link String} passed in by the command line.
      */
     public static void main(final String[] args) {
-        Application.make(args);
+        Application.make(BabbleBot.class, args);
     }
 }

@@ -23,7 +23,6 @@ project.startScripts {
     }
 }
 
-
 project.tasks.run {
     dependsOn ':agent:build'
     doFirst {

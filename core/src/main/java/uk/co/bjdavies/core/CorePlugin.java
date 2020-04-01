@@ -163,16 +163,16 @@ public class CorePlugin implements IPluginEvents {
         });
     }
 
-    @Command(description = "Shutdown bot you will have to start the bot again manually")
+    @Command(description = "Restart bot...")
     @CommandParam(value = "password", optional = false, canBeEmpty = false, exampleValue = "password123")
-    public Mono<String> shutdown(ICommandContext commandContext) {
+    public Mono<String> restart(ICommandContext commandContext) {
         if (commandContext.hasParameter("password")) {
             String password = commandContext.getParameter("password");
             String serverPassword = config.getShutdownPassword();
             if (password.equals(serverPassword)) {
-                announcementService.sendMessage("Shutting down bot, please manually start bot again.");
+                announcementService.sendMessage("Restarting bot...");
                 return Mono.create(sink -> {
-                    application.shutdown(5000);
+                    application.restart(5000);
                     sink.success();
                 });
             } else {

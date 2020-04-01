@@ -60,4 +60,9 @@ public interface IApplication {
      * @param timeout - This will attempt to shutdown babblebot
      */
     void shutdown(int timeout);
+
+    /**
+     * @param timeout - This will attempt to shutdown babblebot
+     */
+    void restart(int timeout);
 }
