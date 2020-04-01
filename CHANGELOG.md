@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.0...v2.1.1) (2020-04-01)
+
+
+### Bug Fixes
+
+* **updates:** Pick announcement channel by random ([158c11f](https://github.com/bendavies99/BabbleBot-Server/commit/158c11f63c740ee5d946ce7d70229f85caa16cc6))
+
 # [2.1.0](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.3...v2.1.0) (2020-04-01)
 
 
