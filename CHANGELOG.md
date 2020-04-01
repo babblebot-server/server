@@ -1,3 +1,11 @@
+# [2.1.0](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.3...v2.1.0) (2020-04-01)
+
+
+### Features
+
+* **core:** Added ability to restart babblebot for updates ([8107a2c](https://github.com/bendavies99/BabbleBot-Server/commit/8107a2ccd683c5aef49b467db8d14a7dc8d5ba60))
+* **updates:** Added a auto-restart feature ([522e4b4](https://github.com/bendavies99/BabbleBot-Server/commit/522e4b4d67f6a4b77b7d650fb367d329e57e0d58))
+
 ## [2.0.3](https://github.com/bendavies99/BabbleBot-Server/compare/v2.0.2...v2.0.3) (2020-03-30)
 
 
