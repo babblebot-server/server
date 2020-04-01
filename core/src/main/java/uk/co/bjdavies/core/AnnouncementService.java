@@ -91,7 +91,7 @@ public class AnnouncementService {
                                     currentVersion = tagVersion;
 
                                     sendMessage("New server update to: " + versionName,
-                                            "Server has updated please use: " +
+                                            "Server has been updated please use: " +
                                                     application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update now, or the bot will restart automatically in 10 minutes...");
 
                                     timer.schedule(new TimerTask() {
