@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.1...v2.1.2) (2020-04-02)
+
+
+### Bug Fixes
+
+* **restarting:** Announcement not being sent on restart ([6c3b86e](https://github.com/bendavies99/BabbleBot-Server/commit/6c3b86eb1dcd2a5814c13b4fa50b7e7b6a731e8e))
+
 ## [2.1.1](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.0...v2.1.1) (2020-04-01)
 
 
