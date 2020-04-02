@@ -239,8 +239,8 @@ public class Application implements IApplication {
                     command.add(ManagementFactory.getRuntimeMXBean().getClassPath());
                     command.add(mainClass.getName());
                     command.addAll(Arrays.asList(args));
-                    command.add("-restart");
                 }
+                command.add("-restart");
 
 
                 ProcessBuilder pb = new ProcessBuilder();
