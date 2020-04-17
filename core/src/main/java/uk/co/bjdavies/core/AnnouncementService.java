@@ -80,6 +80,10 @@ public class AnnouncementService {
                         }.getType());
                         assert res != null;
                         TagItem first = res.get(0);
+                        int index = 0;
+                        while (first.prerelease) {
+                            first = res.get(++index);
+                        }
                         String versionName = first.tag_name.toLowerCase().replace("v", "");
                         Version tagVersion = Version.valueOf(versionName);
                         if (tagVersion.greaterThan(currentVersion)) {
@@ -158,6 +162,7 @@ public class AnnouncementService {
     public static class TagItem {
         public String tag_name;
         public List<Asset> assets;
+        public boolean prerelease;
     }
 
     public static class Asset {
