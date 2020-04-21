@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.plugins.*;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -136,6 +137,12 @@ public class PluginContainer implements IPluginContainer {
     @Override
     public boolean doesPluginExist(String name) {
         return plugins.keySet().stream().anyMatch(e -> e.toLowerCase().equals(name.toLowerCase()));
+    }
+
+    @Override
+    @Nullable
+    public Object getPlugin(String name) {
+        return plugins.get(name);
     }
 
     @Override

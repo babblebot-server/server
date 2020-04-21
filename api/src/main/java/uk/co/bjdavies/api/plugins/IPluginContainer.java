@@ -41,6 +41,14 @@ public interface IPluginContainer {
     boolean doesPluginExist(String name);
 
     /**
+     * Return a plugin by its name
+     *
+     * @param name - The plugin name
+     * @return Object
+     */
+    Object getPlugin(String name);
+
+    /**
      * This will attempt to shut down all plugins if they implement {@link IPluginEvents}
      */
     void shutDownPlugins();
