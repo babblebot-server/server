@@ -1,3 +1,10 @@
+## [2.1.4](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.3...v2.1.4) (2020-04-21)
+
+
+### Bug Fixes
+
+* **plugins:** Add ability to get plugins ([af6d6fe](https://github.com/bendavies99/BabbleBot-Server/commit/af6d6fef4bd5d9f1a16930581ad44b8663248074))
+
 ## [2.1.3](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.2...v2.1.3) (2020-04-17)
 
 
