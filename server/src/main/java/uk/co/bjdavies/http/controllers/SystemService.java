@@ -27,22 +27,21 @@ public class SystemService {
 
     public Publisher<Void> eventsSse(HttpServerResponse res) {
         return res
-                .header(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                .sse()
-                .send(facade
-                        .getClient()
-                        .getEventDispatcher()
-                        .on(MessageCreateEvent.class)
-                        .filterWhen(m ->
-                                m.getMessage()
-                                        .getAuthorAsMember()
-                                        .map(User::isBot))
-                        .map(m ->
-                                WebServer.toByteBuf(m.
-                                        getMessage().
-                                        getContent()
-                                        .orElse("")
-                                )
-                        ));
+          .header(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+          .sse()
+          .send(facade
+            .getClient()
+            .getEventDispatcher()
+            .on(MessageCreateEvent.class)
+            .filterWhen(m ->
+              m.getMessage()
+                .getAuthorAsMember()
+                .map(User::isBot))
+            .map(m ->
+              WebServer.toByteBuf(m.
+                getMessage().
+                getContent()
+              )
+            ));
     }
 }

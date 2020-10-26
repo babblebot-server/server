@@ -2,7 +2,7 @@ package uk.co.bjdavies.discord;
 
 import com.google.inject.Inject;
 import discord4j.core.DiscordClient;
-import discord4j.core.DiscordClientBuilder;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.discord.services.Discord4JBotMessageService;
-import uk.co.bjdavies.discord.services.Discord4JBotService;
 
 /**
  * This class will setup Discord4J by making a {@link discord4j.core.DiscordClient}
@@ -25,7 +24,7 @@ public class Discord4JSetup {
     private final IApplication application;
     private final IDiscordConfig config;
     @Getter
-    private DiscordClient client;
+    private GatewayDiscordClient client;
 
     @Inject
     public Discord4JSetup(IApplication application, IDiscordConfig config) {
@@ -38,7 +37,8 @@ public class Discord4JSetup {
         try {
             log.info("Setting up Discord Client");
 
-            client = new DiscordClientBuilder(config.getToken()).build();
+            client = DiscordClient.builder(config.getToken()).build().login().block();
+            assert client != null;
             client.getEventDispatcher().on(ReadyEvent.class).subscribe(e -> {
                 client.updatePresence(Presence.online(Activity.playing(config.getPlayingText()))).block();
                 log.info("Started Discord Client, waiting for messages...");
@@ -49,9 +49,6 @@ public class Discord4JSetup {
     }
 
     public void startServices() {
-        Discord4JBotService loginService = application.get(Discord4JBotService.class);
-        loginService.register();
-
         Discord4JBotMessageService messageService = application.get(Discord4JBotMessageService.class);
         messageService.register();
 
