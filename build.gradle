@@ -90,88 +90,74 @@ subprojects {
     if (!isJitpack && isRelease) apply plugin: 'signing'
 
     project.afterEvaluate {
-        task javadocJar(type: Jar) {
-            dependsOn project.tasks.javadoc
-            from project.tasks.javadoc.destinationDir
-            archiveClassifier = 'javadoc'
-            group 'build'
-        }
+        if (project.name == "agent" || project.name == "api") {
+            task javadocJar(type: Jar) {
+                dependsOn project.tasks.javadoc
+                from project.tasks.javadoc.destinationDir
+                archiveClassifier = 'javadoc'
+                group 'build'
+            }
 
-        task sourceJar(type: Jar) {
-            dependsOn project.tasks.classes
-            from sourceSets.main.allSource
-            archiveClassifier = 'sources'
-            group 'build'
-        }
-        publishing {
-            publications {
-                maven(MavenPublication) {
-                    from components.java
-                    artifact sourceJar
-                    artifact javadocJar
-                    artifactId archivesBaseName
-                    versionMapping {
-                        usage('java-api') {
-                            fromResolutionOf('runtimeClasspath')
-                        }
-                        usage('java-runtime') {
-                            fromResolutionResult()
+            task sourceJar(type: Jar) {
+                dependsOn project.tasks.classes
+                from sourceSets.main.allSource
+                archiveClassifier = 'sources'
+                group 'build'
+            }
+            publishing {
+                repositories {
+                    maven {
+                        name = "GitHubPackages"
+                        url = uri("https://maven.pkg.github.com/bendavies99/Babblebot-Server")
+                        credentials {
+                            username = System.getenv("GITHUB_ACTOR")
+                            password = System.getenv("GITHUB_TOKEN")
                         }
                     }
-
-                    pom {
-                        name = 'Babblebot-Server'
-                        description = 'This is the core server for Babblebot'
-                        url = 'https://github.com/bendavies99/BabbleBot-Server'
-                        issueManagement {
-                            system = 'GitHub'
-                            url = 'https://github.com/bendavies99/BabbleBot-Server/issues'
-                        }
-                        licenses {
-                            license {
-                                name = 'GPL-3.0'
-                                url = 'https://github.com/bendavies99/BabbleBot-Server/LICENSE.md'
-                                distribution = 'repo'
+                }
+                publications {
+                    maven(MavenPublication) {
+                        from components.java
+                        artifact sourceJar
+                        artifact javadocJar
+                        artifactId archivesBaseName
+                        versionMapping {
+                            usage('java-api') {
+                                fromResolutionOf('runtimeClasspath')
+                            }
+                            usage('java-runtime') {
+                                fromResolutionResult()
                             }
                         }
-                        scm {
+
+                        pom {
+                            name = 'Babblebot-Server'
+                            description = 'This is the core server for Babblebot'
                             url = 'https://github.com/bendavies99/BabbleBot-Server'
-                            connection = 'scm:git:git://github.com/bendavies99/BabbleBot-Server.git'
-                            developerConnection = 'scm:git:ssh://git@github.com:bendavies99/BabbleBot-Server.git'
-                        }
-                        developers {
-                            developer {
-                                name = 'Ben Davies'
+                            issueManagement {
+                                system = 'GitHub'
+                                url = 'https://github.com/bendavies99/BabbleBot-Server/issues'
+                            }
+                            licenses {
+                                license {
+                                    name = 'GPL-3.0'
+                                    url = 'https://github.com/bendavies99/BabbleBot-Server/LICENSE.md'
+                                    distribution = 'repo'
+                                }
+                            }
+                            scm {
+                                url = 'https://github.com/bendavies99/BabbleBot-Server'
+                                connection = 'scm:git:git://github.com/bendavies99/BabbleBot-Server.git'
+                                developerConnection = 'scm:git:ssh://git@github.com:bendavies99/BabbleBot-Server.git'
+                            }
+                            developers {
+                                developer {
+                                    name = 'Ben Davies'
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
-
-        if (!isJitpack) {
-
-            bintray {
-                user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-                key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-                publications = ['maven']
-                publish = true
-                pkg {
-                    repo = 'Babblebot-Server'
-                    name = archivesBaseName
-                    userOrg = user
-                    licenses = ['GPL-3.0']
-                    vcsUrl = 'https://github.com/bendavies99/BabbleBot-Server.git'
-                    version {
-                        name = project_version
-                        vcsTag = project_version
-                    }
-                }
-            }
-
-            publish.dependsOn(bintrayUpload)
-            project.tasks.bintrayUpload.doLast {
-                bintrayPublish
             }
         }
     }
