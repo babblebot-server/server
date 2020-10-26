@@ -11,7 +11,6 @@ dependencies {
     implementation project(':api')
     implementation project(':core')
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 
     implementation 'com.google.inject:guice:4.2.3'
