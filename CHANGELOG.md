@@ -1,15 +1,3 @@
-## [2.1.5](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.4...v2.1.5) (2020-10-26)
-
-
-### Bug Fixes
-
-* **d4j:** Updated discord wrapper to match d4j updates ([f811ab0](https://github.com/bendavies99/BabbleBot-Server/commit/f811ab08bc632f18380d21d708831d08e481d1f7))
-
-
-### Reverts
-
-* Revert "chore(release): 2.1.5 [skip ci]" ([ba6d8ee](https://github.com/bendavies99/BabbleBot-Server/commit/ba6d8ee5a5c6f5a9e8472b8c9a2352612f664f3f))
-
 ## [2.1.4](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.3...v2.1.4) (2020-04-21)
 
 
