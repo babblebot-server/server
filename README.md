@@ -5,9 +5,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-api/stargazers)
 [![GitHub license](https://img.shields.io/github/license/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-api)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-[![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fbendavies99%2Fbabblebot-server)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fbendavies99%2Fbabblebot-server)
-[![codecov](https://codecov.io/gh/bendavies99/babblebot-server/branch/master/graph/badge.svg)](https://codecov.io/gh/bendavies99/babblebot-api)
-[![Build Status](https://travis-ci.org/bendavies99/babblebot-server.svg?branch=master)](https://travis-ci.org/bendavies99/babblebot-api)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/bendavies99/Babblebot-Server)
+![badge](https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build)
 
 ## Getting Started
 Babblebot-Server is a bot for discord everything is fully modular the server comes with a core plugin. 
