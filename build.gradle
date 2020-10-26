@@ -110,7 +110,7 @@ subprojects {
                         name = "GitHubPackages"
                         url = uri("https://maven.pkg.github.com/bendavies99/Babblebot-Server")
                         credentials {
-                            username = System.getenv("GITHUB_ACTOR")
+                            username = "bendavies99"
                             password = System.getenv("GITHUB_TOKEN")
                         }
                     }
