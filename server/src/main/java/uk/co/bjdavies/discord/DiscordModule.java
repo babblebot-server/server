@@ -3,6 +3,8 @@ package uk.co.bjdavies.discord;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
+import lombok.extern.slf4j.Slf4j;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.discord.IDiscordFacade;
 
@@ -12,11 +14,12 @@ import uk.co.bjdavies.api.discord.IDiscordFacade;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
+@Slf4j
 public class DiscordModule extends AbstractModule {
     /**
      * Instance of the {@link DiscordClient}
      */
-    private final DiscordClient client;
+    private final GatewayDiscordClient client;
 
 
     private final Discord4JSetup setup;
@@ -49,7 +52,7 @@ public class DiscordModule extends AbstractModule {
     }
 
     @Provides
-    private DiscordClient provideDiscordClient(IDiscordFacade facade) {
+    private GatewayDiscordClient provideDiscordClient(IDiscordFacade facade) {
         return facade.getClient();
     }
 }

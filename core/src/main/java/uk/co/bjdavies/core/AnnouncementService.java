@@ -6,9 +6,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Snowflake;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
@@ -41,7 +41,8 @@ public class AnnouncementService {
     public AnnouncementService(IDiscordFacade facade, IApplication application) {
         this.facade = facade;
         this.application = application;
-        this.service = Executors.newFixedThreadPool(2, new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
+        this.service = Executors.newFixedThreadPool(2,
+          new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
         timer = new Timer();
         currentVersion = Version.valueOf(application.getServerVersion());
     }
@@ -66,13 +67,13 @@ public class AnnouncementService {
                 service.submit(() -> {
                     try {
                         String response =
-                                HttpClient.create()
-                                        .get()
-                                        .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/releases")
-                                        .responseContent()
-                                        .aggregate()
-                                        .asString()
-                                        .block();
+                          HttpClient.create()
+                            .get()
+                            .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/releases")
+                            .responseContent()
+                            .aggregate()
+                            .asString()
+                            .block();
 
                         Gson gson = new GsonBuilder().create();
 
@@ -95,8 +96,10 @@ public class AnnouncementService {
                                     currentVersion = tagVersion;
 
                                     sendMessage("New server update to: " + versionName,
-                                            "Server has been updated please use: " +
-                                                    application.getConfig().getDiscordConfig().getCommandPrefix() + "restart to update now, or the bot will restart automatically in 10 minutes...");
+                                      "Server has been updated please use: " +
+                                        application.getConfig().getDiscordConfig().getCommandPrefix() +
+                                        "restart to update now, or the bot will restart automatically in 10 minutes.." +
+                                        ".");
 
                                     timer.schedule(new TimerTask() {
                                         @Override
@@ -108,7 +111,8 @@ public class AnnouncementService {
 
                                 });
                             }
-                        } else {
+                        }
+                        else {
                             log.info("Up to date");
                         }
                     } catch (Exception e) {
@@ -126,16 +130,16 @@ public class AnnouncementService {
             spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
             spec.setTimestamp(Instant.now());
             facade.getClient().getSelf()
-                    .subscribe(u -> u.asMember(g.getId())
-                            .subscribe(mem -> mem.getColor()
-                                    .subscribe(spec::setColor)));
+              .subscribe(u -> u.asMember(g.getId())
+                .subscribe(mem -> mem.getColor()
+                  .subscribe(spec::setColor)));
             spec.setTitle(title);
             spec.setDescription("```\n" + message + "```");
         };
 
         if (AnnouncementChannel.all().size() == 0) {
             log.info("Announcement channels are empty so choosing a channel by default use register-ac on a guild to " +
-                    "set announcement channel");
+              "set announcement channel");
             facade.getClient().getGuilds().subscribe(g -> {
                 g.getChannels().filter(c -> {
                     try {
@@ -144,15 +148,16 @@ public class AnnouncementService {
                     } catch (ClassCastException e) {
                         return false;
                     }
-                }).map(c -> (TextChannel) c).take(1).subscribe(c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe());
+                }).map(c -> (TextChannel) c).take(1).subscribe(
+                  c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe());
             });
             return;
         }
 
         AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
-                facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
-                        g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
-                                .subscribe(c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe())));
+          facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
+            g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
+              .subscribe(c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe())));
     }
 
     public synchronized void sendMessage(String message) {
