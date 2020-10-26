@@ -13,6 +13,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'com.google.code.gson:gson:2.8.6'
     compile 'com.github.zafarkhaja:java-semver:0.9.0'
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.8.0'
 
 }
