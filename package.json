@@ -17,7 +17,7 @@
     "commitlint": "^8.3.5",
     "conventional-changelog-conventionalcommits": "^4.2.3",
     "cz-conventional-changelog": "^3.1.0",
-    "gradle-semantic-release-plugin": "^1.4.1",
+    "gradle-semantic-release-plugin": "^1.4.11",
     "husky": "^4.2.3",
     "lint-staged": "^10.0.8",
     "prettier": "^1.19.1",
