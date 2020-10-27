@@ -21,7 +21,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.16'
     implementation 'com.discord4j:discord4j-core:3.1.1'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'org.xerial:sqlite-jdbc:3.7.2'
+    implementation 'org.xerial:sqlite-jdbc:3.32.3.2'
     implementation 'net.bytebuddy:byte-buddy:1.10.17'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.java-websocket:Java-WebSocket:1.5.1'
