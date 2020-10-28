@@ -1,12 +1,15 @@
 # BabbleBot-Server
 
-[![GitHub issues](https://img.shields.io/github/issues/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-api/issues)
-[![GitHub forks](https://img.shields.io/github/forks/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-api/network)
-[![GitHub stars](https://img.shields.io/github/stars/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-api/stargazers)
-[![GitHub license](https://img.shields.io/github/license/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-api)
+[![GitHub issues](https://img.shields.io/github/issues/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/issues)
+[![GitHub forks](https://img.shields.io/github/forks/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/network)
+[![GitHub stars](https://img.shields.io/github/stars/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/stargazers)
+[![GitHub license](https://img.shields.io/github/license/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/bendavies99/Babblebot-Server)
+[![Discord](https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord)](https://discord.gg/uUdX9pw)
 ![badge](https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9)](https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade)
+
 
 ## Getting Started
 Babblebot-Server is a bot for discord everything is fully modular the server comes with a core plugin. 
