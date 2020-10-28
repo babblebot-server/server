@@ -9,6 +9,7 @@
 [![Discord](https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord)](https://discord.gg/uUdX9pw)
 ![badge](https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9)](https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade)
+[![javadoc](https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg)](https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api)
 
 
 ## Getting Started
