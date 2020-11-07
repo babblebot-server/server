@@ -23,12 +23,10 @@
  *
  */
 
-package uk.co.bjdavies.db.Table;
+package uk.co.bjdavies.db_old.Table;
 
 import uk.co.bjdavies.api.db.Model;
-import uk.co.bjdavies.api.db.fields.IntField;
 import uk.co.bjdavies.api.db.fields.PrimaryField;
-import uk.co.bjdavies.api.db.fields.StringField;
 import uk.co.bjdavies.api.db.fields.Unique;
 
 import java.util.Arrays;

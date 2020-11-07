@@ -27,7 +27,6 @@ package uk.co.bjdavies.core;
 
 import com.google.inject.Inject;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -37,8 +36,6 @@ import uk.co.bjdavies.api.command.CommandParam;
 import uk.co.bjdavies.api.command.ICommandContext;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IDiscordConfig;
-import uk.co.bjdavies.api.db.Model;
-import uk.co.bjdavies.api.db.WhereStatement;
 import uk.co.bjdavies.api.discord.IDiscordFacade;
 import uk.co.bjdavies.api.plugins.IPluginEvents;
 import uk.co.bjdavies.api.plugins.IPluginSettings;
@@ -111,9 +108,9 @@ public class CorePlugin implements IPluginEvents {
     @Override
     public void onBoot(IPluginSettings settings) {
         log.info("Booting Core Plugin");
-        commandDispatcher.registerGlobalMiddleware(context ->
-          Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
-            || context.getCommandName().equals("listen"));
+        //        commandDispatcher.registerGlobalMiddleware(context ->
+        //          Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
+        //          || context.getCommandName().equals("listen"));
         announcementService.start();
         IDiscordFacade discordFacade = application.get(IDiscordFacade.class);
         discordFacade.registerEventHandler(ReadyEvent.class, (r) -> {
@@ -130,29 +127,32 @@ public class CorePlugin implements IPluginEvents {
 
     @Command(description = "Start listening again to a channel the bot will then start responding again.")
     public void listen(ICommandContext commandContext) {
-        Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId().asString())
-          .first();
-        model.ifPresent(Model::delete);
-        if (model.isEmpty()) {
-            commandContext.getCommandResponse().sendString("Channel is not ignored, so cancelling command.");
-        }
+        //        Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId()
+        //        .asString())
+        //          .first();
+        //        model.ifPresent(Model::delete);
+        //        if (model.isEmpty()) {
+        //            commandContext.getCommandResponse().sendString("Channel is not ignored, so cancelling command.");
+        //        }
         commandContext.getCommandResponse().sendString("You can now use BabbleBot in this channel again.");
     }
 
     @Command(description = "Ignore a channel so the bot wont respond")
     public void ignore(ICommandContext commandContext) {
-        Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId().asString())
-          .first();
-        if (model.isPresent()) {
-            commandContext.getCommandResponse().sendString("Channel is already ignored, so cancelling command.");
-        }
-        else {
-            Ignore newIgnore = new Ignore();
-            newIgnore.setChannelId(commandContext.getMessage().getChannelId().asString());
-            newIgnore.setGuildId(commandContext.getMessage().getGuild().block().getId().asString());
-            newIgnore.setIgnoredBy(commandContext.getMessage().getAuthor().get().getId().asString());
-            newIgnore.save();
-        }
+        //        Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId()
+        //        .asString())
+        //          .first();
+        //        if (model.isPresent()) {
+        //            commandContext.getCommandResponse().sendString("Channel is already ignored, so cancelling
+        //            command.");
+        //        }
+        //        else {
+        //            Ignore newIgnore = new Ignore();
+        //            newIgnore.setChannelId(commandContext.getMessage().getChannelId().asString());
+        //            newIgnore.setGuildId(commandContext.getMessage().getGuild().block().getId().asString());
+        //            newIgnore.setIgnoredBy(commandContext.getMessage().getAuthor().get().getId().asString());
+        //            newIgnore.save();
+        //        }
 
         commandContext.getCommandResponse().sendString("BabbleBot is now ignoring this channel");
     }
@@ -160,46 +160,52 @@ public class CorePlugin implements IPluginEvents {
     @Command(aliases = {"register-announcement-channel",
       "register-ac"}, description = "Register the channel where the command is ran as a announcement channel")
     public Mono<String> register(ICommandContext commandContext) {
-        return commandContext.getMessage().getGuild().flatMap(g -> {
-            Optional<AnnouncementChannel> model = AnnouncementChannel.
-              where("guildId", g.getId().asString())
-              .first();
-            if (model.isPresent()) {
-                AnnouncementChannel channel = model.get();
-                if (channel.getChannelId().equals(commandContext.getMessage().getChannelId().asString())) {
-                    return Mono.just("Already registered within this server and channel");
-                }
-                else {
-                    return Mono.just("Already registered within this server.");
-                }
-            }
-            else {
-                AnnouncementChannel channel = new AnnouncementChannel();
-                channel.setChannelId(commandContext.getMessage().getChannelId().asString());
-                channel.setGuildId(g.getId().asString());
-                channel.save();
-            }
-
-            return commandContext.getMessage().getChannel()
-              .flatMap(c -> Mono.just("Registered " + ((TextChannel) c).getName() + ", as a announcement channel."));
-        });
+        //        return commandContext.getMessage().getGuild().flatMap(g -> {
+        //            Optional<AnnouncementChannel> model = AnnouncementChannel.
+        //              where("guildId", g.getId().asString())
+        //              .first();
+        //            if (model.isPresent()) {
+        //                AnnouncementChannel channel = model.get();
+        //                if (channel.getChannelId().equals(commandContext.getMessage().getChannelId().asString())) {
+        //                    return Mono.just("Already registered within this server and channel");
+        //                }
+        //                else {
+        //                    return Mono.just("Already registered within this server.");
+        //                }
+        //            }
+        //            else {
+        //                AnnouncementChannel channel = new AnnouncementChannel();
+        //                channel.setChannelId(commandContext.getMessage().getChannelId().asString());
+        //                channel.setGuildId(g.getId().asString());
+        //                channel.save();
+        //            }
+        //
+        //            return commandContext.getMessage().getChannel()
+        //              .flatMap(c -> Mono.just("Registered " + ((TextChannel) c).getName() + ", as a announcement
+        //              channel."));
+        //        });
+        return Mono.empty();
     }
 
     @Command(aliases = {"remove-announcement-channel",
       "remove-ac"}, description = "Remove the channel where the command is ran as a announcement channel")
     public Mono<String> remove(ICommandContext commandContext) {
-        return commandContext.getMessage().getGuild().flatMap(g -> {
-            Optional<AnnouncementChannel> model = AnnouncementChannel.
-              where("guildId", g.getId().asString())
-              .and(new WhereStatement("channelId", commandContext.getMessage().getChannelId().asString()))
-              .first();
-            model.ifPresent(Model::delete);
-            if (model.isEmpty()) {
-                return Mono.just("Unable to remove this channel as a announcement channel as it is not registered");
-            }
-            return commandContext.getMessage().getChannel()
-              .flatMap(c -> Mono.just("Removed " + ((TextChannel) c).getName() + ", as a announcement channel."));
-        });
+        //        return commandContext.getMessage().getGuild().flatMap(g -> {
+        //            Optional<AnnouncementChannel> model = AnnouncementChannel.
+        //              where("guildId", g.getId().asString())
+        //              .and(new WhereStatement("channelId", commandContext.getMessage().getChannelId().asString()))
+        //              .first();
+        //            model.ifPresent(Model::delete);
+        //            if (model.isEmpty()) {
+        //                return Mono.just("Unable to remove this channel as a announcement channel as it is not
+        //                registered");
+        //            }
+        //            return commandContext.getMessage().getChannel()
+        //              .flatMap(c -> Mono.just("Removed " + ((TextChannel) c).getName() + ", as a announcement
+        //              channel."));
+        //        });
+
+        return Mono.empty();
     }
 
     @Command(description = "Restart bot...")

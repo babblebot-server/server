@@ -23,7 +23,7 @@
  *
  */
 
-package uk.co.bjdavies.db.Table;
+package uk.co.bjdavies.db_old.Table;
 
 /**
  * BabbleBot, open-source Discord Bot

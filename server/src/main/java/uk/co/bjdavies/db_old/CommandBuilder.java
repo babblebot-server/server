@@ -23,7 +23,7 @@
  *
  */
 
-package uk.co.bjdavies.db;
+package uk.co.bjdavies.db_old;
 
 import lombok.SneakyThrows;
 import uk.co.bjdavies.api.db.Comparator;

@@ -23,7 +23,7 @@
  *
  */
 
-package uk.co.bjdavies.db;
+package uk.co.bjdavies.db_old;
 
 import uk.co.bjdavies.api.db.*;
 
@@ -36,10 +36,10 @@ import java.util.Optional;
  */
 public class ModelBuilder<T extends Model> implements IModelBuilder<T> {
 
-    private final IQueryBuilder<T> query;
+    private IQueryBuilder<T> query;
 
     public ModelBuilder(String primaryKey, String tableName, IConnection connection, Class<T> model) {
-        query = connection.createQueryBuilder(tableName, primaryKey, model);
+        //query = connection.createQueryBuilder(tableName, primaryKey, model);
     }
 
     @Override

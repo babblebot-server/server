@@ -23,33 +23,41 @@
  *
  */
 
-package uk.co.bjdavies.db.impl;
-
-import uk.co.bjdavies.api.db.ISQLCommand;
-
-import java.util.List;
+package uk.co.bjdavies.db_old.Table;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * BabbleBot, open-source Discord Bot
+ * Author: Ben Davies
+ * Class Name: IntegerProperty.java
+ * Compiled Class Name: IntegerProperty.class
+ * Date Created: 08/02/2018
  */
-public class SQLCommand implements ISQLCommand {
 
-    private final String sql;
-    private final List<String> values;
+public class IntegerProperty extends Property {
+    /**
+     * This determines if the integer auto increments.
+     */
+    private final boolean increments;
 
-    public SQLCommand(String sql, List<String> values) {
-        this.sql = sql;
-        this.values = values;
+    /**
+     * This constructs a IntegerProperty.
+     *
+     * @param fieldName  - The name of the field.
+     * @param increments - does the integer auto increment?
+     */
+    public IntegerProperty(String fieldName, boolean increments) {
+        super(fieldName);
+        this.increments = increments;
     }
 
-    @Override
-    public String getSQL() {
-        return sql;
-    }
 
+    /**
+     * This will return the description of the Integer.
+     *
+     * @return String
+     */
     @Override
-    public List<String> getValues() {
-        return values;
+    public String toString() {
+        return fieldName + " " + "INTEGER " + ((increments) ? "AUTOINCREMENT " : "") + getStringEnding();
     }
 }

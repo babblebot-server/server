@@ -88,7 +88,8 @@ public class Agent {
                     CtClass clazz = cp.get(className.replace('/', '.'));
 
                     if (clazz != null && notAbstract(clazz) && clazz.subclassOf(finalModelClass) &&
-                            !clazz.equals(finalModelClass) && !clazz.equals(cp.get("uk.co.bjdavies.db.impl.ImplModel"))) {
+                            !clazz.equals(finalModelClass) && !clazz.equals(cp.get("uk.co.bjdavies.db.model" +
+                      ".ImplModel"))) {
 
                         byte[] bytecode = instrument(clazz);
                         log.info("Instrumented model: " + clazz.getName());
@@ -221,7 +222,7 @@ public class Agent {
     }
 
     private static void doInstrument(CtClass target) throws NotFoundException, CannotCompileException {
-        CtClass modelClass = cp.get("uk.co.bjdavies.db.impl.ImplModel");
+        CtClass modelClass = cp.get("uk.co.bjdavies.db.model.ImplModel");
         target.setSuperclass(modelClass);
 
         CtMethod[] modelMethods = modelClass.getDeclaredMethods();

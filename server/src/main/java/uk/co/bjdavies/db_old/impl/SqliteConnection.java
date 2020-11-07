@@ -23,21 +23,18 @@
  *
  */
 
-package uk.co.bjdavies.db.impl;
+package uk.co.bjdavies.db_old.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import uk.co.bjdavies.api.config.IDatabaseConfig;
 import uk.co.bjdavies.api.db.*;
-import uk.co.bjdavies.db.DBRecord;
+import uk.co.bjdavies.db_old.DBRecord;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -77,6 +74,16 @@ public class SqliteConnection implements IConnection {
         return (List<T>) processResultSet(connection.prepareStatement(query.buildQuery()).executeQuery());
     }
 
+    @SneakyThrows
+    public <T> Set<T> executeQuery(String rawSql) {
+        return processResultSetSet(connection.prepareStatement(rawSql).executeQuery());
+    }
+
+    @SneakyThrows
+    public Set<Map<String, String>> executeQueryRaw(String rawSql) {
+        return processResultSetSetRaw(connection.prepareStatement(rawSql).executeQuery());
+    }
+
     @Override
     public Object executeCommand(ICommandBuilder command) {
         try {
@@ -87,7 +94,7 @@ public class SqliteConnection implements IConnection {
             }
             connection.setAutoCommit(false);
             int result = statement.executeUpdate();
-            if (result > 0) connection.commit();
+            if (result > 0) { connection.commit(); }
             connection.setAutoCommit(true);
             return result > 0;
         } catch (SQLException e) {
@@ -122,6 +129,32 @@ public class SqliteConnection implements IConnection {
         }
 
         return rows;
+    }
+
+    private <T> Set<T> processResultSetSet(ResultSet executeQuery) {
+        return null; //TODO
+    }
+
+    @SuppressWarnings("MethodWithMultipleLoops")
+    private Set<Map<String, String>> processResultSetSetRaw(ResultSet resultSet) {
+        Set<Map<String, String>> set = new LinkedHashSet<>();
+        try {
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            while (resultSet.next()) {
+                Map<String, String> objectMap = new HashMap<>();
+                for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    String columnValue = resultSet.getString(columnName);
+                    objectMap.put(columnName, columnValue);
+                }
+
+                set.add(objectMap);
+            }
+        } catch (Exception e) {
+            log.error("Error selecting all from the table, most likely the table has not been created.", e);
+            return set;
+        }
+        return set;
     }
 
     @Override

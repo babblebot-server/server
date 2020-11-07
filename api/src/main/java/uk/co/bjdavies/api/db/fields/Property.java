@@ -6,15 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
+ * A Database Property
+ *
+ * @author me@bdavies (Ben Davies)
  * @since 1.0.0
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface StringField {
-    String defaultValue() default "";
+public @interface Property {
+    Class<?> type() default Object.class;
 
-    boolean nullable() default false;
-
-    int charLimit() default 200;
+    String dbName() default "";
 }

@@ -39,7 +39,8 @@ import uk.co.bjdavies.command.CommandDispatcher;
 import uk.co.bjdavies.command.CommandModule;
 import uk.co.bjdavies.config.ConfigModule;
 import uk.co.bjdavies.core.CorePlugin;
-import uk.co.bjdavies.db.DB;
+import uk.co.bjdavies.core.Ignore;
+import uk.co.bjdavies.db_old.DB;
 import uk.co.bjdavies.discord.DiscordModule;
 import uk.co.bjdavies.http.WebServer;
 import uk.co.bjdavies.plugins.PluginModule;
@@ -96,7 +97,8 @@ public class Application implements IApplication {
             e.printStackTrace();
         }
         ApplicationModule applicationModule = new ApplicationModule(this);
-        ConfigModule configModule = new ConfigModule("config.json"); //TODO: use commandLine Arguments to fulfill this. e.g. -bconf.configLocation=config.json
+        ConfigModule configModule = new ConfigModule(
+          "config.json"); //TODO: use commandLine Arguments to fulfill this. e.g. -bconf.configLocation=config.json
         CommandModule commandModule = new CommandModule();
         VariableModule variableModule = new VariableModule();
         PluginModule pluginModule = new PluginModule(this);
@@ -109,17 +111,32 @@ public class Application implements IApplication {
         config = configModule.getConfig();
         DB.install(config.getDatabaseConfig());
 
+        uk.co.bjdavies.db.DB.init(config.getDatabaseConfig());
+
+
+        log.info("Map<> DB Result: {}", uk.co.bjdavies.db.DB.table("ignores").get());
+
+
+        var f = uk.co.bjdavies.db.DB.table("ignores").get(Ignore.class);
+        log.info("Ignore Model DB Result: {}", f);
+        Set<Ignore> ignores = Ignore.all();
+        log.info("Model All: {}", ignores);
+
+
+        //TODO: Use this while testing db
+        System.exit(0);
+
         //Important Order Needs Config!!...
         DiscordModule discordModule = new DiscordModule(this);
 
 
         applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule, commandModule,
-                variableModule, pluginModule);
+          variableModule, pluginModule);
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
 
         config.getPlugins().forEach(pluginConfig -> ImportPluginFactory.importPlugin(pluginConfig, this)
-                .subscribe(pluginContainer::addPlugin));
+          .subscribe(pluginContainer::addPlugin));
 
         discordModule.startDiscordBot();
 
@@ -133,6 +150,7 @@ public class Application implements IApplication {
      *
      * @param args The Arguments passed in by the cli.
      * @return {@link IApplication}
+     *
      * @throws RuntimeException if the application tried to made twice
      */
     public static IApplication make(Class<?> mainClass, String[] args) {
@@ -146,6 +164,7 @@ public class Application implements IApplication {
      * @param args  The Arguments passed in by the cli.
      * @param clazz Bootstrap your own application useful for developing plugins.
      * @return {@link IApplication}
+     *
      * @throws RuntimeException if the application tried to made twice
      */
     public static <T extends Application> IApplication make(Class<?> mainClass, Class<T> clazz, String[] args) {
@@ -154,11 +173,16 @@ public class Application implements IApplication {
             try {
                 return clazz.getDeclaredConstructor(String[].class, Class.class).newInstance(args, mainClass);
             } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                log.error("Tried to bootstrap an application without having String[] args in the constructor or having a private constructor, Exiting....", e);
+                log.error(
+                  "Tried to bootstrap an application without having String[] args in the constructor or having a " +
+                    "private constructor, Exiting....",
+                  e);
                 System.exit(-1);
             }
-        } else {
-            log.error("Tried to create Multiple applications, Exiting...", new RuntimeException("Tried to make multiple Applications"));
+        }
+        else {
+            log.error("Tried to create Multiple applications, Exiting...",
+              new RuntimeException("Tried to make multiple Applications"));
             System.exit(-1);
             return null;
         }
@@ -256,7 +280,8 @@ public class Application implements IApplication {
 
                 if (new File("Babblebot").exists()) {
                     command.add("./Babblebot");
-                } else {
+                }
+                else {
                     String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
                     command.add(cmd);
                     command.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());

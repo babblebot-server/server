@@ -23,11 +23,11 @@
  *
  */
 
-package uk.co.bjdavies.db;
+package uk.co.bjdavies.db_old;
 
 import uk.co.bjdavies.api.config.IDatabaseConfig;
 import uk.co.bjdavies.api.db.IConnection;
-import uk.co.bjdavies.db.impl.SqliteConnection;
+import uk.co.bjdavies.db_old.impl.SqliteConnection;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

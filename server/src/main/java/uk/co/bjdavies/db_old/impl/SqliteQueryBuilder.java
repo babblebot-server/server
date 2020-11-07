@@ -23,11 +23,11 @@
  *
  */
 
-package uk.co.bjdavies.db.impl;
+package uk.co.bjdavies.db_old.impl;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import uk.co.bjdavies.api.db.*;
-import uk.co.bjdavies.db.QueryBuilder;
+import uk.co.bjdavies.db_old.QueryBuilder;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

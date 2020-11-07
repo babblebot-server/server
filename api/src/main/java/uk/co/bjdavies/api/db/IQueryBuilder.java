@@ -8,7 +8,7 @@ import java.util.Optional;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IQueryBuilder<T extends IDBRecord> extends IBaseBuilder {
+public interface IQueryBuilder<T> extends IBaseBuilder {
 
     /**
      * Return a collection of Type T
@@ -63,6 +63,7 @@ public interface IQueryBuilder<T extends IDBRecord> extends IBaseBuilder {
      *
      * @param id the id you want to retrieve
      * @return {@link Model}
+     *
      * @throws NullPointerException if it cant find T.
      */
     T findOrFail(int id) throws NullPointerException;
@@ -73,6 +74,7 @@ public interface IQueryBuilder<T extends IDBRecord> extends IBaseBuilder {
      * @param id      the id you want to retrieve
      * @param columns the columns you want to specify * by default
      * @return {@link Model}
+     *
      * @throws NullPointerException if it cant find T.
      */
     T findOrFail(int id, String... columns) throws NullPointerException;
