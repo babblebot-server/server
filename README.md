@@ -10,7 +10,6 @@
 ![badge](https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9)](https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade)
 [![javadoc](https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg)](https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbendavies99%2FBabbleBot-Server.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbendavies99%2FBabbleBot-Server?ref=badge_shield)
 
 
 ## Getting Started
@@ -112,6 +111,3 @@ See also the list of [contributors](https://github.com/bendavies99/babblebot-api
 ## License
 
 This project is licensed under the GPLv3 or later License - see the [LICENSE.md](LICENSE.md) file for details
-
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbendavies99%2FBabbleBot-Server.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbendavies99%2FBabbleBot-Server?ref=badge_large)
