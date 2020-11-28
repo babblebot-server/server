@@ -27,7 +27,6 @@ package uk.co.bjdavies.db.Table;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: Property.java
  * Compiled Class Name: Property.class

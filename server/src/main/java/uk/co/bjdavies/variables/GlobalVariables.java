@@ -30,7 +30,6 @@ import uk.co.bjdavies.api.variables.Variable;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: GlobalVariables.java
  * Compiled Class Name: GlobalVariables.class

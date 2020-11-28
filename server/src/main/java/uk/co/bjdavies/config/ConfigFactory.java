@@ -32,7 +32,6 @@ import java.io.*;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: ConfigFactory.java
  * Compiled Class Name: ConfigFactory.class

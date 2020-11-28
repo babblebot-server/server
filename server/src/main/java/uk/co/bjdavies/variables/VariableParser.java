@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: VariableParser.java
  * Compiled Class Name: VariableParser.class

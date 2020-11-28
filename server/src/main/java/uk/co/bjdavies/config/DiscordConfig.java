@@ -29,7 +29,6 @@ import uk.co.bjdavies.api.config.IDiscordConfig;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: DiscordConfig.java
  * Compiled Class Name: DiscordConfig.class

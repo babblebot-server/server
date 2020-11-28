@@ -31,7 +31,6 @@ import java.util.List;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: Blueprint.java
  * Compiled Class Name: Blueprint.class
