@@ -391,3 +391,14 @@ temp/
 
 app/plugins/
 app/config/*.config.json
+agent/.classpath
+
+agent/.project
+
+api/.classpath
+
+api/.project
+
+core/.classpath
+
+core/.project
