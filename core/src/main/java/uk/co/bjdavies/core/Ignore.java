@@ -29,10 +29,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.db.Model;
-import uk.co.bjdavies.api.db.fields.PrimaryField;
-import uk.co.bjdavies.api.db.fields.Property;
-import uk.co.bjdavies.api.db.fields.Unique;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.model.fields.PrimaryField;
+import net.bdavies.db.model.fields.Property;
+import net.bdavies.db.model.fields.Unique;
+import net.bdavies.db.model.ITimestamps;
+import net.bdavies.db.model.serialization.UseSerializationObject;
+import net.bdavies.db.model.hooks.ICreateHook;
+import net.bdavies.db.model.hooks.IUpdateHook;
+import net.bdavies.db.model.hooks.OnUpdate;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -42,20 +47,30 @@ import uk.co.bjdavies.api.db.fields.Unique;
 @Setter
 @ToString
 @Slf4j
-public class Ignore extends Model {
-
+public class Ignore extends Model implements IUpdateHook, ITimestamps, ICreateHook {
     @PrimaryField
     @Property
     private int id;
-
     @Property
     private String guildId;
-
     @Property
     @Unique
     private String channelId;
+    @Property
+    @UseSerializationObject(PasswordSerializationObject.class)
+    private Password ignoredBy;
 
     @Property
-    private String ignoredBy;
+    @OnUpdate(IgnoreUpdateHook.class)
+    private String update = "Not Updated!";
 
+    @Override
+    public void onUpdate() {
+        this.ignoredBy = new Password("Updated pass through model OnUpdate!");
+    }
+
+    @Override
+    public void onCreate() {
+        log.info("OnCreateCalled!");
+    }
 }

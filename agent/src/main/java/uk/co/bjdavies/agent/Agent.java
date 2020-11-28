@@ -27,26 +27,31 @@ package uk.co.bjdavies.agent;
 
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.SignatureAttribute;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.StringMemberValue;
+import javassist.scopedpool.ScopedClassPoolFactory;
+import javassist.scopedpool.ScopedClassPoolFactoryImpl;
+import javassist.scopedpool.ScopedClassPoolRepositoryImpl;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.model.hooks.TimestampUpdateHook;
+import net.bdavies.db.model.serialization.DateSerializationObject;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.model.fields.Property;
+import net.bdavies.db.model.ITimestamps;
+import net.bdavies.db.model.serialization.UseSerializationObject;
+import net.bdavies.db.model.hooks.OnUpdate;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.Arrays;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -54,175 +59,97 @@ import java.util.zip.ZipFile;
  */
 @Slf4j
 public class Agent {
+
+    private static final byte[] BYTES = null;
     private static final String GENERATED_DATE_PATTERN = "yyyy-MM-dd'T'hh:mm:ss.SSSZZZ";
-    private static final Set<ClassLoader> loaders = new HashSet<ClassLoader>();
-    private static final List<CtClass> models = new ArrayList<CtClass>();
+    private static final String MODEL_CLASS = Model.class.getName();
     private static ClassPool cp;
-    private static CtClass modelClass = null;
-    private static String currentDirectoryPath;
+    private static ScopedClassPoolFactory scopedPool;
+
+    private Agent() {}
 
     public static void premain(String args, Instrumentation instrumentation) {
         cp = ClassPool.getDefault();
+        scopedPool = new ScopedClassPoolFactoryImpl();
 
-        try {
-            cp.insertClassPath(new ClassClassPath(Class.forName("uk.co.bjdavies.api.db.Model")));
-            modelClass = cp.get("uk.co.bjdavies.api.db.Model");
-        } catch (ClassNotFoundException | NotFoundException e) {
-            e.printStackTrace();
-        }
-        log.info("Started Babblebot Agent...");
-
-        CtClass finalModelClass = modelClass;
+        log.info("Started Babblebot-DB Agent...");
         instrumentation.addTransformer(new ClassFileTransformer() {
             @Override
-            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
                 try {
-                    if (className.contains("Proxy") || className.contains("java/lang") || className.contains("com/sun") || className.contains("Guice") || className.contains("google") || className.contains("GeneratedMethodAccessor") || className.contains("GeneratedConstructorAccessor")) {
-                        return null;
-                    }
-                    if (!loaders.contains(loader) && loader instanceof URLClassLoader) {
-                        scanLoader(loader);
-                        loaders.add(loader);
-                    }
 
-                    CtClass clazz = cp.get(className.replace('/', '.'));
+                    ClassPool classPool = scopedPool.create(loader, cp, ScopedClassPoolRepositoryImpl.getInstance());
+                    CtClass clazz = classPool.makeClassIfNew(new ByteArrayInputStream(classfileBuffer));
 
-                    if (clazz != null && notAbstract(clazz) && clazz.subclassOf(finalModelClass) &&
-                            !clazz.equals(finalModelClass) && !clazz.equals(cp.get("uk.co.bjdavies.db.model" +
-                      ".ImplModel"))) {
-
+                    if (isModel(clazz)) {
                         byte[] bytecode = instrument(clazz);
-                        log.info("Instrumented model: " + clazz.getName());
+                        log.info("Setting up Model: " + clazz.getSimpleName());
                         return bytecode;
                     }
 
                 } catch (Exception e) {
+                    log.error("Something went wrong when instrumenting model: {}", classBeingRedefined.getName(), e);
                 }
-                return null;
+                return BYTES;
             }
         });
 
     }
 
-    private static void scanLoader(ClassLoader loader) throws Exception {
-        System.out.println("Scanning  class loader:  " + loader);
-        //lets skip known jars to save some time
-        List<String> toSkipList = Arrays.asList("rt.jar", "activejdbc-", "javalite-common", "mysql-connector", "slf4j",
-                "rt.jar", "jre", "jdk", "springframework", "servlet-api", "activeweb", "junit", "jackson", "jaxen",
-                "dom4j", "guice", "javax", "aopalliance", "commons-logging", "app-config", "freemarker",
-                "commons-fileupload", "hamcrest", "commons-fileupload", "commons-io", "javassist", "ehcache", "xml-apis");
 
-        if (loader instanceof URLClassLoader) {
-            URL[] urls = ((URLClassLoader) loader).getURLs();
-            for (URL url : urls) {
-                boolean skip = false;
-                for (String name : toSkipList) {
-                    if (url.getPath().contains(name)) {
-                        skip = true;
-                    }
-                }
-
-                if (!skip) {
-                    processURL(url);
-                }
-            }
-        }
-    }
-
-    private static void processURL(URL url) throws Exception {
-        log.info("Processing: " + url);
-        File f = new File(url.toURI());
-        if (f.isFile()) {
-            processFilePath(f);
-        } else {
-            processDirectoryPath(f);
-        }
-    }
-
-    private static void processDirectoryPath(File f) throws Exception {
-        currentDirectoryPath = f.getCanonicalPath();
-        processDirectory(f);
-    }
-
-    private static void processDirectory(File f) throws Exception {
-        findFiles(f);
-        File[] files = f.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    processDirectory(file);
-                }
-            }
-        }
-    }
-
-    private static void findFiles(File f) throws Exception {
-        File[] files = f.listFiles((dir, name) -> name.endsWith(".class"));
-
-        if (files != null) {
-            for (File file : files) {
-                int current = currentDirectoryPath.length();
-                String fileName = file.getCanonicalPath().substring(++current);
-                String className = fileName.replace(File.separatorChar, '.').substring(0, fileName.length() - 6);
-                tryClass(className);
-            }
-        }
-    }
-
-    private static void processFilePath(File file) throws Exception {
-        try {
-            if (file.getCanonicalPath().toLowerCase().endsWith(".jar")
-                    || file.getCanonicalPath().toLowerCase().endsWith(".zip")) {
-
-                ZipFile zip = new ZipFile(file);
-                Enumeration<? extends ZipEntry> entries = zip.entries();
-
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-
-                    if (entry.getName().endsWith("class")) {
-                        InputStream zin = zip.getInputStream(entry);
-                        tryClass(entry.getName().replace(File.separatorChar, '.').substring(0, entry.getName().length() - 6));
-                        zin.close();
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void tryClass(String className) throws Exception {
-        try {
-            CtClass clazz = cp.get(className.replace('/', '.'));
-            if (isModel(clazz)) {
-                if (!models.contains(clazz)) {
-                    models.add(clazz);
-                    System.out.println("Found model: " + className);
-
-                }
-            }
-        } catch (Exception e) {
-            throw new Exception(e);
-        }
-    }
-
+    @SneakyThrows
     private static boolean isModel(CtClass clazz) {
-        return clazz != null && notAbstract(clazz) && clazz.subclassOf(modelClass) && !clazz.equals(modelClass);
+        return notAbstract(clazz) && clazz.getSuperclass().getName().equals(MODEL_CLASS)
+                && !clazz.getName().equals(MODEL_CLASS)
+                && !clazz.getName().equals(Model.class.getName());
     }
 
-    private static byte[] instrument(CtClass target) throws Exception {
+    @SneakyThrows
+    private static boolean applyTimestamps(CtClass clazz) {
+        return Arrays.stream(clazz.getInterfaces()).anyMatch(c -> c.getName().equals(ITimestamps.class.getName()));
+    }
+
+    private static byte[] instrument(CtClass target) {
         try {
             doInstrument(target);
+            if(applyTimestamps(target)) {
+                instrumentTimestamps(target);
+            }
             target.detach();
             return target.toBytecode();
         } catch (Exception e) {
-            throw new Exception(e);
+            log.error("Error when instrumenting model {}", target.getName(), e);
         }
+        return BYTES;
+    }
+
+    @SneakyThrows
+    private static void instrumentTimestamps(CtClass target) {
+        log.info("Applying timestamps to {}", target.getName());
+        CodeConverter codeConverter = new CodeConverter();
+        CtField createdAt = CtField.make("private java.util.Date createdAt = new java.util.Date();", target);
+        addAnnotationsToField(createdAt, target, AnnotationBuilder.getBuilder(Property.class, target), AnnotationBuilder.getBuilder(UseSerializationObject.class, target)
+                .addClass("value", DateSerializationObject.class));
+        target.addField(createdAt);
+        CtMethod createdAtGetter = CtNewMethod.getter("getCreatedAt", createdAt);
+        createdAtGetter.instrument(codeConverter);
+        addGeneratedAnnotation(createdAtGetter, target);
+        target.addMethod(createdAtGetter);
+        String src = "private java.util.Date updatedAt = new java.util.Date();";
+        CtField updatedAt = CtField.make(src, target);
+        addAnnotationsToField(updatedAt, target, AnnotationBuilder.getBuilder(Property.class, target),
+                AnnotationBuilder.getBuilder(OnUpdate.class, target).addClass("value", TimestampUpdateHook.class),
+                AnnotationBuilder.getBuilder(UseSerializationObject.class, target).addClass("value", DateSerializationObject.class));
+        target.addField(updatedAt);
+        CtMethod updatedAtGetter = CtNewMethod.getter("getUpdatedAt", updatedAt);
+        addGeneratedAnnotation(updatedAtGetter, target);
+        updatedAtGetter.instrument(codeConverter);
+        target.addMethod(updatedAtGetter);
+
     }
 
     private static void doInstrument(CtClass target) throws NotFoundException, CannotCompileException {
-        CtClass modelClass = cp.get("uk.co.bjdavies.db.model.ImplModel");
+        CtClass modelClass = cp.get(Model.class.getName());
         target.setSuperclass(modelClass);
 
         CtMethod[] modelMethods = modelClass.getDeclaredMethods();
@@ -239,7 +166,6 @@ public class Agent {
 
         conv.redirectMethodCall(modelGetClass, newGetClass);
 
-
         for (CtMethod method : modelMethods) {
             int modifiers = method.getModifiers();
             if (Modifier.isStatic(modifiers)) {
@@ -255,16 +181,19 @@ public class Agent {
                     } else {
                         newMethod = CtNewMethod.delegator(method, target);
                     }
-
-                    // Include the generic signature
-                    for (Object attr : method.getMethodInfo().getAttributes()) {
-                        if (attr instanceof SignatureAttribute) {
-                            newMethod.getMethodInfo().addAttribute((SignatureAttribute) attr);
-                        }
-                    }
+                    includeSignatureAttribute(method, newMethod);
                     addGeneratedAnnotation(newMethod, target);
                     target.addMethod(newMethod);
                 }
+            }
+        }
+
+    }
+
+    private static void includeSignatureAttribute(CtMethod method, CtMethod newMethod) {
+        for (AttributeInfo attr : method.getMethodInfo().getAttributes()) {
+            if (attr instanceof SignatureAttribute) {
+                newMethod.getMethodInfo().addAttribute(attr);
             }
         }
     }
@@ -272,15 +201,23 @@ public class Agent {
     private static void addGeneratedAnnotation(CtMethod newMethod, CtClass target) {
         ConstPool constPool = target.getClassFile().getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-        Annotation annot = new Annotation("javax.annotation.Generated", constPool);
-        annot.addMemberValue("value", new StringMemberValue("uk.co.bjdavies.agent.Agent", constPool));
+        Annotation annotation = new Annotation("javax.annotation.Generated", constPool);
+        annotation.addMemberValue("value", new StringMemberValue(Agent.class.getName(), constPool));
 
         ZonedDateTime now = ZonedDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(GENERATED_DATE_PATTERN);
-        annot.addMemberValue("date", new StringMemberValue(now.format(formatter), constPool));
+        annotation.addMemberValue("date", new StringMemberValue(now.format(formatter), constPool));
 
-        attr.addAnnotation(annot);
+        attr.addAnnotation(annotation);
         newMethod.getMethodInfo().addAttribute(attr);
+    }
+
+
+
+    public static void addAnnotationsToField(CtField field, CtClass target, AnnotationBuilder... builder) {
+        AnnotationsAttribute attr = new AnnotationsAttribute(target.getClassFile().getConstPool(), AnnotationsAttribute.visibleTag);
+        Arrays.stream(builder).map(AnnotationBuilder::build).forEach(attr::addAnnotation);
+        field.getFieldInfo().addAttribute(attr);
     }
 
     private static boolean targetHasMethod(CtMethod[] targetMethods, CtMethod method) {

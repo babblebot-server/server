@@ -27,9 +27,9 @@ package uk.co.bjdavies.core;
 
 import lombok.Getter;
 import lombok.Setter;
-import uk.co.bjdavies.api.db.Model;
-import uk.co.bjdavies.api.db.fields.PrimaryField;
-import uk.co.bjdavies.api.db.fields.Unique;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.model.fields.PrimaryField;
+import net.bdavies.db.model.fields.Unique;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

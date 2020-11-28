@@ -4,4 +4,5 @@ include 'app'
 include 'api'
 include 'agent'
 include 'core'
+include 'db'
 

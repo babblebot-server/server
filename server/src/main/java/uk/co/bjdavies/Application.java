@@ -29,6 +29,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import lombok.extern.log4j.Log4j2;
+import net.bdavies.db.DB;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IConfig;
@@ -38,9 +39,9 @@ import uk.co.bjdavies.api.variables.IVariableContainer;
 import uk.co.bjdavies.command.CommandDispatcher;
 import uk.co.bjdavies.command.CommandModule;
 import uk.co.bjdavies.config.ConfigModule;
+import uk.co.bjdavies.core.AnnouncementChannel;
 import uk.co.bjdavies.core.CorePlugin;
 import uk.co.bjdavies.core.Ignore;
-import uk.co.bjdavies.db_old.DB;
 import uk.co.bjdavies.discord.DiscordModule;
 import uk.co.bjdavies.http.WebServer;
 import uk.co.bjdavies.plugins.PluginModule;
@@ -75,10 +76,10 @@ public class Application implements IApplication {
     private final ICommandDispatcher commandDispatcher;
     private final IVariableContainer variableContainer;
     private final IPluginContainer pluginContainer;
-    private String serverVersion;
     private final WebServer webServer;
     private final Class<?> mainClass;
     private final String[] args;
+    private String serverVersion;
 
     /**
      * Create a {@link Application} for BabbleBot
@@ -109,29 +110,30 @@ public class Application implements IApplication {
         pluginContainer = pluginModule.getPluginContainer();
 
         config = configModule.getConfig();
-        DB.install(config.getDatabaseConfig());
 
-        uk.co.bjdavies.db.DB.init(config.getDatabaseConfig());
+        //TODO: Remove this only for testing
+        applicationInjector = Guice.createInjector(applicationModule, configModule, commandModule,
+          variableModule, pluginModule);
+//        DB.init(config.getDatabaseConfig(), this);
+//        //Relationships -> DB joins, oneToOne, oneToMany, ManyToMany
+//        Set<Ignore> i = Ignore.where("guildId", "2").all();
+//        i.forEach(m -> m.setChannelId("Matey I am a channel"));
+//        i.forEach(Model::save);
 
+        DB.init(config.getDatabaseConfig(), this);
+        log.info(DB.table("ignores").get());
+        Set<Ignore> ignores = Ignore.find(b -> b.where("guildId", ">", "1"));
+        System.out.println(ignores);
 
-        log.info("Map<> DB Result: {}", uk.co.bjdavies.db.DB.table("ignores").get());
-
-
-        var f = uk.co.bjdavies.db.DB.table("ignores").get(Ignore.class);
-        log.info("Ignore Model DB Result: {}", f);
-        Set<Ignore> ignores = Ignore.all();
-        log.info("Model All: {}", ignores);
-
-
-        //TODO: Use this while testing db
         System.exit(0);
 
         //Important Order Needs Config!!...
         DiscordModule discordModule = new DiscordModule(this);
 
 
-        applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule, commandModule,
-          variableModule, pluginModule);
+        //        applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule,
+        //        commandModule,
+        //          variableModule, pluginModule);
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
 
@@ -194,7 +196,7 @@ public class Application implements IApplication {
      * This will return of a instance of a class and inject any dependencies that are inside the dependency injector.
      *
      * @param clazz - this is the class to create
-     * @return Object<T> this is an object of type T
+     * @return Object this is an object of type T
      */
     public <T> T get(Class<T> clazz) {
         return applicationInjector.getInstance(clazz);
@@ -248,8 +250,6 @@ public class Application implements IApplication {
             IDiscordFacade facade = get(IDiscordFacade.class);
             facade.logoutBot().block();
             webServer.stop();
-
-            Runtime.getRuntime().runFinalization();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -269,12 +269,9 @@ public class Application implements IApplication {
         Executors.newSingleThreadExecutor().submit(() -> {
             getPluginContainer().shutDownPlugins();
             IDiscordFacade facade = get(IDiscordFacade.class);
-            facade.registerEventHandler(DisconnectEvent.class, (d) -> {
-                log.info("Bot has been logged out!!!");
-            });
+            facade.registerEventHandler(DisconnectEvent.class, d -> log.info("Bot has been logged out!!!"));
             facade.logoutBot().block();
             webServer.stop();
-            Runtime.getRuntime().runFinalization();
             try {
                 List<String> command = new ArrayList<>();
 
@@ -300,8 +297,7 @@ public class Application implements IApplication {
                 Process p = pb.start();
                 p.waitFor();
                 System.exit(p.exitValue());
-                //System.exit(0);
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | InterruptedException e) /* NOSONAR */ {
                 e.printStackTrace();
             }
         });

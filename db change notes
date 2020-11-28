@@ -1,0 +1,59 @@
+API I want (1 Db Connection per application)
+
+DB.install(config.getDatabaseConfig()); // this will use the db settings in the config to setup
+
+// Should I have auto Model instrumentation? Yeah.
+
+// Models (ext from QueryBuilder!)
+Optional<Model> model = Model.findOne(1 // pk);
+
+model.ifPresent(m -> {
+
+});
+
+// SQL Objects
+TableObject
+QueryObject
+ColumnObject
+
+
+// Collection API from Java
+TreeSet<E extends Model>
+where [pks != other.pks]
+sort by [pks] in result option (LinkedHashSet, TreeSet)
+
+
+// QueryBuilder API
+
+
+// Scenario: I want to select all from users
+
+// val users = DB.table("users").get(); // TreeSet<Map<String, String>> // new QueryBuilder("users").get(); //DONE
+// Set<User> users = DB.table("users").get(User.class) //TreeSet<User>; // new QueryBuilder("users").get(User.class); //DONE
+// Set<User> users = User.retrieveAll() //TreeSet<User>; // new ModelQueryBuilder<User>("users") //DONE
+
+// QueryBuilder -> SQLiteQueryObject ex QueryObject
+// ModelQueryBuilder<T extends Model> ex QueryBuilder -> ^
+
+
+//Okay lets get started solving this problem
+
+
+// SQL: SELECT * FROM users
+
+
+//SQL: SELECT * FROM ignore WHERE guildId = 1;
+
+// DB Generic
+-> val ignores = DB.table("ignores").where("guildId", 1).get();
+
+// DB Model
+-> val ignores = DB.table("ignores").where("guildId", 1).get(Ignore.class);
+
+// Model
+-> Set<Ignore> ignores = Ignore.where("guildId", 1).all();
+
+
+
+
+

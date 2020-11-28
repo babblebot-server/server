@@ -22,4 +22,5 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation project(':server')
     implementation project(':api')
+    implementation project(':db')
 }
