@@ -57,4 +57,4 @@ See also the list of [contributors](https://github.com/bendavies99/babblebot-api
 
 ## License
 
-This project is licensed under the GPLv3 or later License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT Licence - see the [LICENSE.md](LICENSE.md) file for details
