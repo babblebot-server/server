@@ -30,12 +30,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.Order;
 import net.bdavies.db.query.PreparedQuery;
 import net.bdavies.db.query.QueryLink;
 import net.bdavies.db.query.QueryType;
 import net.bdavies.db.dialect.connection.IConnection;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Edit me
@@ -55,6 +57,7 @@ public abstract class QueryObject extends SQLObject implements IQueryObject {
     protected boolean isFirstWhere = true;
     protected Map<String, String> values = new LinkedHashMap<>();
     protected PreparedQuery preparedQuery = new PreparedQuery();
+    protected Map<String, Order> orderMap = new LinkedHashMap<>();
 
     @NonNull
     private final IConnection connection;
@@ -131,6 +134,19 @@ public abstract class QueryObject extends SQLObject implements IQueryObject {
         Set<R> objects = get(clazz);
         long count = objects.size();
         return objects.stream().skip(count - 1).findFirst().orElse(null);
+    }
+
+
+    @Override
+    public IQueryObject orderBy(Map<String, Order> cols) {
+        this.orderMap = cols;
+        return this;
+    }
+
+    @Override
+    public IQueryObject orderBy(String... cols) {
+        this.orderMap = Arrays.stream(cols).collect(Collectors.toMap(m -> m, m -> Order.ASC));
+        return this;
     }
 
     @Override

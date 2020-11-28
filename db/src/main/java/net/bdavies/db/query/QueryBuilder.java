@@ -28,6 +28,8 @@ package net.bdavies.db.query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.DB;
+import net.bdavies.db.Order;
+import net.bdavies.db.obj.IBaseBuilder;
 import net.bdavies.db.obj.IQueryObject;
 import net.bdavies.db.obj.QueryObject;
 
@@ -92,11 +94,22 @@ public class QueryBuilder implements IQueryObject {
         return this;
     }
 
+    @Override
+    public IQueryObject orderBy(Map<String, Order> cols) {
+        object.orderBy(cols);
+        return this;
+    }
+
+    @Override
+    public IQueryObject orderBy(String... cols) {
+        object.orderBy(cols);
+        return this;
+    }
+
     public <T> Set<T> get(Class<T> clazz) {
         return object.get(clazz);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Map<String, String> first() {
         return object.first();
@@ -107,7 +120,6 @@ public class QueryBuilder implements IQueryObject {
         return object.first(clazz);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Map<String, String> last() {
         return object.last();
@@ -118,7 +130,6 @@ public class QueryBuilder implements IQueryObject {
         return object.last(clazz);
     }
 
-    @SuppressWarnings("unchecked")
     public Set<Map<String, String>> get() {
         return object.get();
     }

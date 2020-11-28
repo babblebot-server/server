@@ -90,7 +90,14 @@ public class BaseQueryObject extends QueryObject {
 
 
     protected String toSelectQuery() {
-        return "SELECT " + getColumnsString() + " FROM " + table + getWhereString();
+        return "SELECT " + getColumnsString() + " FROM " + table + getWhereString() + getOrderByString();
+    }
+
+    private String getOrderByString() {
+        if (orderMap.isEmpty()) return "";
+
+        return " ORDER BY " + orderMap.entrySet().stream().map(e -> e.getKey() + " " + e.getValue())
+                .collect(Collectors.joining(", "));
     }
 
     protected String getWhereString() {

@@ -34,8 +34,8 @@ import java.lang.annotation.Target;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Target({ElementType.CONSTRUCTOR})
+@Target({ElementType.CONSTRUCTOR, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TableName {
-    String name();
+    String value();
 }

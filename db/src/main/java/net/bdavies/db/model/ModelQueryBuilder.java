@@ -44,6 +44,7 @@ public class ModelQueryBuilder<T extends Model> extends QueryBuilder implements 
     public ModelQueryBuilder(Class<T> modelClazz) {
         super(ModelUtils.getTableName(modelClazz));
         this.modelClazz = modelClazz;
+        object.orderBy(ModelUtils.getPrimaryKey(modelClazz));
     }
 
     @Override

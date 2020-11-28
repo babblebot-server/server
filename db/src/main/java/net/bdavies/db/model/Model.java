@@ -96,6 +96,9 @@ public class Model {
         }
     }
 
+
+
+
     /**
      * This will return all records in the DB for this model
      *
@@ -104,7 +107,7 @@ public class Model {
      * @throws ClassCastException this will be the cause of specifying a different type to the type of the model you run find on
      */
     public static <T extends Model> Set<T> all() {
-        return new ModelQueryBuilder<T>(getModelClass()).get(getModelClass());
+        return new ModelQueryBuilder<>(getModelClass()).get(getModelClass());
     }
 
     /**
@@ -113,7 +116,8 @@ public class Model {
      * @param builder The query builder to filter against
      * @param <T>     Model type to return
      * @return {@link Set} of all models
-     * @throws ClassCastException this will be the cause of specifying a different type to the type of the model you run find on
+     * @throws ClassCastException this will be the cause of specifying a different type to the type of the model you run
+     *                            find on when you attempt to use a method from the selected class
      */
     public static <T extends Model> Set<T> find(Consumer<IModelQueryBuilder<T>> builder) {
         IModelQueryBuilder<T> modelQueryBuilder = new ModelQueryBuilder<>(getModelClass());
@@ -132,7 +136,7 @@ public class Model {
     public static <T extends Model> Optional<T> findOne(Consumer<IModelQueryBuilder<T>> builder) {
         IModelQueryBuilder<T> modelQueryBuilder = new ModelQueryBuilder<>(getModelClass());
         builder.accept(modelQueryBuilder);
-        return Optional.of(modelQueryBuilder.first(getModelClass()));
+        return Optional.ofNullable(modelQueryBuilder.first(getModelClass()));
     }
 
     /**
@@ -146,8 +150,9 @@ public class Model {
     public static <T extends Model> Optional<T> findLast(Consumer<IModelQueryBuilder<T>> builder) {
         IModelQueryBuilder<T> modelQueryBuilder = new ModelQueryBuilder<>(getModelClass());
         builder.accept(modelQueryBuilder);
-        return Optional.of(modelQueryBuilder.last(getModelClass()));
+        return Optional.ofNullable(modelQueryBuilder.last(getModelClass()));
     }
+
 
 
     /**
@@ -156,9 +161,28 @@ public class Model {
      * @return boolean if operation succeeded
      */
     public static boolean deleteAll() {
-        return new ModelQueryBuilder<>(getModelClass()).delete();
+        return new ModelQueryBuilder<>(getModelClass())
+                .delete();
     }
 
+
+    /**
+     * Delete all Models of this type based on a builder
+     * @param <T> type of model
+     * @param builder delete a model based on a builder
+     * @return boolean if operation succeeded
+     */
+    public static <T extends Model> boolean  deleteAll(Consumer<IModelQueryBuilder<T>> builder) {
+        IModelQueryBuilder<T> modelQueryBuilder = new ModelQueryBuilder<>(getModelClass());
+        builder.accept(modelQueryBuilder);
+        return modelQueryBuilder.delete();
+    }
+
+    /**
+     * Get the current model class this is instrumented uses the agent
+     * @param <T> the type of model
+     * @return Class of type T
+     */
     private static <T extends Model> Class<T> getModelClass() {
         throw new UnsupportedOperationException("Not instrumented please install agent.");
     }
@@ -226,15 +250,16 @@ public class Model {
 
     private Map<String, String> modelToValues() {
         Map<String, String> values = new LinkedHashMap<>();
-        properties.stream().filter(p -> !p.isIncrements()).filter(p -> p.getPreviousValue() == null
-                || !p.getPreviousValue()
-                .equals(getPropertyFieldValue(p)))
+        properties.stream().filter(p -> !p.isIncrements())
+                .filter(p -> saveType != SaveType.UPDATE || p.getPreviousValue() == null
+                        || !p.getPreviousValue()
+                        .equals(getPropertyFieldValue(p)))
                 .filter(p -> !p.isRelational())
                 .forEach(p -> values.put(p.getName(), getPropertyFieldValue(p)));
         return values;
     }
 
-    public String serializeObject(Object data, ModelProperty property, IApplication application) {
+    private String serializeObject(Object data, ModelProperty property, IApplication application) {
         return application.get(property.getSerializer()).serialize(this, data, property);
     }
 
@@ -312,10 +337,12 @@ public class Model {
             if (this instanceof ICreateHook) {
                 ((ICreateHook) this).onCreate();
             }
-            IModelQueryBuilder<Model> modelQueryBuilder = new ModelQueryBuilder<>(getModelClass());
-            Model model = modelQueryBuilder.last(getModelClass());
+
             queryObject.insert(modelToValues());
             saveType = SaveType.UPDATE;
+            //noinspection unchecked
+            IModelQueryBuilder<Model> modelQueryBuilder = new ModelQueryBuilder<>((Class<Model>) this.getClass());
+            Model model = modelQueryBuilder.last(this.getClass());
             //noinspection OverlyLongLambda
             getAllIncrementingProperties().forEach(p -> {
                 int fromLastModel = 0;
@@ -324,12 +351,13 @@ public class Model {
                 }
                 try {
                     p.getField().setAccessible(true);
-                    p.getField().set(this, fromLastModel + 1);
+                    p.getField().set(this, fromLastModel);
                 } catch (IllegalAccessException e) {
                     log.error("Something went wrong when setting property {}", p.getName(), e);
                 }
             });
             properties.forEach(p -> p.setPreviousValue(getPropertyFieldValue(p)));
+            resetQueryObject();
         }
 
         return true;

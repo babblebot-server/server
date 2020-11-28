@@ -121,9 +121,9 @@ public class Application implements IApplication {
 //        i.forEach(Model::save);
 
         DB.init(config.getDatabaseConfig(), this);
-        log.info(DB.table("ignores").get());
-        Set<Ignore> ignores = Ignore.find(b -> b.where("guildId", ">", "1"));
-        System.out.println(ignores);
+        log.info("{}", Ignore.all());
+//        Set<Ignore> ignores = Ignore.find(b -> b.where("guildId", ">", "1"));
+//        System.out.println(ignores);
 
         System.exit(0);
 

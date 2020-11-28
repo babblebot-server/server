@@ -23,42 +23,35 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.model;
 
-import net.bdavies.db.Order;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import net.bdavies.db.model.fields.PrimaryField;
+import net.bdavies.db.model.fields.Property;
+import net.bdavies.db.model.fields.TableName;
 
-import java.util.Map;
-import java.util.Set;
 
 /**
- * This is includes standard Query functions
+ * This is a model to test against
  *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder {
-    IBaseBuilder where(String col, String val);
+@Getter
+@Setter
+@TableName("test")
+@ToString
+public class TestModel extends Model {
 
-    IBaseBuilder and(String col, String val);
+    public TestModel() {
+    }
 
-    IBaseBuilder or(String col, String val);
+    @Property
+    @PrimaryField
+    private int id;
 
-    IBaseBuilder where(String col, String operator, String val);
-
-    IBaseBuilder and(String col, String operator, String val);
-
-    IBaseBuilder or(String col, String operator, String val);
-
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+    @Property
+    private String text;
 }

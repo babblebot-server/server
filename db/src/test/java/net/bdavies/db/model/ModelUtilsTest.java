@@ -23,42 +23,38 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.model;
 
-import net.bdavies.db.Order;
+import net.bdavies.db.DBSetup;
+import net.bdavies.db.model.fields.TableName;
+import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-import java.util.Set;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * This is includes standard Query functions
- *
+ * Tests for Model Utils
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder {
-    IBaseBuilder where(String col, String val);
+class ModelUtilsTest extends DBSetup {
 
-    IBaseBuilder and(String col, String val);
+    @Test
+    void getTableName() {
+        assertEquals("test", ModelUtils.getTableName(TestModel.class));
+        assertEquals("anothertestmodels", ModelUtils.getTableName(AnotherTestModel.class));
+        assertEquals("cmodel", ModelUtils.getTableName(ConstructorModel.class));
+    }
 
-    IBaseBuilder or(String col, String val);
+    @Test
+    void pluralize() {
+        assertEquals("tests", ModelUtils.pluralize("test"));
+        assertEquals("berries", ModelUtils.pluralize("berry"));
+        assertEquals("houses", ModelUtils.pluralize("hous"));
+    }
 
-    IBaseBuilder where(String col, String operator, String val);
-
-    IBaseBuilder and(String col, String operator, String val);
-
-    IBaseBuilder or(String col, String operator, String val);
-
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+    private static class ConstructorModel extends Model {
+        @TableName("cModel")
+        public ConstructorModel() {
+        }
+    }
 }

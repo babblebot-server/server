@@ -23,42 +23,51 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.dialect.connection;
 
-import net.bdavies.db.Order;
+import lombok.SneakyThrows;
+import uk.co.bjdavies.api.IApplication;
+import uk.co.bjdavies.api.config.IDatabaseConfig;
 
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
- * This is includes standard Query functions
+ * This will create a sqlite database in memory
  *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder {
-    IBaseBuilder where(String col, String val);
+public class InMemoryConnection extends RDMSConnection {
 
-    IBaseBuilder and(String col, String val);
+    public InMemoryConnection(IDatabaseConfig databaseConfig, IApplication application) {
+        super(databaseConfig, application);
+    }
 
-    IBaseBuilder or(String col, String val);
+    @Override
+    protected Connection getConnectionForDB(IDatabaseConfig config, IApplication application) {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
-    IBaseBuilder where(String col, String operator, String val);
+        try {
+            return DriverManager.getConnection("jdbc:log4jdbc:sqlite::memory:");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
 
-    IBaseBuilder and(String col, String operator, String val);
-
-    IBaseBuilder or(String col, String operator, String val);
-
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
 }

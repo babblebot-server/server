@@ -34,10 +34,7 @@ import net.bdavies.db.query.PreparedQuery;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -81,6 +78,7 @@ public abstract class RDMSConnection implements IConnection {
                log.error("Couldn't set value: {}, because of an error", v, e);
             }
         });
+        query.getPreparedValues().clear();
     }
 
     @Override
@@ -120,12 +118,12 @@ public abstract class RDMSConnection implements IConnection {
                 e1.printStackTrace();
                 return null;
             }
-        }).collect(Collectors.toSet());
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @SuppressWarnings("MethodWithMultipleLoops")
     private Set<Map<String, String>> processResultSetRaw(ResultSet resultSet) {
-        Set<Map<String, String>> set = new LinkedHashSet<>();
+        Set<Map<String, String>> set = Collections.synchronizedSet(new LinkedHashSet<>());
         try {
             ResultSetMetaData metaData = resultSet.getMetaData();
             while (resultSet.next()) {

@@ -6,11 +6,28 @@ repositories {
     mavenCentral()
 }
 
+test {
+    jvmArgs("-javaagent:${project(':agent').getBuildDir()}/libs/babblebot-server-agent-${project(':agent').getVersion()}.jar")
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation(project(":api"))
+
+    testImplementation 'org.javassist:javassist:3.27.0-GA'
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
+    testImplementation("org.mockito:mockito-core:2.21.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:2.23.0")
+    testImplementation('org.projectlombok:lombok:1.18.16')
+    testImplementation('org.apache.logging.log4j:log4j-slf4j18-impl:2.14.0')
+    testAnnotationProcessor('org.projectlombok:lombok:1.18.16')
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.2")
+
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     implementation("org.apache.commons:commons-lang3:3.11")
+    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
+    implementation 'org.xerial:sqlite-jdbc:3.32.3.2'
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
 
 
     implementation 'org.projectlombok:lombok:1.18.16'

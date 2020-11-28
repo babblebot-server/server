@@ -22,12 +22,10 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.16'
     implementation 'com.discord4j:discord4j-core:3.1.2'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'org.xerial:sqlite-jdbc:3.32.3.2'
     implementation 'net.bytebuddy:byte-buddy:1.10.18'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.java-websocket:Java-WebSocket:1.5.1'
     implementation 'org.xeustechnologies:jcl-core:2.8'
-    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
 
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
