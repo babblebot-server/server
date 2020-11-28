@@ -36,7 +36,6 @@ import java.util.Map;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: VariableContainer.java
  * Compiled Class Name: VariableContainer.class

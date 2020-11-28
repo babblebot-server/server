@@ -32,7 +32,6 @@ import java.util.List;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: Config.java
  * Compiled Class Name: Config.class

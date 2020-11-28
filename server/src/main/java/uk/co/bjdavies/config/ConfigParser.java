@@ -31,7 +31,6 @@ import java.io.Reader;
 
 /**
  * BabbleBot, open-source Discord Bot
- * Licence: GPL V3
  * Author: Ben Davies
  * Class Name: ConfigParser.java
  * Compiled Class Name: ConfigParser.class
