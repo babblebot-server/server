@@ -140,7 +140,7 @@ subprojects {
                             }
                             licenses {
                                 license {
-                                    name = 'GPL-3.0'
+                                    name = 'MIT'
                                     url = 'https://github.com/bendavies99/BabbleBot-Server/LICENSE.md'
                                     distribution = 'repo'
                                 }
