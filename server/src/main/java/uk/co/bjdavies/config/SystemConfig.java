@@ -38,12 +38,12 @@ import uk.co.bjdavies.api.config.ISystemConfig;
 public class SystemConfig implements ISystemConfig {
 
 
-    private final boolean autoUpdate = true;
+    private boolean autoUpdate = true;
 
     /**
      * This will show all the logs for the discord client and other problems that occur throughout the program and all the info.
      */
-    private final boolean debug = true;
+    private boolean debug = true;
 
 
     @Override

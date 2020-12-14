@@ -26,15 +26,13 @@
 package net.bdavies.db.obj;
 
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.Operator;
 import net.bdavies.db.Order;
 import net.bdavies.db.query.PreparedQuery;
 import net.bdavies.db.query.QueryLink;
-import net.bdavies.db.query.QueryType;
-import net.bdavies.db.dialect.connection.IConnection;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,19 +46,15 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @Slf4j
-@RequiredArgsConstructor
-public abstract class QueryObject extends SQLObject implements IQueryObject {
-    @NonNull
-    protected String table;
+@NoArgsConstructor
+public abstract class QueryObject implements IQueryObject {
+
     protected List<String> columns = new LinkedList<>();
     protected List<WhereStatementObject> wheres = new LinkedList<>();
     protected boolean isFirstWhere = true;
     protected Map<String, String> values = new LinkedHashMap<>();
     protected PreparedQuery preparedQuery = new PreparedQuery();
     protected Map<String, Order> orderMap = new LinkedHashMap<>();
-
-    @NonNull
-    private final IConnection connection;
 
     @Override
     public IQueryObject columns(String... cols) {
@@ -71,21 +65,21 @@ public abstract class QueryObject extends SQLObject implements IQueryObject {
     @Override
     public IQueryObject where(String col, String val) {
 
-        return where(col, "=", val);
+        return where(col, Operator.EQ, val);
     }
 
     @Override
     public IQueryObject and(String col, String val) {
-        return and(col, "=", val);
+        return and(col, Operator.EQ, val);
     }
 
     @Override
     public IQueryObject or(String col, String val) {
-        return or(col, "=", val);
+        return or(col, Operator.EQ, val);
     }
 
     @Override
-    public IQueryObject where(String col, String operator, String val) {
+    public IQueryObject where(String col, Operator operator, String val) {
         if (isFirstWhere) {
             wheres.add(new WhereStatementObject(col, operator, val, null));
             isFirstWhere = false;
@@ -96,21 +90,18 @@ public abstract class QueryObject extends SQLObject implements IQueryObject {
     }
 
     @Override
-    public IQueryObject and(String col, String operator, String val) {
+    public IQueryObject and(String col, Operator operator, String val) {
         wheres.add(new WhereStatementObject(col, operator, val, QueryLink.AND));
         return this;
     }
 
     @Override
-    public IQueryObject or(String col, String operator, String val) {
+    public IQueryObject or(String col, Operator operator, String val) {
         wheres.add(new WhereStatementObject(col, operator, val, QueryLink.OR));
         return this;
     }
 
-    @Override
-    public <T> Set<T> get(Class<T> clazz) {
-        return connection.executeQuery(clazz, this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
-    }
+
 
     @Override
     public Map<String, String> first() {
@@ -149,21 +140,7 @@ public abstract class QueryObject extends SQLObject implements IQueryObject {
         return this;
     }
 
-    @Override
-    public Set<Map<String, String>> get() {
-        return connection.executeQueryRaw(this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
-    }
 
-    @Override
-    public boolean delete() {
-        return connection.executeCommand(this.toSQLString(QueryType.DELETE, preparedQuery), preparedQuery);
-    }
-
-    @Override
-    public boolean insert(Map<String, String> insertValues) {
-        this.values = insertValues;
-        return connection.executeCommand(this.toSQLString(QueryType.INSERT, preparedQuery), preparedQuery);
-    }
 
     @Override
     public int insertGetId(String idColName, Map<String, String> insertValues) {
@@ -191,11 +168,7 @@ public abstract class QueryObject extends SQLObject implements IQueryObject {
         return objects.stream().skip(count - 1).findFirst().orElse(null);
     }
 
-    @Override
-    public boolean update(Map<String, String> updateValues) {
-        this.values = updateValues;
-        return connection.executeCommand(this.toSQLString(QueryType.UPDATE, preparedQuery), preparedQuery);
-    }
+
 
     @Override
     public Set<Map<String, String>> updateGet(Map<String, String> updateValues) {

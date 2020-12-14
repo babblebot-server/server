@@ -23,30 +23,26 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.model.fields;
 
-import net.bdavies.db.Order;
-
-import java.util.Map;
-import java.util.Set;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * This is includes standard Query functions
+ * This will define what field will use the _id field for MongoDB databases
  *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ObjectIdProperty {
+    /**
+     * This is the name of the objectId property defaults to _id as this will be standard in all collections but you may want to link another collection through an
+     * Object Id but not using the model system so this is how to you can achieve that
+     * @return String property name
+     */
+    String value() default "_id";
 }

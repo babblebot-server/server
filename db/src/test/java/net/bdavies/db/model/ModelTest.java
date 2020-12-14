@@ -28,6 +28,7 @@ package net.bdavies.db.model;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.DB;
 import net.bdavies.db.DBSetup;
+import net.bdavies.db.Operator;
 import net.bdavies.db.model.serialization.ISQLObjectDeserializer;
 import net.bdavies.db.model.serialization.ISQLObjectSerializer;
 import net.bdavies.db.query.QueryBuilder;
@@ -87,7 +88,7 @@ class ModelTest extends DBSetup {
         assertEquals(1, testModels.size());
         Set<TestModel> testModels1 = TestModel.find(b -> b.where("text", "NotFound!"));
         assertEquals(0, testModels1.size());
-        Set<TestModel> testModels2 = TestModel.find(b -> b.where("text", "LIKE", "%J%"));
+        Set<TestModel> testModels2 = TestModel.find(b -> b.where("text", Operator.LIKE, "%J%"));
         assertEquals(3, testModels2.size());
     }
 
@@ -101,11 +102,11 @@ class ModelTest extends DBSetup {
 
     @Test
     void findLast() {
-        Optional<TestModel> testModel = TestModel.findLast(b -> b.where("id", ">", "0"));
+        Optional<TestModel> testModel = TestModel.findLast(b -> b.where("id", Operator.GT, "0"));
         assertTrue(testModel.isPresent());
         assertEquals("Lex", testModel.get().getText());
 
-        Optional<TestModel> testModel2 = TestModel.findLast(b -> b.where("text", "LIKE", "%Jo%"));
+        Optional<TestModel> testModel2 = TestModel.findLast(b -> b.where("text", Operator.LIKE, "%Jo%"));
         assertTrue(testModel2.isPresent());
         assertEquals("Joey", testModel2.get().getText());
     }
@@ -123,7 +124,7 @@ class ModelTest extends DBSetup {
 
     @Test
     void serializeObject() {
-        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", ">", "1"));
+        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", Operator.GT, "1"));
         //noinspection OverlyLongLambda
         testModel.ifPresent(m -> {
             try {
@@ -136,7 +137,7 @@ class ModelTest extends DBSetup {
                 obj = (Class<? extends ISQLObjectSerializer<Model,Object>>) serializer.getClass();
                 ModelProperty property = new ModelProperty(HelloWorld.class, null, "test",
                         false, false, false, obj, null,
-                        null, "", false, Relationship.NONE);
+                        null, "", false, Relationship.NONE, false);
                 String data = (String) method.invoke(m, new HelloWorld("TestData"), property, application);
                 assertEquals("TestData", data);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -149,7 +150,7 @@ class ModelTest extends DBSetup {
 
     @Test
     void deserializeObject() {
-        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", ">", "1"));
+        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", Operator.GT, "1"));
         //noinspection OverlyLongLambda
         testModel.ifPresent(m -> {
             try {
@@ -162,7 +163,7 @@ class ModelTest extends DBSetup {
                 obj = (Class<? extends ISQLObjectDeserializer<Model,Object>>) serializer.getClass();
                 ModelProperty property = new ModelProperty(HelloWorld.class, null, "test",
                         false, false, false, null, obj,
-                        null, "", false, Relationship.NONE);
+                        null, "", false, Relationship.NONE, false);
 
                 HelloWorld data = (HelloWorld) method.invoke(m, "TestData", property, application);
                 assertEquals("TestData", data.getAppender());
@@ -187,7 +188,7 @@ class ModelTest extends DBSetup {
         model.save();
         assertEquals(10, TestModel.all().size());
         assertEquals(10, model.getId());
-        Optional<TestModel> testModel = TestModel.findLast(b -> b.where("id", ">", "0"));
+        Optional<TestModel> testModel = TestModel.findLast(b -> b.where("id", Operator.GT, "0"));
         testModel.ifPresent(m -> {
             assertEquals("TestSave", m.getText());
             assertEquals(10, m.getId());
@@ -196,7 +197,7 @@ class ModelTest extends DBSetup {
         model.setText("TestSave2");
         model.save();
         assertEquals("TestSave2", model.getText());
-        testModel = TestModel.findLast(b -> b.where("id", ">", "0"));
+        testModel = TestModel.findLast(b -> b.where("id", Operator.GT, "0"));
         testModel.ifPresent(m -> {
             assertEquals("TestSave2", m.getText());
             assertEquals(10, m.getId());

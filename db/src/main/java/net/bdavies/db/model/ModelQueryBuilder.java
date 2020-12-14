@@ -26,6 +26,7 @@
 package net.bdavies.db.model;
 
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.Operator;
 import net.bdavies.db.query.QueryBuilder;
 
 import java.util.Set;
@@ -66,23 +67,24 @@ public class ModelQueryBuilder<T extends Model> extends QueryBuilder implements 
     }
 
     @Override
-    public ModelQueryBuilder<T> where(String col, String operator, String val) {
+    public ModelQueryBuilder<T> where(String col, Operator operator, String val) {
         object.where(col, operator, val);
         return this;
     }
 
     @Override
-    public ModelQueryBuilder<T> and(String col, String operator, String val) {
+    public ModelQueryBuilder<T> and(String col, Operator operator, String val) {
         object.and(col, operator, val);
         return this;
     }
 
     @Override
-    public ModelQueryBuilder<T> or(String col, String operator, String val) {
+    public ModelQueryBuilder<T> or(String col, Operator operator, String val) {
         object.or(col, operator, val);
         return this;
     }
 
+    @Override
     public boolean delete() {
         Set<T> models = get(modelClazz);
         models.forEach(Model::delete);

@@ -30,6 +30,7 @@ import com.google.inject.Injector;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import lombok.extern.log4j.Log4j2;
 import net.bdavies.db.DB;
+import net.bdavies.db.Operator;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IConfig;
@@ -39,9 +40,9 @@ import uk.co.bjdavies.api.variables.IVariableContainer;
 import uk.co.bjdavies.command.CommandDispatcher;
 import uk.co.bjdavies.command.CommandModule;
 import uk.co.bjdavies.config.ConfigModule;
-import uk.co.bjdavies.core.AnnouncementChannel;
 import uk.co.bjdavies.core.CorePlugin;
 import uk.co.bjdavies.core.Ignore;
+import uk.co.bjdavies.core.Password;
 import uk.co.bjdavies.discord.DiscordModule;
 import uk.co.bjdavies.http.WebServer;
 import uk.co.bjdavies.plugins.PluginModule;
@@ -114,16 +115,13 @@ public class Application implements IApplication {
         //TODO: Remove this only for testing
         applicationInjector = Guice.createInjector(applicationModule, configModule, commandModule,
           variableModule, pluginModule);
-//        DB.init(config.getDatabaseConfig(), this);
-//        //Relationships -> DB joins, oneToOne, oneToMany, ManyToMany
-//        Set<Ignore> i = Ignore.where("guildId", "2").all();
-//        i.forEach(m -> m.setChannelId("Matey I am a channel"));
-//        i.forEach(Model::save);
 
         DB.init(config.getDatabaseConfig(), this);
         log.info("{}", Ignore.all());
-//        Set<Ignore> ignores = Ignore.find(b -> b.where("guildId", ">", "1"));
-//        System.out.println(ignores);
+        Set<Ignore> ignores = Ignore.find(b -> b.where("update", Operator.LIKE, "Yo"));
+        Ignore testInsert = DB.create(Ignore.class, Map.of("guildId", 3, "channelId", 3, "ignoredBy", new Password("Yes"), "update", "Yes!"));
+        testInsert.save();
+        log.info("Ignore Made: {}", testInsert);
 
         System.exit(0);
 
@@ -133,7 +131,7 @@ public class Application implements IApplication {
 
         //        applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule,
         //        commandModule,
-        //          variableModule, pluginModule);
+        //          variableModule, pluginModule)
 
         pluginContainer.addPlugin("core", get(CorePlugin.class));
 
@@ -250,6 +248,7 @@ public class Application implements IApplication {
             IDiscordFacade facade = get(IDiscordFacade.class);
             facade.logoutBot().block();
             webServer.stop();
+            DB.shutdown();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -272,6 +271,7 @@ public class Application implements IApplication {
             facade.registerEventHandler(DisconnectEvent.class, d -> log.info("Bot has been logged out!!!"));
             facade.logoutBot().block();
             webServer.stop();
+            DB.shutdown();
             try {
                 List<String> command = new ArrayList<>();
 

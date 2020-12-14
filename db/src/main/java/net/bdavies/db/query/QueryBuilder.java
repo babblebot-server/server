@@ -28,6 +28,7 @@ package net.bdavies.db.query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.DB;
+import net.bdavies.db.Operator;
 import net.bdavies.db.Order;
 import net.bdavies.db.obj.IBaseBuilder;
 import net.bdavies.db.obj.IQueryObject;
@@ -77,19 +78,19 @@ public class QueryBuilder implements IQueryObject {
     }
 
     @Override
-    public IQueryObject where(String col, String operator, String val) {
+    public IQueryObject where(String col, Operator operator, String val) {
         object.where(col, operator, val);
         return this;
     }
 
     @Override
-    public IQueryObject and(String col, String operator, String val) {
+    public IQueryObject and(String col, Operator operator, String val) {
         object.and(col, operator, val);
         return this;
     }
 
     @Override
-    public IQueryObject or(String col, String operator, String val) {
+    public IQueryObject or(String col, Operator operator, String val) {
         object.or(col, operator, val);
         return this;
     }

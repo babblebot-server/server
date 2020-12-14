@@ -23,30 +23,42 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.dialect.connection;
 
-import net.bdavies.db.Order;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import uk.co.bjdavies.api.IApplication;
+import uk.co.bjdavies.api.config.IDatabaseConfig;
 
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 /**
- * This is includes standard Query functions
+ * Connection class for a MySQL connection
  *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
+@Slf4j
+public class MySQLConnection extends RDMSConnection {
 
-    <T> Set<T> get(Class<T> clazz);
+    public MySQLConnection(IDatabaseConfig config, IApplication application) {
+        super(config, application);
+    }
 
-    Set<Map<String, String>> get();
+    @Override
+    @SneakyThrows
+    protected Connection getConnectionForDB(IDatabaseConfig config, IApplication application) {
+        try {
+            Class.forName("com.mysql.jdbc.Driver"); //NOSONAR
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+        return DriverManager.getConnection("jdbc:log4jdbc:mysql://" + config.getHostname() + ":" +
+                (config.getPort().isEmpty() ? "3306" : config.getPort()) +  "/" + config.getDatabase() + "?user=" + config.getUsername() +
+                "&password=" + config.getPassword());
+    }
 }

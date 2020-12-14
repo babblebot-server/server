@@ -23,30 +23,64 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db;
 
-import net.bdavies.db.Order;
-
-import java.util.Map;
-import java.util.Set;
+import lombok.Getter;
 
 /**
- * This is includes standard Query functions
- *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v"></a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
+@Getter
+public enum Operator {
+    /**
+     * Less Than e.g. <
+     */
+    LT("<"),
+    /**
+     * Less than equal e.g. <=
+     */
+    LTE("<="),
+    /**
+     * Greater Than e.g. >
+     */
+    GT(">"),
+    /**
+     * Greater Than e.g. >=
+     */
+    GTE(">="),
+    /**
+     * Not Equal e.g. !=
+     */
+    NE("!="),
+    /**
+     * Equal e.g. =
+     */
+    EQ("="),
+    /**
+     * Like value e.g. LIKE %
+     * NOTE: for mongoDB you pass a regex string or a keyword
+     */
+    LIKE("LIKE"),
+    /**
+     * In Values e.g. IN (val1,val2,val3)
+     * NOTE: Mongodb you do not need the () but in SQL you do
+     */
+    IN("IN"),
+    /**
+     * Not In Values e.g. NOT IN (val1,val2,val3)
+     * NOTE: Mongodb you do not need the () but in SQL you do
+     */
+    NIN("NOT IN"),
+    /**
+     * Not Null e.g. NOT NULL
+     * Note: for mongodb this checks if the column exists in the document
+     */
+    NN("NOT NULL");
 
-    <T> Set<T> get(Class<T> clazz);
+    private final String operatorString;
 
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+    Operator(String s) {
+        operatorString = s;
+    }
 }

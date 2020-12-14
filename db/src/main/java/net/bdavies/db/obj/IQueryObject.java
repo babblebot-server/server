@@ -37,18 +37,6 @@ import java.util.Set;
 public interface IQueryObject extends IBaseBuilder {
     IQueryObject columns(String... cols);
 
-    IQueryObject where(String col, String val);
-
-    IQueryObject and(String col, String val);
-
-    IQueryObject or(String col, String val);
-
-    IQueryObject where(String col, String operator, String val);
-
-    IQueryObject and(String col, String operator, String val);
-
-    IQueryObject or(String col, String operator, String val);
-
     <T> Set<T> get(Class<T> clazz);
 
     Set<Map<String, String>> get();

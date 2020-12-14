@@ -37,13 +37,15 @@ import java.util.Set;
  * @author me@bdavies (Ben Davies)
  * @since 1.0.0
  */
-public interface IConnection {
+public interface IConnection<R> {
 
-    <T> Set<T> executeQuery(Class<T> clazz, String rawSql, PreparedQuery preparedQuery);
+    <T> Set<T> executeQuery(Class<T> clazz, R obj, PreparedQuery preparedQuery);
 
-    Set<Map<String, String>> executeQueryRaw(String rawSql, PreparedQuery preparedQuery);
+    Set<Map<String, String>> executeQueryRaw(R obj, PreparedQuery preparedQuery);
 
     IApplication getApplication();
 
-    boolean executeCommand(String rawSql, PreparedQuery preparedQuery);
+    boolean executeCommand(R obj, PreparedQuery preparedQuery);
+
+    void closeDB();
 }

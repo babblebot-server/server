@@ -27,11 +27,14 @@ package net.bdavies.db.dialect.obj;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.obj.ISQLObject;
 import net.bdavies.db.query.QueryType;
 import net.bdavies.db.dialect.connection.IConnection;
 import net.bdavies.db.query.PreparedQuery;
 import net.bdavies.db.obj.QueryObject;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,11 +44,45 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Slf4j
-public class BaseQueryObject extends QueryObject {
-
+public class BaseQueryObject extends QueryObject implements ISQLObject {
+    @NonNull
+    protected final String table;
+    protected final IConnection<String> connection;
     public BaseQueryObject(@NonNull String table,
-      @NonNull IConnection connection) {
-        super(table, connection);
+      @NonNull IConnection<String> connection) {
+        this.table = table;
+        this.connection = connection;
+
+    }
+
+
+    @Override
+    public <T> Set<T> get(Class<T> clazz) {
+        return connection.executeQuery(clazz, this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
+    }
+
+    @Override
+    public Set<Map<String, String>> get() {
+        return connection.executeQueryRaw(this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
+    }
+
+    @Override
+    public boolean delete() {
+        return connection.executeCommand(this.toSQLString(QueryType.DELETE, preparedQuery), preparedQuery);
+    }
+
+    @Override
+    public boolean insert(Map<String, String> insertValues) {
+        this.values = insertValues;
+        return connection.executeCommand(this.toSQLString(QueryType.INSERT, preparedQuery), preparedQuery);
+    }
+
+
+
+    @Override
+    public boolean update(Map<String, String> updateValues) {
+        this.values = updateValues;
+        return connection.executeCommand(this.toSQLString(QueryType.UPDATE, preparedQuery), preparedQuery);
     }
 
     @Override

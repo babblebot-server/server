@@ -35,9 +35,7 @@ import net.bdavies.db.query.QueryType;
  * @author me@bdavies (Ben Davies)
  * @since 1.0.0
  */
-@Slf4j
-public abstract class SQLObject {
-
-    public abstract String toSQLString(QueryType type, PreparedQuery query);
+public interface ISQLObject {
+    String toSQLString(QueryType type, PreparedQuery query);
 
 }

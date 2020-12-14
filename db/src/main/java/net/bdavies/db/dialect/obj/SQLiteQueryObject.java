@@ -40,7 +40,7 @@ import net.bdavies.db.dialect.connection.IConnection;
 @ToString
 public class SQLiteQueryObject extends BaseQueryObject {
 
-    public SQLiteQueryObject(@NonNull String table, @NonNull IConnection connection) {
+    public SQLiteQueryObject(@NonNull String table, @NonNull IConnection<String> connection) {
         super(table, connection);
     }
 

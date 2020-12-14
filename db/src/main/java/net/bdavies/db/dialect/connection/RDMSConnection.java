@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Slf4j
-public abstract class RDMSConnection implements IConnection {
+public abstract class RDMSConnection implements IConnection<String> {
 
     protected final Connection connection;
     protected final IApplication application;
@@ -147,5 +147,11 @@ public abstract class RDMSConnection implements IConnection {
     @Override
     public IApplication getApplication() {
         return application;
+    }
+
+    @SneakyThrows
+    @Override
+    public void closeDB() {
+        connection.close();
     }
 }

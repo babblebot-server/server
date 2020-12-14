@@ -23,30 +23,30 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.dialect.descriptor;
 
-import net.bdavies.db.Order;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.query.QueryType;
+import org.bson.conversions.Bson;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * This is includes standard Query functions
+ * This will describe a filter and query to the db
  *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+@AllArgsConstructor
+@Getter
+@Slf4j
+public class MongoDocumentDescriptor {
+    private final QueryType type;
+    private final String collectionName;
+    private final List<ColumnDescriptor> columnsToFetch;
+    private final Bson filter;
+    private final Map<String, String> values;
 }

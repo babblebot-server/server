@@ -29,9 +29,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.DB;
-import net.bdavies.db.model.serialization.*;
-import net.bdavies.db.obj.QueryObject;
-import uk.co.bjdavies.api.IApplication;
+import net.bdavies.db.model.fields.ObjectIdProperty;
 import net.bdavies.db.model.fields.PrimaryField;
 import net.bdavies.db.model.fields.Property;
 import net.bdavies.db.model.fields.Protected;
@@ -39,6 +37,10 @@ import net.bdavies.db.model.hooks.ICreateHook;
 import net.bdavies.db.model.hooks.IPropertyUpdateHook;
 import net.bdavies.db.model.hooks.IUpdateHook;
 import net.bdavies.db.model.hooks.OnUpdate;
+import net.bdavies.db.model.serialization.*;
+import net.bdavies.db.obj.QueryObject;
+import org.bson.types.ObjectId;
+import uk.co.bjdavies.api.IApplication;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -97,8 +99,6 @@ public class Model {
     }
 
 
-
-
     /**
      * This will return all records in the DB for this model
      *
@@ -154,7 +154,6 @@ public class Model {
     }
 
 
-
     /**
      * Delete all Models of this type
      *
@@ -168,11 +167,12 @@ public class Model {
 
     /**
      * Delete all Models of this type based on a builder
-     * @param <T> type of model
+     *
+     * @param <T>     type of model
      * @param builder delete a model based on a builder
      * @return boolean if operation succeeded
      */
-    public static <T extends Model> boolean  deleteAll(Consumer<IModelQueryBuilder<T>> builder) {
+    public static <T extends Model> boolean deleteAll(Consumer<IModelQueryBuilder<T>> builder) {
         IModelQueryBuilder<T> modelQueryBuilder = new ModelQueryBuilder<>(getModelClass());
         builder.accept(modelQueryBuilder);
         return modelQueryBuilder.delete();
@@ -180,6 +180,7 @@ public class Model {
 
     /**
      * Get the current model class this is instrumented uses the agent
+     *
      * @param <T> the type of model
      * @return Class of type T
      */
@@ -224,7 +225,15 @@ public class Model {
                 f.setAccessible(true);
                 properties.add(new ModelProperty(type, f, property.dbName().isEmpty() ? f.getName() : property.dbName(),
                         f.isAnnotationPresent(Protected.class), f.isAnnotationPresent(PrimaryField.class), increments,
-                        serializer, deSerializer, onUpdateHook, null, false, Relationship.NONE));
+                        serializer, deSerializer, onUpdateHook, null, false, Relationship.NONE, false));
+            } else if (f.isAnnotationPresent(ObjectIdProperty.class)) {
+                ObjectIdProperty property = f.getAnnotation(ObjectIdProperty.class);
+                f.setAccessible(true);
+                boolean deserialize = f.getType().equals(ObjectId.class);
+                ISQLObjectDeserializer<Model, ?> objectIdDeserializer = new ObjectIdDeserializer();
+                Class<? extends ISQLObjectDeserializer<Model, Object>> objectDeserializer = (Class<? extends ISQLObjectDeserializer<Model, Object>>) (objectIdDeserializer).getClass();
+                properties.add(new ModelProperty(f.getType(), f, property.value(), f.isAnnotationPresent(Protected.class), false,
+                        false, null, deserialize ? objectDeserializer : null, null, null, false, Relationship.NONE, true));
             }
         }
     }
@@ -244,6 +253,10 @@ public class Model {
         return properties.stream().filter(ModelProperty::isIncrements).collect(Collectors.toList());
     }
 
+    private List<ModelProperty> getAllObjectIds() {
+        return properties.stream().filter(ModelProperty::isObjectId).collect(Collectors.toList());
+    }
+
     private List<ModelProperty> getAllPropertiesWithOnUpdate() {
         return properties.stream().filter(mp -> mp.getOnUpdate() != null).collect(Collectors.toList());
     }
@@ -255,6 +268,7 @@ public class Model {
                         || !p.getPreviousValue()
                         .equals(getPropertyFieldValue(p)))
                 .filter(p -> !p.isRelational())
+                .filter(p -> !p.isObjectId())
                 .forEach(p -> values.put(p.getName(), getPropertyFieldValue(p)));
         return values;
     }
@@ -269,6 +283,9 @@ public class Model {
 
     @SneakyThrows
     private String getPropertyFieldValue(ModelProperty property) {
+        if (property.getSerializer() == null) {
+            return String.valueOf(property.getField().get(this));
+        }
         return serializeObject(property.getField().get(this), property, application);
     }
 
@@ -338,10 +355,12 @@ public class Model {
                 ((ICreateHook) this).onCreate();
             }
 
-            queryObject.insert(modelToValues());
+            Map<String, String> values = modelToValues();
+            queryObject.insert(values);
             saveType = SaveType.UPDATE;
             //noinspection unchecked
             IModelQueryBuilder<Model> modelQueryBuilder = new ModelQueryBuilder<>((Class<Model>) this.getClass());
+            values.forEach(modelQueryBuilder::where);
             Model model = modelQueryBuilder.last(this.getClass());
             //noinspection OverlyLongLambda
             getAllIncrementingProperties().forEach(p -> {
@@ -352,6 +371,36 @@ public class Model {
                 try {
                     p.getField().setAccessible(true);
                     p.getField().set(this, fromLastModel);
+                } catch (IllegalAccessException e) {
+                    log.error("Something went wrong when setting property {}", p.getName(), e);
+                }
+            });
+            getAllObjectIds().forEach(p -> {
+                String fromLastModel = "";
+                if (model != null) {
+                    if (p.getDeSerializer() == null) {
+                        try {
+                            p.getField().setAccessible(true);
+                            fromLastModel = (String) p.getField().get(model);
+                        } catch (IllegalAccessException e) {
+                            log.error("Something went wrong", e);
+                        }
+                    } else {
+                        try {
+                            p.getField().setAccessible(true);
+                            fromLastModel = ((ObjectId) p.getField().get(model)).toHexString();
+                        } catch (IllegalAccessException e) {
+                            log.error("Something went wrong", e);
+                        }
+                    }
+                }
+                try {
+                    p.getField().setAccessible(true);
+                    if (p.getDeSerializer() == null) {
+                        p.getField().set(this, fromLastModel);
+                    } else {
+                        p.getField().set(this, deSerializeObject(fromLastModel, p, application));
+                    }
                 } catch (IllegalAccessException e) {
                     log.error("Something went wrong when setting property {}", p.getName(), e);
                 }

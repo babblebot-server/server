@@ -23,30 +23,19 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.model.serialization;
 
-import net.bdavies.db.Order;
-
-import java.util.Map;
-import java.util.Set;
+import net.bdavies.db.model.IModelProperty;
+import net.bdavies.db.model.Model;
+import org.bson.types.ObjectId;
 
 /**
- * This is includes standard Query functions
- *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v"></a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+public class ObjectIdDeserializer implements ISQLObjectDeserializer<Model, ObjectId> {
+    @Override
+    public ObjectId deserialize(Model model, String data, IModelProperty property) {
+        return new ObjectId(data);
+    }
 }

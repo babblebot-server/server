@@ -46,12 +46,12 @@ public class PluginConfig implements IPluginConfig {
     /**
      * This is the class path that the class that implements
      */
-    private final String pluginClassPath = "";
+    private String pluginClassPath = "";
 
     /**
      * This is the type of module it is either "js" or "java" <strong>default</strong> is java
      */
-    private final String pluginType = "java";
+    private String pluginType = "java";
 
 
     @Override

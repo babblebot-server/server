@@ -25,28 +25,12 @@
 
 package net.bdavies.db.obj;
 
-import net.bdavies.db.Order;
-
-import java.util.Map;
-import java.util.Set;
+import org.bson.conversions.Bson;
 
 /**
- * This is includes standard Query functions
- *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+public interface IMongoObject {
+    Bson getFilter();
 }

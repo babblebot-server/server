@@ -23,30 +23,21 @@
  *
  */
 
-package net.bdavies.db.obj;
+package net.bdavies.db.dialect.obj;
 
-import net.bdavies.db.Order;
-
-import java.util.Map;
-import java.util.Set;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.dialect.connection.IConnection;
 
 /**
- * This is includes standard Query functions
+ * A Query Object for the mysql driver
  *
  * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
-public interface IBaseBuilder extends IWhereBuilder {
-    IBaseBuilder orderBy(Map<String, Order> cols);
-    IBaseBuilder orderBy(String... cols);
-
-    <T> Set<T> get(Class<T> clazz);
-
-    Set<Map<String, String>> get();
-
-    Map<String, String> first();
-    <T> T first(Class<T> clazz);
-    Map<String, String> last();
-    <T> T last(Class<T> clazz);
-
+@Slf4j
+public class MySQLQueryObject extends BaseQueryObject {
+    public MySQLQueryObject(@NonNull String table, @NonNull IConnection<String> connection) {
+        super(table, connection);
+    }
 }

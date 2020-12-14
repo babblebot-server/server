@@ -29,10 +29,14 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.dialect.connection.IConnection;
+import net.bdavies.db.dialect.connection.MongoDBConnection;
+import net.bdavies.db.dialect.connection.MySQLConnection;
+import net.bdavies.db.dialect.obj.MongoDBQueryObject;
+import net.bdavies.db.dialect.obj.MySQLQueryObject;
 import net.bdavies.db.dialect.obj.SQLiteQueryObject;
 import net.bdavies.db.error.DBError;
 import net.bdavies.db.model.Model;
-import net.bdavies.db.obj.SQLObject;
+import net.bdavies.db.obj.IQueryObject;
 import net.bdavies.db.query.QueryBuilder;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.config.IDatabaseConfig;
@@ -53,8 +57,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @UtilityClass
 public final class DB {
-    private static final Map<Class<? extends SQLObject>, Class<? extends SQLObject>> objectMap = new HashMap<>();
+    private static final Map<Class<? extends IQueryObject>, Class<? extends IQueryObject>> objectMap = new HashMap<>();
     private static final String ERROR_MESSAGE = "Trying to use the DB before initialising it first";
+    @SuppressWarnings("rawtypes")
     private static IConnection dbConnection = null;
 
     public static void init(IDatabaseConfig databaseConfig, IApplication application) {
@@ -63,6 +68,15 @@ public final class DB {
                 case "sqlite":
                     dbConnection = new SQLiteConnection(databaseConfig, application);
                     objectMap.put(QueryObject.class, SQLiteQueryObject.class);
+                    break;
+                case "mysql":
+                    dbConnection = new MySQLConnection(databaseConfig, application);
+                    objectMap.put(QueryObject.class, MySQLQueryObject.class);
+                    break;
+                case "mongodb":
+                    dbConnection = new MongoDBConnection(databaseConfig, application);
+                    log.warn("MongoDB support is very experimental and will most likely not work as expected please make an issue for any bugs found!");
+                    objectMap.put(QueryObject.class, MongoDBQueryObject.class);
                     break;
                 default:
                     log.error("DB not found please use sqlite");
@@ -88,7 +102,11 @@ public final class DB {
         return new QueryBuilder(tblName);
     }
 
-    public static <T extends SQLObject> T buildObject(Class<T> clazz, Object... args) {
+    public static void shutdown() {
+        dbConnection.closeDB();
+    }
+
+    public static <T extends IQueryObject> T buildObject(Class<T> clazz, Object... args) {
         if (!objectMap.containsKey(clazz)) {
             log.error("Cannot find map for class : {}", clazz.getSimpleName());
             return null;
