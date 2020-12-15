@@ -13,7 +13,6 @@ This document is a set of guidelines to follow while working with babblebot and 
 [Getting started with contributing](#getting-started-with-contributing)
   * [Issues](#issues)
   * [Pull Requests](#pull-requests)
-  * [Change Guidelines](#change-guidelines)
   * [Your first contribution](#your-first-contribution)
   
 [Style guidelines](#style-guidelines)
@@ -146,6 +145,9 @@ fix(core): Command help not running after restart
 
 
 ### Java
+
+Basic rules:
+- All classes must declare a logger annotate all classes using `@Slf4j` in scopes `server`, `db`, `web` and `app`
 
 ### Java documentation
 Java documentation is important so other developers can understand what you have written and extend if needed be or use your class
