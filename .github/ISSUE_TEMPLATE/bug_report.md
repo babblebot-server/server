@@ -1,7 +1,7 @@
 ---
 name: 🐛 Bug report
 about: If you know something isn't working as expected
-title: 'Bug Report'
+title: ''
 labels: 'bug'
 assignees: ''
 
