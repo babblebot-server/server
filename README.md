@@ -1,16 +1,14 @@
-# BabbleBot-Server
+<p align="center"><img src="https://socialify.git.ci/bendavies99/Babblebot-Server/image?description=1&font=Source%20Code%20Pro&language=1&owner=1&pattern=Floating%20Cogs&theme=Dark" alt="BabbleBot-Server" width="640" height="320" /></p>
 
-[![GitHub issues](https://img.shields.io/github/issues/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/issues)
-[![GitHub forks](https://img.shields.io/github/forks/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/network)
-[![GitHub stars](https://img.shields.io/github/stars/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/stargazers)
-[![GitHub license](https://img.shields.io/github/license/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/bendavies99/Babblebot-Server)
-[![Discord](https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord)](https://discord.gg/uUdX9pw)
-![badge](https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9)](https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade)
-[![javadoc](https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg)](https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api)
-
+<p align="center">
+  <a href="https://github.com/bendavies99/BabbleBot-Server/actions"><img src="https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build" alt="Build Status"></a>
+  <a href="https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9" alt="Coverage Status"></a>
+  <a href="https://github.com/bendavies99/BabbleBot-Server/releases"><img src="https://img.shields.io/github/v/release/bendavies99/Babblebot-Server" alt="Version"></a>
+  <a href="https://github.com/bendavies99/BabbleBot-Server/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bendavies99/babblebot-server" alt="License"></a>
+  <a href="https://discord.gg/uUdX9pw"><img src="https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord" alt="Chat"></a>
+  <br>
+  <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg" alt="Javadoc"></a>
+</p>
 
 ## Getting Started
 Babblebot-Server is a bot for discord everything is fully modular the server comes with a core plugin. 
