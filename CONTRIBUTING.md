@@ -71,16 +71,79 @@ Everything is set up here for you just need to provide a discord token from [Dis
 ## Getting started with contributing
 
 ### Issues
+When submitting issues please check beforehand if your issue has already been mentioned
+
+If not, then please use the templates provided for you any issues not using the template will be asked to be edited to follow such template
 
 ### Pull Requests
-
-### Change Guidelines
+Same as issues please use the pull request template, or your pull request will be asked to be edited or resubmitted
 
 ### Your first contribution
+Steps:
+- fork babblebot-server
+- pick an issue, if you are stuck: look at issues that are labelled with `good first issue` or `help wanted`
+- Discuss
+- Make a PR
+- Hopefully get your code merged into Babblebot :)
 
 ## Style guidelines
+Please ensure your IDE supports `EditorConfig` and make sure it has it set as the default formatter
+Misc. Guidelines are talked about below
 
 ### Commits
+
+Commits should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) Standard
+
+#### Commit Types
+| Type     | Commit Prefix | Description |
+| -------  | ------------- | ----------- |
+| Feature  | feat | Any changes add features to the code | 
+| Bugfix   | fix  | Any changes that fix a problem | 
+| Documentation | docs | Anything that changes documentation |
+| Style | style | Code style changes (white-space, semi-colons, formatting) |
+| Chores | chore | Updating dependencies, no production code changes |
+| Build System | build | Updating anything to do with building babblebot-server |
+| CI | ci | Updating continuous integration (github_actions) |
+| Performance | perf | Solely performance changes |
+| Refactor | refactor | This is to be used when `fix` or `feat` cannot be used when updating code |
+| Tests | test | changes that update tests or add missing tests |
+
+#### Commit Scopes
+
+```text
+IMPORTANT: Scope names should always be lowercase and if they have a space then separate with a "-"
+```
+
+| Name | Description |
+| ---- | ----------- |
+| Server | Core of the application providing the main command dispatcher and facade for Discord4j |
+| App | Main scope for running the server |
+| API | For providing the forward facing api for development of plugins |
+| Core | Anything to do with the core plugin for the server |
+| DB | The db extension for the main BB server |
+| Web | The web extension for the main BB server |
+
+#### Commit Message Format
+
+Each commit message consists of a header, a body and a footer. The header has a special format that includes a type, a scope and a subject:
+
+```text
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+The **header** is mandatory and the scope of the header is optional.
+The footer must include `BREAKING CHANGES` if there are any
+
+#### Commit Samples
+```text
+docs(api): Updated Documentation for Command Dispatcher
+fix(core): Command help not running after restart
+```
+
 
 ### Java
 
@@ -153,7 +216,7 @@ The rules shown here are:-
  - @since: is not needed if the method is created the same time as the class
  
  ```text
-NOTE: if you fail a PR Review due to documentation style please commit style(docs): Updated JavaDocs to match specification
+NOTE: if you fail a PR Review due to documentation style please commit docs(scope): Updated JavaDocs to match specification
 ```
 ```text
 NOTE: if you notice any classes or methods in babblebot-server that don't match specification and want to help, please fix them and open a pull request! 
