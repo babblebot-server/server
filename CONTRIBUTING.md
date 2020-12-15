@@ -4,33 +4,38 @@
 
 This document is a set of guidelines to follow while working with babblebot and what our best practices are
 
-#### Table of contents
+## Table of contents
 
 [What should I do to get started](#what-should-i-do-to-get-started)
-  * [Starting Babblebot-Server](#starting-babblebot-server)
-  * [Config](#config)
+
+*   [Starting Babblebot-Server](#starting-babblebot-server)
+*   [Config](#config)
 
 [Getting started with contributing](#getting-started-with-contributing)
-  * [Issues](#issues)
-  * [Pull Requests](#pull-requests)
-  * [Your first contribution](#your-first-contribution)
-  
+
+*   [Issues](#issues)
+*   [Pull Requests](#pull-requests)
+*   [Your first contribution](#your-first-contribution)
+
 [Style guidelines](#style-guidelines)
-  * [Commits](#commits)
-  * [Java](#java)
-  * [Java documentation](#java-documentation)
+
+*   [Commits](#commits)
+*   [Java](#java)
+*   [Java documentation](#java-documentation)
 
 ## What should I do to get started
+
 Firstly, you will need to fork the project and then run git clone
 
 Any IDE is supported provided they support the following features:
- - Gradle
- - Lombok
- - Java SE 11
- - EditorConfig
- 
+
+*   Gradle
+*   Lombok
+*   Java SE 11
+*   EditorConfig
 
 ### Starting Babblebot-Server
+
 To start babblebot-server ensure gradle is installed and all dependencies are installed
 
 Then start the task `:app:run` either from the ide or `./gradlew :app:run` in the terminal
@@ -40,9 +45,11 @@ NOTE: When you first run babblebot-server for the first you will get an error to
 ```
 
 ### Config
+
 You should find your new config file located at: `app/config/config.json`
 
 It will look like this:
+
 ```json
 {
   "discord": {
@@ -70,22 +77,27 @@ Everything is set up here for you just need to provide a discord token from [Dis
 ## Getting started with contributing
 
 ### Issues
+
 When submitting issues please check beforehand if your issue has already been mentioned
 
 If not, then please use the templates provided for you any issues not using the template will be asked to be edited to follow such template
 
 ### Pull Requests
+
 Same as issues please use the pull request template, or your pull request will be asked to be edited or resubmitted
 
 ### Your first contribution
+
 Steps:
-- fork babblebot-server
-- pick an issue, if you are stuck: look at issues that are labelled with `good first issue` or `help wanted`
-- Discuss
-- Make a PR
-- Hopefully get your code merged into Babblebot :)
+
+*   fork babblebot-server
+*   pick an issue, if you are stuck: look at issues that are labelled with `good first issue` or `help wanted`
+*   Discuss
+*   Make a PR
+*   Hopefully get your code merged into Babblebot :)
 
 ## Style guidelines
+
 Please ensure your IDE supports `EditorConfig` and make sure it has it set as the default formatter
 Misc. Guidelines are talked about below
 
@@ -94,10 +106,11 @@ Misc. Guidelines are talked about below
 Commits should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) Standard
 
 #### Commit Types
+
 | Type     | Commit Prefix | Description |
 | -------  | ------------- | ----------- |
-| Feature  | feat | Any changes add features to the code | 
-| Bugfix   | fix  | Any changes that fix a problem | 
+| Feature  | feat | Any changes add features to the code |
+| Bugfix   | fix  | Any changes that fix a problem |
 | Documentation | docs | Anything that changes documentation |
 | Style | style | Code style changes (white-space, semi-colons, formatting) |
 | Chores | chore | Updating dependencies, no production code changes |
@@ -138,29 +151,34 @@ The **header** is mandatory and the scope of the header is optional.
 The footer must include `BREAKING CHANGES` if there are any
 
 #### Commit Samples
+
 ```text
 docs(api): Updated Documentation for Command Dispatcher
 fix(core): Command help not running after restart
 ```
 
-
 ### Java
 
 Basic rules:
-- All classes must declare a logger annotate all classes using `@Slf4j` in scopes `server`, `db`, `web` and `app`
+
+*   All classes must declare a logger annotate all classes using `@Slf4j` in scopes `server`, `db`, `web` and `app`
 
 ### Java documentation
+
 Java documentation is important so other developers can understand what you have written and extend if needed be or use your class
 
 Rules:
-- All packages except server, core, and app will fail Pull requests if the documentation guidelines are not met, especially any code that is exposed to plugin developers
-- Respect documentation helps all contributors
-- Please be as descriptive as possible
+
+*   All packages except server, core, and app will fail Pull requests if the documentation guidelines are not met, especially any code that is exposed to plugin developers
+*   Respect documentation helps all contributors
+*   Please be as descriptive as possible
 
 #### Class Documentation
+
 When documenting a class please provide a descriptive overview of the class, a use case of the class, and some code examples
 
 Please follow this style on every class you create:
+
 ```java
 /**
 * Class to describe how to write java docs
@@ -175,19 +193,20 @@ public class JavaDoc {}
 ```
 
 The rules shown here are:-
- - First Line: Class Description
- - Second Line: Class use case
- - Third Line & Fourth Line: Class Example usage
- - @author: This is up to you, just as long you use something that can relate to your github profile
- - @since: Please keep this at `__RELEASE_VERSION__` Semantic Release will handle this
- - Always leave a space between text and `@author` and `@since`
 
-
+*   First Line: Class Description
+*   Second Line: Class use case
+*   Third Line & Fourth Line: Class Example usage
+*   @author: This is up to you, just as long you use something that can relate to your github profile
+*   @since: Please keep this at `__RELEASE_VERSION__` Semantic Release will handle this
+*   Always leave a space between text and `@author` and `@since`
 
 #### Method Documentation
+
 When documenting a method please provide a descriptive overview of the method, author if you did not create the class, params, return, and a since tag
 
 Please follow this style on every method you create:
+
 ```java
 public class JavaDoc {
    /**
@@ -205,21 +224,22 @@ public class JavaDoc {
 }
 ```
 
-
 The rules shown here are:-
- - First Line: Method Description
- - Third Line & Fourth Line: Params and return
- - @author: This is up to you, just as long you use something that can relate to your github profile
- - @since: Please keep this at `__RELEASE_VERSION__` Semantic Release will handle this
- - Always leave a space between text and `@author` and `@since`
- - @param: This must be `@param paramName description`
- - @return: This must be `@return {@link ReturningObject} description`
- - @author: is not needed if the authored user is the same
- - @since: is not needed if the method is created the same time as the class
- 
- ```text
+
+*   First Line: Method Description
+*   Third Line & Fourth Line: Params and return
+*   @author: This is up to you, just as long you use something that can relate to your github profile
+*   @since: Please keep this at `__RELEASE_VERSION__` Semantic Release will handle this
+*   Always leave a space between text and `@author` and `@since`
+*   @param: This must be `@param paramName description`
+*   @return: This must be `@return {@link ReturningObject} description`
+*   @author: is not needed if the authored user is the same
+*   @since: is not needed if the method is created the same time as the class
+
+```text
 NOTE: if you fail a PR Review due to documentation style please commit docs(scope): Updated JavaDocs to match specification
 ```
+
 ```text
 NOTE: if you notice any classes or methods in babblebot-server that don't match specification and want to help, please fix them and open a pull request! 
 Remember to use the above commit message 
