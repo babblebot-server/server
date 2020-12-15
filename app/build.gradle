@@ -24,6 +24,7 @@ project.startScripts {
 }
 
 project.tasks.run {
+    dependsOn ':server:createProperties'
     dependsOn ':agent:build'
     doFirst {
         project.applicationDefaultJvmArgs += ["-javaagent:${project(':agent').getBuildDir()}/libs/babblebot-server-agent-${project(':agent').getVersion()}.jar"]
