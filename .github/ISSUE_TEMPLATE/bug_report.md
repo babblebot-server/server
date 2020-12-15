@@ -1,38 +1,54 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+name: 🐛 Bug report
+about: If you know something isn't working as expected
+title: 'Bug Report'
+labels: 'bug'
 assignees: ''
 
 ---
+## Bug Report
 
-**Describe the bug**
+### Description
+
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+### How-to reproduce
+
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+or
+
+a reproduction link
+
+or
+
+reproduction code e.g.
+```java
+commandContext.sendResponse("Test");
+```
+
+### Expected Behaviour
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+### Actual Behaviour
+A clear and concise description of what actually happens.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+### Logs
+If applicable, add logs to help explain your problem.
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+### Possible Solution
+Provide a possible solution and your proposed changes
 
-**Additional context**
-Add any other context about the problem here.
+### Enviroment
+<pre><code>
+Java Version: 11
+BabbleBot-Server Version: X.Y.Z
+Plugins installed: a,b,c,...
+
+Related Config Settings:
+</code></pre>
+
