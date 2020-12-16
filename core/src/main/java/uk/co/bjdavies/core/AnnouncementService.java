@@ -112,7 +112,8 @@ public class AnnouncementService {
                         }
                         String versionName = first.tag_name.toLowerCase().replace("v", "");
                         Version tagVersion = Version.valueOf(versionName);
-                        if (tagVersion.greaterThan(currentVersion)) {
+                        if (tagVersion.greaterThan(currentVersion) &&
+                                (tagVersion.getMajorVersion() == currentVersion.getMajorVersion() && !application.hasArgument("--updateMajor"))) {
                             if (application.getConfig().getSystemConfig().isAutoUpdateOn()) {
                                 log.info("Updating....");
                                 application.get(UpdateService.class).updateTo(first).subscribe((b) -> {
