@@ -163,23 +163,6 @@ public class AnnouncementService {
             spec.setDescription("```\n" + message + "```");
         };
 
-        if (AnnouncementChannel.all().size() == 0) {
-            log.info("Announcement channels are empty so choosing a channel by default use register-ac on a guild to " +
-              "set announcement channel");
-            facade.getClient().getGuilds().subscribe(g -> {
-                g.getChannels().filter(c -> {
-                    try {
-                        TextChannel channel = (TextChannel) c;
-                        return channel != null;
-                    } catch (ClassCastException e) {
-                        return false;
-                    }
-                }).map(c -> (TextChannel) c).take(1).subscribe(
-                  c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe());
-            });
-            return;
-        }
-
         AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
           facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
             g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
