@@ -30,6 +30,11 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew assemble
+    - name: Run FOSSA scan and upload build data
+      uses: fossa-contrib/fossa-action@v1
+      with:
+        fossa-api-key: ${{ secrets.FOSSA_API_KEY }}
+        skip-test: false
     - name: Deploy with Semantic Release
       run: npm run release
       env:
