@@ -34,7 +34,7 @@ jobs:
       uses: fossa-contrib/fossa-action@v1
       with:
         fossa-api-key: ${{ secrets.FOSSA_API_KEY }}
-        skip-test: false
+        skip-test: true
     - name: Deploy with Semantic Release
       run: npm run release
       env:
