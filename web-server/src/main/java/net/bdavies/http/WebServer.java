@@ -23,13 +23,14 @@
  *
  */
 
-package uk.co.bjdavies.http;
+package net.bdavies.http;
 
 import com.google.inject.Inject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.http.controllers.SystemController;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -40,8 +41,6 @@ import reactor.netty.http.server.HttpServerResponse;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.config.IHttpConfig;
 import uk.co.bjdavies.api.discord.IDiscordFacade;
-import uk.co.bjdavies.api.http.Get;
-import uk.co.bjdavies.http.controllers.SystemController;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;

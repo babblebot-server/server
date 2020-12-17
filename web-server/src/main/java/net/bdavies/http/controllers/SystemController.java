@@ -23,14 +23,14 @@
  *
  */
 
-package uk.co.bjdavies.http.controllers;
+package net.bdavies.http.controllers;
 
 import com.google.inject.Inject;
 import org.reactivestreams.Publisher;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
-import uk.co.bjdavies.api.http.Controller;
-import uk.co.bjdavies.api.http.Get;
+import net.bdavies.http.Controller;
+import net.bdavies.http.Get;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

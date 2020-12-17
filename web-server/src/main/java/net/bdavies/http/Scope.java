@@ -23,7 +23,7 @@
  *
  */
 
-package uk.co.bjdavies.api.http;
+package net.bdavies.http;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -36,7 +36,12 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Controller {
-    //e.g. Where the base path of the controller will lie.
-    String value() default "/";
+public @interface Scope {
+
+    RequestScope value() default RequestScope.SINGLETON;
+
+    enum RequestScope {
+        SINGLETON,
+        PER_REQUEST
+    }
 }
