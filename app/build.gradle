@@ -3,7 +3,7 @@ plugins {
 }
 
 application {
-    mainClassName = 'uk.co.bjdavies.BabbleBot'
+    mainClassName = 'net.bdavies.BabbleBot'
     applicationName = 'Babblebot'
 }
 
@@ -24,7 +24,7 @@ project.startScripts {
 }
 
 project.tasks.run {
-    dependsOn ':agent:build'
+    dependsOn ':db:build'
     doFirst {
         project.applicationDefaultJvmArgs += ["-javaagent:${project(':db').getBuildDir()}/libs/babblebot-server-db-${project(':db').getVersion()}.jar"]
         project.applicationDefaultJvmArgs += ["-Dname=BabbleBot-Server"]
@@ -33,7 +33,7 @@ project.tasks.run {
 }
 jar {
     manifest {
-        attributes 'Main-Class': 'uk.co.bjdavies.BabbleBot'
+        attributes 'Main-Class': 'net.bdavies.BabbleBot'
     }
 
 
