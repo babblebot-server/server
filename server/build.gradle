@@ -9,7 +9,8 @@ test {
 dependencies {
 
     implementation project(':api')
-    implementation project(':core')
+    implementation project(':db')
+    implementation project(':web-server')
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 
@@ -26,6 +27,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.java-websocket:Java-WebSocket:1.5.1'
     implementation 'org.xeustechnologies:jcl-core:2.8'
+    implementation 'com.github.zafarkhaja:java-semver:0.9.0'
+    implementation 'commons-io:commons-io:2.8.0'
 
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'

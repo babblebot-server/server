@@ -29,6 +29,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import lombok.extern.log4j.Log4j2;
+import net.bdavies.db.DB;
+import net.bdavies.http.WebServer;
 import uk.co.bjdavies.api.IApplication;
 import uk.co.bjdavies.api.command.ICommandDispatcher;
 import uk.co.bjdavies.api.config.IConfig;
@@ -39,9 +41,8 @@ import uk.co.bjdavies.command.CommandDispatcher;
 import uk.co.bjdavies.command.CommandModule;
 import uk.co.bjdavies.config.ConfigModule;
 import uk.co.bjdavies.core.CorePlugin;
-import uk.co.bjdavies.db.DB;
+import uk.co.bjdavies.core.Ignore;
 import uk.co.bjdavies.discord.DiscordModule;
-import uk.co.bjdavies.http.WebServer;
 import uk.co.bjdavies.plugins.PluginModule;
 import uk.co.bjdavies.plugins.importing.ImportPluginFactory;
 import uk.co.bjdavies.variables.VariableContainer;
@@ -108,6 +109,7 @@ public class Application implements IApplication {
 
         config = configModule.getConfig();
         DB.install(config.getDatabaseConfig());
+        log.info(Ignore.all());
 
         //Important Order Needs Config!!...
         DiscordModule discordModule = new DiscordModule(this);
@@ -116,7 +118,7 @@ public class Application implements IApplication {
         applicationInjector = Guice.createInjector(applicationModule, configModule, discordModule, commandModule,
                 variableModule, pluginModule);
 
-        pluginContainer.addPlugin("core", get(CorePlugin.class));
+        pluginContainer.addPlugin("uk/co/bjdavies/core", get(CorePlugin.class));
 
         config.getPlugins().forEach(pluginConfig -> ImportPluginFactory.importPlugin(pluginConfig, this)
                 .subscribe(pluginContainer::addPlugin));
