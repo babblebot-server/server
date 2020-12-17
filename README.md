@@ -1,112 +1,178 @@
-# BabbleBot-Server
+<p align="center"><img src="https://socialify.git.ci/bendavies99/Babblebot-Server/image?description=1&font=Source%20Code%20Pro&language=1&owner=0&pattern=Floating%20Cogs&theme=Dark" alt="BabbleBot-Server" width="640" height="320" /></p>  
 
-[![GitHub issues](https://img.shields.io/github/issues/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/issues)
-[![GitHub forks](https://img.shields.io/github/forks/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/network)
-[![GitHub stars](https://img.shields.io/github/stars/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server/stargazers)
-[![GitHub license](https://img.shields.io/github/license/bendavies99/babblebot-server)](https://github.com/bendavies99/babblebot-server)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/bendavies99/Babblebot-Server)
-[![Discord](https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord)](https://discord.gg/uUdX9pw)
-![badge](https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9)](https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade)
-[![javadoc](https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg)](https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api)
+<p align="center">  
+ <a href="https://github.com/bendavies99/BabbleBot-Server/actions"><img src="https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build" alt="Build Status"></a>  
+ <a href="https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9" alt="Coverage Status"></a>  
+ <a href="https://github.com/bendavies99/BabbleBot-Server/releases"><img src="https://img.shields.io/github/v/release/bendavies99/Babblebot-Server" alt="Version"></a>  
+ <a href="https://github.com/bendavies99/BabbleBot-Server/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bendavies99/babblebot-server" alt="License"></a>  
+ <a href="https://discord.gg/uUdX9pw"><img src="https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord" alt="Chat"></a>  
+ <br>  
+ <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg?label=API%20Javadoc" alt="API Javadoc"></a>  
+ <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-db"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-db/javadoc.svg?label=DB%20Javadoc" alt="DB Javadoc"></a>  
+ <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-web"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-web/javadoc.svg?label=Web%20Javadoc" alt="Web Javadoc"></a>  
+</p>  
 
+## Table of Contents
+
+[Getting Started](#getting-started)
+
+*   [Installation](#installation)
+*   [Configuration](#configuration)
+*   [Updating](#updating)
+
+[Plugins](#plugins)
+
+*   [Officially Supported Plugins](#officially-supported-plugins)
+*   [Community Plugins](#community-plugins)
+*   [Installing Plugins](#installing-plugins)
+*   [Write your own plugin](#write-your-own-plugin)
+
+[Commands](#commands)
+
+[Contributing](#contributing)
+
+[Authors](#authors)
+
+[License](#license)
 
 ## Getting Started
-Babblebot-Server is a bot for discord everything is fully modular the server comes with a core plugin. 
-This plugin comes with 3 commands they are:-
-- **help** - This will send the user making the command a DM with all the registered commands
-- **ignore** - If this command is used the channel it has been used in will be ignored by the bot.
-- **listen** - This will make the bot start listening to the channel again.
 
-### Config
-Example config:
-```json
-{
-  "discord": {
-    "token": "<-- Your discord token -->",
-    "commandPrefix": "!"
-  },
-  "http": {
-    "port": 8090
-  },
-  "database": {
-    "type": "sqlite",
-    "database": "Core.db"
-  }
-}
-``` 
+A fully modular bot for Discord built on top of Discord4J which can be found [here](https://github.com/Discord4J/Discord4J)
 
+Features include:
 
+*   Fully configurable, Lightweight server
+*   Plugin system (configuration, persistence, middleware, web-views) (🚧)
+*   Variable parser (using ${var} in response messages)
+*   Persistent data for plugins (🚧)
+*   Web client (🚧)
+*   Automatic updates (for minor and patch updates)
+*   Announcement System (Notify users through discord)
+*   Fully featured help system
 
-#### Discord
-This is the settings for discord part of the server
-##### Token
-Get your bot token at [Discord Developers](https://discord.com/developers)
-##### Command Prefix
-This will be what you use to activate command e.g. !help or $help etc.
+```text
+NOTE: The emoji "🚧" means that the current features are under heavy development and are experimental
+```
 
-#### HTTP
-This is the settings for the web-server **COMING SOON**
-##### PORT
-This is the port you cant to the run the server on
+## Installation
 
-#### DATABASE
-This is the way to persist data for your server and your plugins
-##### Type
-The type of database
-- MySQL
-- PostgreSQL
-- SQLite (**currently only supported**)
-- MongoDB
-##### Database
-This is the database name as SQLite just has a file for a database it's the filename.
+### Prerequisites:
 
+*   Java 11
+*   Discord bot token (**Unsure?** Follow this [guide](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token))
+*   Ensure your bot is on your server
 
+### Steps to install Babblebot-Server:
 
+*   Download the latest release from: [Releases](https://github.com/bendavies99/BabbleBot-Server/releases)
+*   Extract the archive anywhere on your machine
+*   Open up the `bin` folder if you are on **Windows** run `./Babblebot.bat`; **Linux** run `./Babblebot`
+*   On your first run a folder called `config` will be created please add your `Discord bot token` to `config/config.json`
+*   Run the application again, then your bot should be online (**Any issues?** please create a discussion [here](https://github.com/bendavies99/BabbleBot-Server/discussions))
 
-### Modules
+## Configuration
 
-#### [Server](https://github.com/bendavies99/BabbleBot-Server/tree/master/server)
-This is the main application where all the logic comes in for:-
-- Config
-- Http
-- Discord
-- Commands
+Please look at this configuration guide [here](https://github.com/bendavies99/BabbleBot-Server/wiki/Configuration)
 
-#### [Agent](https://github.com/bendavies99/BabbleBot-Server/tree/master/agent)
-This handles the instrumentation of the Database models
+## Updating
 
-#### [Core](https://github.com/bendavies99/BabbleBot-Server/tree/master/core)
-This is the core plugin that is used by the server.
+### Manual Updating
 
-#### [API](https://github.com/bendavies99/BabbleBot-Server/tree/master/api)
-This is the **Java** API for developing plugins please refer to the API readme for more details.
+Steps to update manually:
 
-Note: If you would like a JS/TS API please refer to [babblebot-api](https://github.com/bendavies99/babblebot-api)
+*   Download the latest release from: [Releases](https://github.com/bendavies99/BabbleBot-Server/releases)
+*   Extract the archive anywhere on your machine
+*   Replace the `lib` folder and replace `Babblebot` and `Babblebot.bat`
 
-#### [App](https://github.com/bendavies99/BabbleBot-Server/tree/master/app)
-The app is the executable that can be ran by the end-user,
+```text
+NOTE: if you don't care about keeping the same folder you can copy over the folders `config` and `plugins` and your database file if you have one
+```
 
-### Installing
+### Automatic Updates
 
-Please find the latest release fom here [Releases](https://github.com/bendavies99/BabbleBot-Server/releases).
+Babblebot has a system in place to automatically update itself when a new release is made to turn this off under the config there is `system.autoUpdate` change this to `false`
 
-When you download the release extract the zip or tar.gz, you will find a **bin** folder open that 
-and then open up app.bat or app.sh
+The system will only update when there is a minor or patch update which would be only Y and Z in this example `X.Y.Z`
 
-##### Enjoy!
+```text
+NOTE: you can update to a major version by using --updateMajor when running babblebot it is not recommended as plugins may not support this version use with caution
+```
 
-## Versioning
+## Plugins
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, 
-see the [tags on this repository](https://github.com/bendavies99/babblebot-api/tags).
+Plugins are what give power to Babblebot. Without them Babblebot will be a strong server for just 3 commands
+
+Plugins Offer:
+
+*   More Commands
+*   Middleware for the command dispatcher
+*   More variables (🚧)
+
+### Officially Supported Plugins
+
+| Name | Description | Link | Server Versions supported | Namespace |
+| ---- | ----------- | ---- | ------------------------------- | ---- |
+| audiodj | Play audio in a voice server from various sources | [Link](https://github.com/bendavies99/babblebot-audiodj-java) | 2.x.x, 3.x.x | Configurable (Default: None) |
+
+### Community Plugins
+
+| Name | Description | Link | Namespace |
+| ---- | ----------- | ---- | --------- |
+
+If you wish to have your plugin displayed here please create a discussion [here](https://github.com/bendavies99/BabbleBot-Server/discussions)
+
+### Installing Plugins
+
+Steps to install a plugin:
+
+*   Locate and download the latest version of a plugin it should be a `.jar` file
+*   If not already created, create a `plugins` folder inside the `bin` folder
+*   Create a new folder for your plugin it needs to be the same name as the `.jar` file
+*   Place your jar file inside that folder
+*   Open up your `config/config.json` file and add inside
+    ```json
+      // Old
+      "plugins": []
+      // New
+      "plugins": [{ "pluginLocation": "<!-- use folder name you used earlier -->" }]
+    ```
+    For additional plugins add a `,` between objects e.g.
+    ```json
+      // Old
+      "plugins": [{ "pluginLocation": "plg1" }]
+      // New
+      "plugins": [{ "pluginLocation": "plg1" }, { "pluginLocation": "plg2" }]
+    ```
+*   Save & Restart your server
+
+### Write your own plugin
+
+If you wish to write your own plugin please follow this guide [here](https://github.com/bendavies99/BabbleBot-Server/wiki/Creating-A-Plugin)
+
+## Commands
+
+Babblebot has a `core` plugin which by is installed by default it cannot be **disabled** it has 3 commands that every server will have:
+
+| Command (aliases) | Description | Parameters | Since |
+| ------- | ----------- | ---------- | ----- |
+| help | Display all the commands registered to the server | -(cmd?)=\* (Command to have help with) | 1.0.0 |
+| ignore | Ignore a text channel on your discord server | N/A | 1.0.0 |
+| listen | Listen to a text channel on your discord server | N/A | 1.0.0 |
+| register-announcement-channel, register-ac | Register text channel as your announcements channel | N/A | 2.0.0 |
+| remove-announcement-channel, remove-ac | Remove text channel as your announcements channel | N/A | 2.0.0 |
+| restart | Restart your server from discord | -(password\*)=\* (Password to stop unwanted restarts) | 2.1.0 |
+
+## Contributing
+
+Firstly, Thank you for taking the time to contribute to Babblebot if you wish to contribute please read the contributing guide [here](https://github.com/bendavies99/babblebot-server/blob/master/CONTRIBUTING.md)
 
 ## Authors
 
-- **Ben Davies** - _Lead Developer_ - [Github](https://github.com/bendavies99)
+*   **Ben Davies** - *Lead Developer* - [Github](https://github.com/bendavies99)
 
-See also the list of [contributors](https://github.com/bendavies99/babblebot-api/contributors) who participated in this project.
+Currently, there is only me working on Babblebot, but it's always open for new ideas and contributions!
+
+See also the list of [contributors](https://github.com/bendavies99/babblebot-server/contributors) who participated in this project.
 
 ## License
 

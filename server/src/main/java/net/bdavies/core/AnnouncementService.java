@@ -112,7 +112,8 @@ public class AnnouncementService {
                         }
                         String versionName = first.tag_name.toLowerCase().replace("v", "");
                         Version tagVersion = Version.valueOf(versionName);
-                        if (tagVersion.greaterThan(currentVersion)) {
+                        if (tagVersion.greaterThan(currentVersion) &&
+                                (tagVersion.getMajorVersion() == currentVersion.getMajorVersion() && !application.hasArgument("--updateMajor"))) {
                             if (application.getConfig().getSystemConfig().isAutoUpdateOn()) {
                                 log.info("Updating....");
                                 application.get(UpdateService.class).updateTo(first).subscribe((b) -> {
@@ -161,23 +162,6 @@ public class AnnouncementService {
             spec.setTitle(title);
             spec.setDescription("```\n" + message + "```");
         };
-
-        if (AnnouncementChannel.all().size() == 0) {
-            log.info("Announcement channels are empty so choosing a channel by default use register-ac on a guild to " +
-              "set announcement channel");
-            facade.getClient().getGuilds().subscribe(g -> {
-                g.getChannels().filter(c -> {
-                    try {
-                        TextChannel channel = (TextChannel) c;
-                        return channel != null;
-                    } catch (ClassCastException e) {
-                        return false;
-                    }
-                }).map(c -> (TextChannel) c).take(1).subscribe(
-                  c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe());
-            });
-            return;
-        }
 
         AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
           facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->

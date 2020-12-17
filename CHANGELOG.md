@@ -1,3 +1,10 @@
+## [2.1.6](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.5...v2.1.6) (2020-12-16)
+
+
+### Bug Fixes
+
+* Various changes made ([827a1ca](https://github.com/bendavies99/BabbleBot-Server/commit/827a1ca76dc5b85f43f05f2cd89cd913eb89a41c))
+
 ## [2.1.5](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.4...v2.1.5) (2020-10-26)
 
 

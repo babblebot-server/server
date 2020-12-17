@@ -5,9 +5,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, next, staging ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, next, staging ]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       with:
         java-version: 11
     - name: Setup Node.js environment
-      uses: actions/setup-node@v2.1.2
+      uses: actions/setup-node@v2.1.4
       with:
         node-version: 12.x
     - name: Run Npm CI
@@ -34,3 +34,8 @@ jobs:
       run: npm run release
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    - name: Run FOSSA scan and upload build data
+      uses: fossa-contrib/fossa-action@v1
+      with:
+        fossa-api-key: ${{ secrets.FOSSA_API_KEY }}
+        skip-test: true
