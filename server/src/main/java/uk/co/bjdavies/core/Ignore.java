@@ -27,17 +27,18 @@ package uk.co.bjdavies.core;
 
 import lombok.Getter;
 import lombok.Setter;
-import uk.co.bjdavies.api.db.Model;
-import uk.co.bjdavies.api.db.fields.IntField;
-import uk.co.bjdavies.api.db.fields.PrimaryField;
-import uk.co.bjdavies.api.db.fields.StringField;
-import uk.co.bjdavies.api.db.fields.Unique;
+import net.bdavies.db.Model;
+import net.bdavies.db.fields.IntField;
+import net.bdavies.db.fields.PrimaryField;
+import net.bdavies.db.fields.StringField;
+import net.bdavies.db.fields.Unique;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * @since 1.0.0
  */
-public class AnnouncementChannel extends Model {
+public class Ignore extends Model {
+
     @IntField
     @PrimaryField
     @Getter
@@ -46,7 +47,6 @@ public class AnnouncementChannel extends Model {
     @StringField(charLimit = 255)
     @Getter
     @Setter
-    @Unique
     private String guildId;
 
     @StringField(charLimit = 255)
@@ -55,12 +55,18 @@ public class AnnouncementChannel extends Model {
     @Setter
     private String channelId;
 
+    @StringField(charLimit = 255)
+    @Getter
+    @Setter
+    private String ignoredBy;
+
     @Override
     public String toString() {
-        return "AnnouncementChannel{" +
+        return "Ignore{" +
                 "id=" + id +
                 ", guildId='" + guildId + '\'' +
                 ", channelId='" + channelId + '\'' +
+                ", ignoredBy='" + ignoredBy + '\'' +
                 '}';
     }
 }

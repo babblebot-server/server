@@ -2,6 +2,6 @@ rootProject.name = 'BabbleBot-Server'
 include 'server'
 include 'app'
 include 'api'
-include 'agent'
-include 'core'
+include 'db'
+include 'web-server'
 
