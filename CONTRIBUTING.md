@@ -133,7 +133,9 @@ IMPORTANT: Scope names should always be lowercase and if they have a space then 
 | API | For providing the forward facing api for development of plugins |
 | Core | Anything to do with the core plugin for the server |
 | DB | The db extension for the main BB server |
-| Web | The web extension for the main BB server |
+| Web Server | The web server extension for the main BB server this allows plugins to add to the web client |
+| Web Client | The web client written in Vue.js |
+| * | For **docs** only you can specify specific files such as `contributing` |
 
 #### Commit Message Format
 
