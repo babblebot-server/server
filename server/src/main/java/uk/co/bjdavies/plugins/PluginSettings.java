@@ -25,7 +25,7 @@
 
 package uk.co.bjdavies.plugins;
 
-import uk.co.bjdavies.api.plugins.IPluginSettings;
+import net.bdavies.api.plugins.IPluginSettings;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

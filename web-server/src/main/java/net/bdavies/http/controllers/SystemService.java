@@ -32,8 +32,8 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import net.bdavies.http.WebServer;
 import org.reactivestreams.Publisher;
 import reactor.netty.http.server.HttpServerResponse;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.discord.IDiscordFacade;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

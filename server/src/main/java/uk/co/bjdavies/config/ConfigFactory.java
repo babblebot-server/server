@@ -26,7 +26,7 @@
 package uk.co.bjdavies.config;
 
 import lombok.SneakyThrows;
-import uk.co.bjdavies.api.config.IConfig;
+import net.bdavies.api.config.IConfig;
 
 import java.io.*;
 

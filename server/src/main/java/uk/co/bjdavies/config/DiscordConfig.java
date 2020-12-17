@@ -25,7 +25,7 @@
 
 package uk.co.bjdavies.config;
 
-import uk.co.bjdavies.api.config.IDiscordConfig;
+import net.bdavies.api.config.IDiscordConfig;
 
 /**
  * BabbleBot, open-source Discord Bot

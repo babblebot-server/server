@@ -26,7 +26,7 @@
 package uk.co.bjdavies;
 
 import com.google.inject.AbstractModule;
-import uk.co.bjdavies.api.IApplication;
+import net.bdavies.api.IApplication;
 
 /**
  * This is a module class that allows to inject application into a class when using {@link com.google.inject.Inject}

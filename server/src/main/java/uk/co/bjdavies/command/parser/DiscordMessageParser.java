@@ -27,7 +27,7 @@ package uk.co.bjdavies.command.parser;
 
 import discord4j.core.object.entity.Message;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.command.ICommandContext;
+import net.bdavies.api.command.ICommandContext;
 import uk.co.bjdavies.command.CommandContext;
 
 import java.util.HashMap;

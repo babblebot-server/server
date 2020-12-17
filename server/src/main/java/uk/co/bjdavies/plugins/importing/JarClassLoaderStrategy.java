@@ -29,10 +29,10 @@ import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.xeustechnologies.jcl.JarClassLoader;
 import reactor.core.publisher.Flux;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IPluginConfig;
-import uk.co.bjdavies.api.plugins.IPlugin;
-import uk.co.bjdavies.api.plugins.Plugin;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IPluginConfig;
+import net.bdavies.api.plugins.IPlugin;
+import net.bdavies.api.plugins.Plugin;
 
 import java.util.Arrays;
 import java.util.List;

@@ -27,10 +27,10 @@ package uk.co.bjdavies.plugins;
 
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.plugins.ICustomPluginConfig;
-import uk.co.bjdavies.api.plugins.IPlugin;
-import uk.co.bjdavies.api.plugins.PluginConfig;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.plugins.ICustomPluginConfig;
+import net.bdavies.api.plugins.IPlugin;
+import net.bdavies.api.plugins.PluginConfig;
 
 import java.io.*;
 import java.lang.reflect.Field;

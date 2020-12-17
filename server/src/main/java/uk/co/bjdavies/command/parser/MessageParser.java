@@ -25,7 +25,7 @@
 
 package uk.co.bjdavies.command.parser;
 
-import uk.co.bjdavies.api.command.ICommandContext;
+import net.bdavies.api.command.ICommandContext;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

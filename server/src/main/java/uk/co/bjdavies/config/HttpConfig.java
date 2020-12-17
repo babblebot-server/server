@@ -25,7 +25,7 @@
 
 package uk.co.bjdavies.config;
 
-import uk.co.bjdavies.api.config.IHttpConfig;
+import net.bdavies.api.config.IHttpConfig;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

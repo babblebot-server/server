@@ -38,9 +38,9 @@ import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IHttpConfig;
-import uk.co.bjdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IHttpConfig;
+import net.bdavies.api.discord.IDiscordFacade;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;

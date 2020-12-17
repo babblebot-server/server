@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
-import uk.co.bjdavies.api.command.IResponse;
+import net.bdavies.api.command.IResponse;
 import uk.co.bjdavies.command.response.handlers.EmbedHandler;
 import uk.co.bjdavies.command.response.handlers.StringHandler;
 

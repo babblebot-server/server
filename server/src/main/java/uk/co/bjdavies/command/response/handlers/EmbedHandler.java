@@ -27,7 +27,7 @@ package uk.co.bjdavies.command.response.handlers;
 
 import discord4j.core.spec.EmbedCreateSpec;
 import reactor.core.publisher.FluxProcessor;
-import uk.co.bjdavies.api.command.IResponse;
+import net.bdavies.api.command.IResponse;
 import uk.co.bjdavies.command.ResponseFactory;
 import uk.co.bjdavies.command.response.ResponseHandler;
 

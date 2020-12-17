@@ -27,7 +27,7 @@ package uk.co.bjdavies.command;
 
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.command.IResponse;
+import net.bdavies.api.command.IResponse;
 
 import java.util.function.Consumer;
 

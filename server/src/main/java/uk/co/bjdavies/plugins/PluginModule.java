@@ -27,8 +27,8 @@ package uk.co.bjdavies.plugins;
 
 import com.google.inject.AbstractModule;
 import lombok.Getter;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.plugins.IPluginContainer;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.plugins.IPluginContainer;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

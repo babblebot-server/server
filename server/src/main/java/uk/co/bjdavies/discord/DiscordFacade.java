@@ -35,8 +35,8 @@ import discord4j.discordjson.json.gateway.StatusUpdate;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Mono;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.discord.IDiscordFacade;
 
 import java.util.function.Consumer;
 

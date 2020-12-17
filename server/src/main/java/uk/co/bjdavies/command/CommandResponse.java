@@ -31,8 +31,8 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
-import uk.co.bjdavies.api.command.ICommandResponse;
-import uk.co.bjdavies.api.command.IResponse;
+import net.bdavies.api.command.ICommandResponse;
+import net.bdavies.api.command.IResponse;
 import uk.co.bjdavies.command.response.ResponseHandler;
 import uk.co.bjdavies.command.response.ResponseHandlerFactory;
 

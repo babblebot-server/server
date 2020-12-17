@@ -31,9 +31,9 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
 import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Mono;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.command.ICommandDispatcher;
-import uk.co.bjdavies.api.config.IDiscordConfig;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.command.ICommandDispatcher;
+import net.bdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.command.CommandDispatcher;
 import uk.co.bjdavies.command.parser.DiscordMessageParser;
 

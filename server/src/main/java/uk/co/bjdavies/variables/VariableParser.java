@@ -25,9 +25,9 @@
 
 package uk.co.bjdavies.variables;
 
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.variables.IVariableContainer;
-import uk.co.bjdavies.api.variables.Variable;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.variables.IVariableContainer;
+import net.bdavies.api.variables.Variable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

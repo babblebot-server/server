@@ -26,8 +26,8 @@
 package uk.co.bjdavies.variables;
 
 import lombok.extern.log4j.Log4j2;
-import uk.co.bjdavies.api.variables.IVariableContainer;
-import uk.co.bjdavies.api.variables.Variable;
+import net.bdavies.api.variables.IVariableContainer;
+import net.bdavies.api.variables.Variable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

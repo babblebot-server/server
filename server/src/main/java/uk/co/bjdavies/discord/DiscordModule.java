@@ -30,8 +30,8 @@ import com.google.inject.Provides;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.discord.IDiscordFacade;
 
 /**
  * This is a module class that allows to inject discord stuff into a class when using {@link com.google.inject.Inject}

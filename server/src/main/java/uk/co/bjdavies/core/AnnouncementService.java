@@ -37,8 +37,8 @@ import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.discord.IDiscordFacade;
 
 import java.time.Instant;
 import java.util.List;

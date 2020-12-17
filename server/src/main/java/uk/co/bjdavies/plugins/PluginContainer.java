@@ -27,8 +27,8 @@ package uk.co.bjdavies.plugins;
 
 import de.skuzzle.semantic.Version;
 import lombok.extern.log4j.Log4j2;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.plugins.*;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.plugins.*;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

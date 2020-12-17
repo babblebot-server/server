@@ -33,8 +33,8 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IDiscordConfig;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDiscordConfig;
 import uk.co.bjdavies.discord.services.Discord4JBotMessageService;
 
 /**

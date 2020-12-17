@@ -26,7 +26,7 @@
 package uk.co.bjdavies.plugins.importing;
 
 import reactor.core.publisher.Flux;
-import uk.co.bjdavies.api.config.IPluginConfig;
+import net.bdavies.api.config.IPluginConfig;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

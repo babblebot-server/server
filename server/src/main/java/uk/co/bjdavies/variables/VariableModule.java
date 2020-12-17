@@ -27,7 +27,7 @@ package uk.co.bjdavies.variables;
 
 import com.google.inject.AbstractModule;
 import lombok.Getter;
-import uk.co.bjdavies.api.variables.IVariableContainer;
+import net.bdavies.api.variables.IVariableContainer;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

@@ -25,7 +25,7 @@
 
 package uk.co.bjdavies.config;
 
-import uk.co.bjdavies.api.config.*;
+import net.bdavies.api.config.*;
 
 import java.util.Arrays;
 import java.util.List;

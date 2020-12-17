@@ -26,7 +26,7 @@
 package net.bdavies.db;
 
 import net.bdavies.db.impl.SqliteConnection;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import net.bdavies.api.config.IDatabaseConfig;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

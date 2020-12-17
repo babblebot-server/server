@@ -26,8 +26,8 @@
 package uk.co.bjdavies.discord;
 
 import discord4j.core.object.entity.Member;
-import uk.co.bjdavies.api.command.ICommandContext;
-import uk.co.bjdavies.api.discord.IDiscordCommandUtil;
+import net.bdavies.api.command.ICommandContext;
+import net.bdavies.api.discord.IDiscordCommandUtil;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

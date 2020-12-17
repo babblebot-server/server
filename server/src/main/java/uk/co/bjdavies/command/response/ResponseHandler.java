@@ -28,7 +28,7 @@ package uk.co.bjdavies.command.response;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
-import uk.co.bjdavies.api.command.IResponse;
+import net.bdavies.api.command.IResponse;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

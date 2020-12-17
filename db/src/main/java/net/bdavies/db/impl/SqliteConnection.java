@@ -28,7 +28,7 @@ package net.bdavies.db.impl;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.*;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import net.bdavies.api.config.IDatabaseConfig;
 
 import java.io.File;
 import java.io.IOException;

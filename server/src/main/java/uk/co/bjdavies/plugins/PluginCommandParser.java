@@ -26,9 +26,9 @@
 package uk.co.bjdavies.plugins;
 
 import lombok.extern.log4j.Log4j2;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.command.*;
-import uk.co.bjdavies.api.plugins.IPluginSettings;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.command.*;
+import net.bdavies.api.plugins.IPluginSettings;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -26,7 +26,7 @@
 package uk.co.bjdavies.variables;
 
 
-import uk.co.bjdavies.api.variables.Variable;
+import net.bdavies.api.variables.Variable;
 
 /**
  * BabbleBot, open-source Discord Bot

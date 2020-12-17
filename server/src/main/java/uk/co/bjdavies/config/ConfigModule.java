@@ -28,9 +28,9 @@ package uk.co.bjdavies.config;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import lombok.Getter;
-import uk.co.bjdavies.api.config.IConfig;
-import uk.co.bjdavies.api.config.IDiscordConfig;
-import uk.co.bjdavies.api.config.IHttpConfig;
+import net.bdavies.api.config.IConfig;
+import net.bdavies.api.config.IDiscordConfig;
+import net.bdavies.api.config.IHttpConfig;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

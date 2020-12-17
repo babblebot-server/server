@@ -28,9 +28,9 @@ package uk.co.bjdavies.command;
 
 import discord4j.core.object.entity.Message;
 import lombok.extern.log4j.Log4j2;
-import uk.co.bjdavies.api.command.ICommandContext;
-import uk.co.bjdavies.api.command.ICommandResponse;
-import uk.co.bjdavies.api.discord.IDiscordCommandUtil;
+import net.bdavies.api.command.ICommandContext;
+import net.bdavies.api.command.ICommandResponse;
+import net.bdavies.api.discord.IDiscordCommandUtil;
 import uk.co.bjdavies.discord.DiscordCommandUtil;
 
 import java.util.Map;
