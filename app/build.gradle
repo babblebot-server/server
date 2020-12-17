@@ -3,14 +3,14 @@ plugins {
 }
 
 application {
-    mainClassName = 'uk.co.bjdavies.BabbleBot'
+    mainClassName = 'net.bdavies.BabbleBot'
     applicationName = 'Babblebot'
 }
 
 
 project.startScripts {
     doLast {
-        String agentFileName = 'babblebot-server-agent-' + project(':agent').getVersion() + '.jar'
+        String agentFileName = 'babblebot-server-db-' + project(':db').getVersion() + '.jar'
         String forwardSlash = "/"
         String unixRegex = $/exec "$$JAVACMD" /$
         String unixReplacement = $/exec "$$JAVACMD" -javaagent:"$$APP_HOME/lib${forwardSlash}${
@@ -24,17 +24,17 @@ project.startScripts {
 }
 
 project.tasks.run {
+    dependsOn ':db:build'
     dependsOn ':server:createProperties'
-    dependsOn ':agent:build'
     doFirst {
-        project.applicationDefaultJvmArgs += ["-javaagent:${project(':agent').getBuildDir()}/libs/babblebot-server-agent-${project(':agent').getVersion()}.jar"]
+        project.applicationDefaultJvmArgs += ["-javaagent:${project(':db').getBuildDir()}/libs/babblebot-server-db-${project(':db').getVersion()}.jar"]
         project.applicationDefaultJvmArgs += ["-Dname=BabbleBot-Server"]
         project.applicationDefaultJvmArgs += ["-Dio.netty.noUnsafe=true"]
     }
 }
 jar {
     manifest {
-        attributes 'Main-Class': 'uk.co.bjdavies.BabbleBot'
+        attributes 'Main-Class': 'net.bdavies.BabbleBot'
     }
 
 
@@ -48,5 +48,4 @@ repositories {
 dependencies {
     implementation project(':server')
     implementation project(':api')
-    implementation project(':agent')
 }
