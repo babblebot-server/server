@@ -1,3 +1,32 @@
+# [3.0.0-rc.1](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.6...v3.0.0-rc.1) (2020-12-17)
+
+
+### Build System
+
+* updated build.gradle ([4ef2dc5](https://github.com/bendavies99/BabbleBot-Server/commit/4ef2dc5054bb6f9db18fff9cd9fcd4ee52d5f4b6)), closes [#87](https://github.com/bendavies99/BabbleBot-Server/issues/87)
+
+
+### Code Refactoring
+
+* **api:** change main package from uk.co.bjdavies to net.bdavies ([344d0af](https://github.com/bendavies99/BabbleBot-Server/commit/344d0afba3e4d2257f4d4930001d0237a7e01802)), closes [#87](https://github.com/bendavies99/BabbleBot-Server/issues/87)
+* **app,server:** change main package to net.bdavies ([e8b4970](https://github.com/bendavies99/BabbleBot-Server/commit/e8b49704ad31ddbdf1189ea7733ee3a081d26897)), closes [#87](https://github.com/bendavies99/BabbleBot-Server/issues/87)
+* **core:** moved core to server package ([ac8ffb5](https://github.com/bendavies99/BabbleBot-Server/commit/ac8ffb55886638f3e3dc44da9447185f999c01fb)), closes [#78](https://github.com/bendavies99/BabbleBot-Server/issues/78)
+* **db:** moved db into its own package ([415f161](https://github.com/bendavies99/BabbleBot-Server/commit/415f161a5b4c6d3a58a1c48f9da737efe5fbd0d1)), closes [#78](https://github.com/bendavies99/BabbleBot-Server/issues/78)
+* **web-server:** moved http to web-server module ([d8f39ad](https://github.com/bendavies99/BabbleBot-Server/commit/d8f39adbf8820d0e53ac6a619fc6be598ddc739a)), closes [#78](https://github.com/bendavies99/BabbleBot-Server/issues/78)
+
+
+### BREAKING CHANGES
+
+* **app,server:** plugin developers will have to switch to new namespace net.bdavies for v3.0.0 and above
+* **api:** plugin developers will have to switch to new namespace net.bdavies for v3.0.0 and above
+* plugin developers will have to switch to new namespace net.bdavies for v3.0.0 and above
+* **web-server:** Renamed packages for web-server to net.bdavies, http is no longer in api,
+web-server will require a new import for plugin developers
+* **db:** Renamed db packages from uk.co.bjdavies -> net.bdavies, db is no longer in api, db
+will require another import for plugin developers
+* **core:** Core will no longer be built into a jar so Babblebot binary files will need to
+remove it from the classpath
+
 ## [2.1.6](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.5...v2.1.6) (2020-12-16)
 
 
