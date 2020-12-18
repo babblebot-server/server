@@ -7,14 +7,14 @@ plugins {
     id 'idea'
 }
 
-group 'uk.co.bjdavies'
+group 'net.bdavies'
 
 ext {
     //Project Contants
     project_name = "BabbleBot-Server"
-    artifact_group = 'co.uk.bjdavies'
+    artifact_group = 'net.bdavies'
     project_version = "$version".toString()
-    project_description = "This is a simple Discord Server using Discord4J"
+    project_description = "A fully modular bot for Discord using Discord4j as the back-end"
     project_url = 'https://babblebot.bdavies.net'
     project_jdk = JavaVersion.VERSION_11
     jdk = JavaVersion.current().majorVersion
@@ -91,7 +91,7 @@ subprojects {
     if (!isJitpack && isRelease) apply plugin: 'signing'
 
     project.afterEvaluate {
-        if (project.name == "agent" || project.name == "api") {
+        if (project.name != "server" && project.name != "app" && project.name != "web-client") {
             task javadocJar(type: Jar) {
                 dependsOn project.tasks.javadoc
                 from project.tasks.javadoc.destinationDir
@@ -132,8 +132,8 @@ subprojects {
                         }
 
                         pom {
-                            name = 'Babblebot-Server'
-                            description = 'This is the core server for Babblebot'
+                            name = "babblebot-server-$project.name"
+                            description = 'A fully modular bot for Discord using Discord4j as the back-end'
                             url = 'https://github.com/bendavies99/BabbleBot-Server'
                             issueManagement {
                                 system = 'GitHub'
@@ -141,7 +141,7 @@ subprojects {
                             }
                             licenses {
                                 license {
-                                    name = 'GPL-3.0'
+                                    name = 'MIT'
                                     url = 'https://github.com/bendavies99/BabbleBot-Server/LICENSE.md'
                                     distribution = 'repo'
                                 }
@@ -153,7 +153,7 @@ subprojects {
                             }
                             developers {
                                 developer {
-                                    name = 'Ben Davies'
+                                    name = 'Ben Davies <me@bdavies.net>'
                                 }
                             }
                         }
