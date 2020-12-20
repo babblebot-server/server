@@ -184,8 +184,11 @@ Please follow this style on every class you create:
 ```java
 /**
 * Class to describe how to write java docs
+* <p>
 * Used to show the contributors about the style of class java docs
+* <p>
 * JavaDoc example = new JavaDoc();
+* <p>
 * example.generateTemplate();
 *
 * @author Name - email@email.com (Optional!)
@@ -202,6 +205,7 @@ The rules shown here are:-
 *   @author: This is up to you, just as long you use something that can relate to your github profile
 *   @since: Please keep this at `__RELEASE_VERSION__` Semantic Release will handle this
 *   Always leave a space between text and `@author` and `@since`
+*   Always for the new lines in the top portion put a `<p>` tag for java doc rendering
 
 #### Method Documentation
 
@@ -233,6 +237,7 @@ The rules shown here are:-
 *   @author: This is up to you, just as long you use something that can relate to your github profile
 *   @since: Please keep this at `__RELEASE_VERSION__` Semantic Release will handle this
 *   Always leave a space between text and `@author` and `@since`
+*   Always for the new lines in the top portion put a `<p>` tag for java doc rendering
 *   @param: This must be `@param paramName description`
 *   @return: This must be `@return {@link ReturningObject} description`
 *   @author: is not needed if the authored user is the same
