@@ -29,11 +29,11 @@ import com.google.inject.Inject;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.http.WebServer;
 import org.reactivestreams.Publisher;
 import reactor.netty.http.server.HttpServerResponse;
-import net.bdavies.api.IApplication;
-import net.bdavies.api.discord.IDiscordFacade;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

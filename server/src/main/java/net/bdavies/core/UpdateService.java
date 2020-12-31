@@ -34,6 +34,7 @@ import net.bdavies.api.IApplication;
 import java.io.*;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
@@ -57,8 +58,8 @@ public class UpdateService {
         return Mono.create(sink -> {
             try {
                 File tmp = File.createTempFile("update", "bb");
-                File unZipTmp = new File("tmp/updates/" + tag.tag_name.toLowerCase().replace("v", ""));
-                FileUtils.copyURLToFile(new URL(tag.assets.get(1).browser_download_url), tmp);
+                File unZipTmp = new File("tmp/updates/" + tag.getTag_name().toLowerCase(Locale.ROOT).replace("v", ""));
+                FileUtils.copyURLToFile(new URL(tag.getAssets().get(1).getBrowser_download_url()), tmp);
                 if (!unZipTmp.exists()) {
                     unZipTmp.mkdirs();
                 }
@@ -81,7 +82,7 @@ public class UpdateService {
                     entry = zis.getNextEntry();
                 }
                 zis.close();
-                if (swapLibs(firstDir, tag.tag_name.toLowerCase().replace("v", ""))) {
+                if (swapLibs(firstDir, tag.getTag_name().toLowerCase(Locale.ROOT).replace("v", ""))) {
                     if (swapScripts(firstDir)) {
                         unZipTmp.deleteOnExit();
                         sink.success();
@@ -153,10 +154,11 @@ public class UpdateService {
         AtomicBoolean copy = new AtomicBoolean(true);
         try {
             Arrays.stream(Objects.requireNonNull(ourLibsFolder.listFiles()))
-                    .filter(f -> (f.getName().toLowerCase().contains("babblebot") &&
-                            !f.getName().toLowerCase().contains(version)) /* Delete old babblebot jars */ ||
+                    .filter(f -> (f.getName().toLowerCase(Locale.ROOT).contains("babblebot") &&
+                            !f.getName().toLowerCase(Locale.ROOT).contains(version)) /* Delete old babblebot jars */ ||
                             Arrays.stream(Objects.requireNonNull(libsFolder.listFiles()))
-                                    .noneMatch(f1 -> f1.getName().equals(f.getName()))) /* delete outdated libraries */
+                                    .noneMatch(f1 -> f1.getName().equals(f.getName())))
+                    /* delete outdated libraries */
                     .forEach(File::deleteOnExit);
             Arrays.stream(Objects.requireNonNull(libsFolder.listFiles())).forEach(f -> {
                 try {
@@ -175,10 +177,10 @@ public class UpdateService {
         return copy.get();
     }
 
-    private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
         byte[] bytesIn = new byte[4096];
-        int read = 0;
+        int read;
         while ((read = zipIn.read(bytesIn)) != -1) {
             bos.write(bytesIn, 0, read);
         }

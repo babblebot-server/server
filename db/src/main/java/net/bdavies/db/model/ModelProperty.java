@@ -58,6 +58,7 @@ public class ModelProperty implements IModelProperty {
     @Setter
     private String previousValue;
     private final boolean isRelational;
-    private final Relationship relationship;
+    private final RelationshipType relationship;
     private final boolean isObjectId;
+    private final boolean hasDefaultValue;
 }

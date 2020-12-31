@@ -26,20 +26,19 @@
 package net.bdavies.db.model;
 
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.DB;
+import net.bdavies.api.IApplication;
 import net.bdavies.db.DBSetup;
 import net.bdavies.db.Operator;
+import net.bdavies.db.Repository;
 import net.bdavies.db.model.serialization.ISQLObjectDeserializer;
 import net.bdavies.db.model.serialization.ISQLObjectSerializer;
-import net.bdavies.db.query.QueryBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.bjdavies.api.IApplication;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,98 +48,52 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v"></a>
  */
 @Slf4j
-class ModelTest extends DBSetup {
-    @Test
-    void all() {
-        Set<TestModel> models = TestModel.all();
-        assertEquals(9, models.size());
+class ModelTest extends DBSetup
+{
+
+    private Repository<TestModel> repo;
+
+    @BeforeEach
+    protected void setUp()
+    {
+        super.setUp();
+        repo = manager.getRepository(TestModel.class);
     }
 
     @Test
-    void testFailConstruct() {
-        assertThrows(UnsupportedOperationException.class, TestModel::new);
-        assertThrows(UnsupportedOperationException.class, AnotherTestModel::new);
+    void init()
+    {
+        TestModel testModel = new TestModel();
+        testModel.init(manager, Map.of("text", "TestData"));
+        assertNotNull(testModel);
     }
 
-    @Test
-    void testForClassCastException() {
-        ClassCastException exception = assertThrows(ClassCastException.class, () -> {
-            Set<AnotherTestModel> models = TestModel.find(b -> b.where("text", "Jo"));
-            models.forEach(m -> log.error(m.getName()));
-        });
-        String msg = exception.getMessage();
-        boolean contains = msg.contains("cannot be cast to") && msg.contains("AnotherTestModel")
-                && msg.contains("TestModel");
-        assertTrue(contains);
-    }
 
     @Test
-    void create() {
-        TestModel testModel = createTestModel("TestData");
-        assertEquals("TestData", testModel.getText());
-    }
-
-    @Test
-    void find() {
-        QueryBuilder queryBuilder = new QueryBuilder("test");
-        queryBuilder.columns("text").insert(Map.of("text", "FindTest"));
-        Set<TestModel> testModels = TestModel.find(b -> b.where("text", "FindTest"));
-        assertEquals(1, testModels.size());
-        Set<TestModel> testModels1 = TestModel.find(b -> b.where("text", "NotFound!"));
-        assertEquals(0, testModels1.size());
-        Set<TestModel> testModels2 = TestModel.find(b -> b.where("text", Operator.LIKE, "%J%"));
-        assertEquals(3, testModels2.size());
-    }
-
-    @Test
-    void findOne() {
-        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("text", "Jo"));
-        assertTrue(testModel.isPresent());
-        testModel = TestModel.findOne(b -> b.where("text", "Joline"));
-        assertTrue(testModel.isEmpty());
-    }
-
-    @Test
-    void findLast() {
-        Optional<TestModel> testModel = TestModel.findLast(b -> b.where("id", Operator.GT, "0"));
-        assertTrue(testModel.isPresent());
-        assertEquals("Lex", testModel.get().getText());
-
-        Optional<TestModel> testModel2 = TestModel.findLast(b -> b.where("text", Operator.LIKE, "%Jo%"));
-        assertTrue(testModel2.isPresent());
-        assertEquals("Joey", testModel2.get().getText());
-    }
-
-    @Test
-    void deleteAll() {
-        boolean t = TestModel.deleteAll();
-        assertTrue(t);
-        assertEquals(0, TestModel.all().size());
-        populateTestTable(9);
-        t = TestModel.deleteAll(b -> b.where("text", "Lex"));
-        assertTrue(t);
-        assertEquals(8, TestModel.all().size());
-    }
-
-    @Test
-    void serializeObject() {
-        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", Operator.GT, "1"));
+    void serializeObject()
+    {
+        Optional<TestModel> testModel = repo.findFirst(b -> b.where("id", Operator.GT, "1"));
         //noinspection OverlyLongLambda
         testModel.ifPresent(m -> {
-            try {
+            try
+            {
                 Method method = m.getClass().getSuperclass()
-                        .getDeclaredMethod("serializeObject", Object.class, ModelProperty.class, IApplication.class);
+                        .getDeclaredMethod("serializeObject", Object.class, ModelProperty.class,
+                                IApplication.class);
                 method.setAccessible(true);
-                ISQLObjectSerializer<?, ?> serializer = new HelloWorldSerializer();
+                ISQLObjectSerializer<?, ?> serializer = new HelloWorldSerializationObject();
                 Class<? extends ISQLObjectSerializer<Model, Object>> obj;
                 //noinspection unchecked
-                obj = (Class<? extends ISQLObjectSerializer<Model,Object>>) serializer.getClass();
+                obj = (Class<? extends ISQLObjectSerializer<Model, Object>>) serializer.getClass();
                 ModelProperty property = new ModelProperty(HelloWorld.class, null, "test",
                         false, false, false, obj, null,
-                        null, "", false, Relationship.NONE, false);
-                String data = (String) method.invoke(m, new HelloWorld("TestData"), property, application);
+                        null, "", false, RelationshipType.NONE, false, false);
+                String data = (String) method.invoke(m, new HelloWorld("TestData"), property,
+                        manager.getApplication());
                 assertEquals("TestData", data);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            }
+            catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+            {
                 e.printStackTrace();
                 fail(e.getMessage());
             }
@@ -149,25 +102,30 @@ class ModelTest extends DBSetup {
     }
 
     @Test
-    void deserializeObject() {
-        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", Operator.GT, "1"));
+    void deserializeObject()
+    {
+        Optional<TestModel> testModel = repo.findFirst(b -> b.where("id", Operator.GT, "1"));
         //noinspection OverlyLongLambda
         testModel.ifPresent(m -> {
-            try {
-                Method method = m.getClass().getSuperclass().getDeclaredMethod("deSerializeObject", String.class,
-                        ModelProperty.class, IApplication.class);
+            try
+            {
+                Method method = m.getClass().getSuperclass()
+                        .getDeclaredMethod("deSerializeObject", String.class,
+                                ModelProperty.class, IApplication.class);
                 method.setAccessible(true);
-                ISQLObjectDeserializer<?, ?> serializer = new HelloWorldSerializer();
+                ISQLObjectDeserializer<?, ?> serializer = new HelloWorldSerializationObject();
                 Class<? extends ISQLObjectDeserializer<Model, Object>> obj;
                 //noinspection unchecked
-                obj = (Class<? extends ISQLObjectDeserializer<Model,Object>>) serializer.getClass();
+                obj = (Class<? extends ISQLObjectDeserializer<Model, Object>>) serializer.getClass();
                 ModelProperty property = new ModelProperty(HelloWorld.class, null, "test",
                         false, false, false, null, obj,
-                        null, "", false, Relationship.NONE, false);
+                        null, "", false, RelationshipType.NONE, false, false);
 
-                HelloWorld data = (HelloWorld) method.invoke(m, "TestData", property, application);
+                HelloWorld data = (HelloWorld) method.invoke(m, "TestData", property, manager.getApplication());
                 assertEquals("TestData", data.getAppender());
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            }
+            catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+            {
                 e.printStackTrace();
                 fail();
             }
@@ -175,20 +133,22 @@ class ModelTest extends DBSetup {
     }
 
     @Test
-    void reflectFields() {
-        TestModel model = createTestModel("TestData");
+    void reflectFields()
+    {
+        TestModel model = repo.create(Map.of("text", "TestData"));
         assertEquals("TestData", model.getText());
         model.reflectFields(Map.of("text", "TestData2"));
         assertEquals("TestData2", model.getText());
     }
 
     @Test
-    void save() {
-        TestModel model = DB.create(TestModel.class, Map.of("text", "TestSave"));
+    void save()
+    {
+        TestModel model = repo.create(Map.of("text", "TestSave"));
         model.save();
-        assertEquals(10, TestModel.all().size());
+        assertEquals(10, repo.getAll().size());
         assertEquals(10, model.getId());
-        Optional<TestModel> testModel = TestModel.findLast(b -> b.where("id", Operator.GT, "0"));
+        Optional<TestModel> testModel = repo.findLast(b -> b.where("id", Operator.GT, "0"));
         testModel.ifPresent(m -> {
             assertEquals("TestSave", m.getText());
             assertEquals(10, m.getId());
@@ -197,7 +157,7 @@ class ModelTest extends DBSetup {
         model.setText("TestSave2");
         model.save();
         assertEquals("TestSave2", model.getText());
-        testModel = TestModel.findLast(b -> b.where("id", Operator.GT, "0"));
+        testModel = repo.findLast(b -> b.where("id", Operator.GT, "0"));
         testModel.ifPresent(m -> {
             assertEquals("TestSave2", m.getText());
             assertEquals(10, m.getId());
@@ -205,15 +165,15 @@ class ModelTest extends DBSetup {
     }
 
     @Test
-    void delete() {
-        Optional<TestModel> testModel = TestModel.findOne(b -> b.where("id", "9"));
+    void delete()
+    {
+        Optional<TestModel> testModel = repo.findFirst(b -> b.where("id", "9"));
         testModel.ifPresent(Model::delete);
-        assertEquals(8, TestModel.all().size());
+        assertEquals(8, repo.getAll().size());
 
-        TestModel testModel1 = DB.create(TestModel.class, Map.of("text", "Lex"));
-        testModel1.save();
-        assertEquals(9, TestModel.all().size());
+        TestModel testModel1 = repo.createAndPersist(Map.of("text", "Lex"));
+        assertEquals(9, repo.getAll().size());
         testModel1.delete();
-        assertEquals(8, TestModel.all().size());
+        assertEquals(8, repo.getAll().size());
     }
 }

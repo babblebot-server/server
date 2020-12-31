@@ -25,7 +25,8 @@
 
 package net.bdavies.db.dialect.connection;
 
-import uk.co.bjdavies.api.IApplication;
+import net.bdavies.api.IApplication;
+import net.bdavies.db.model.Model;
 import net.bdavies.db.query.PreparedQuery;
 
 import java.util.Map;
@@ -39,7 +40,7 @@ import java.util.Set;
  */
 public interface IConnection<R> {
 
-    <T> Set<T> executeQuery(Class<T> clazz, R obj, PreparedQuery preparedQuery);
+    <T extends Model> Set<T> executeQuery(Class<T> clazz, R obj, PreparedQuery preparedQuery);
 
     Set<Map<String, String>> executeQueryRaw(R obj, PreparedQuery preparedQuery);
 

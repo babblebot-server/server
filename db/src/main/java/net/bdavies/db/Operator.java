@@ -76,7 +76,11 @@ public enum Operator {
      * Not Null e.g. NOT NULL
      * Note: for mongodb this checks if the column exists in the document
      */
-    NN("NOT NULL");
+    NN("NOT NULL"),
+    /**
+     * No Op used for groups and other things say AND (`yesEnum` = 'yes')
+     */
+    NONE("");
 
     private final String operatorString;
 

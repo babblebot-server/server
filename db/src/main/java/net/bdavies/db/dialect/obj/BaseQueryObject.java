@@ -25,16 +25,25 @@
 
 package net.bdavies.db.dialect.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.obj.ISQLObject;
-import net.bdavies.db.query.QueryType;
+import net.bdavies.db.DatabaseManager;
+import net.bdavies.db.Operator;
 import net.bdavies.db.dialect.connection.IConnection;
-import net.bdavies.db.query.PreparedQuery;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.obj.IQueryObject;
+import net.bdavies.db.obj.ISQLObject;
 import net.bdavies.db.obj.QueryObject;
+import net.bdavies.db.obj.WhereStatementObject;
+import net.bdavies.db.query.PreparedQuery;
+import net.bdavies.db.query.QueryLink;
+import net.bdavies.db.query.QueryType;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -44,104 +53,150 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Slf4j
-public class BaseQueryObject extends QueryObject implements ISQLObject {
+@AllArgsConstructor
+@ToString(callSuper = true)
+public class BaseQueryObject extends QueryObject implements ISQLObject
+{
     @NonNull
     protected final String table;
+    @NonNull
     protected final IConnection<String> connection;
-    public BaseQueryObject(@NonNull String table,
-      @NonNull IConnection<String> connection) {
-        this.table = table;
-        this.connection = connection;
-
-    }
+    @NonNull
+    protected final DatabaseManager manager;
 
 
     @Override
-    public <T> Set<T> get(Class<T> clazz) {
-        return connection.executeQuery(clazz, this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
+    public <T extends Model> Set<T> get(Class<T> clazz)
+    {
+        return connection
+                .executeQuery(clazz, this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
     }
 
     @Override
-    public Set<Map<String, String>> get() {
+    public Set<Map<String, String>> get()
+    {
         return connection.executeQueryRaw(this.toSQLString(QueryType.SELECT, preparedQuery), preparedQuery);
     }
 
     @Override
-    public boolean delete() {
+    public boolean delete()
+    {
         return connection.executeCommand(this.toSQLString(QueryType.DELETE, preparedQuery), preparedQuery);
     }
 
     @Override
-    public boolean insert(Map<String, String> insertValues) {
+    public boolean insert(Map<String, String> insertValues)
+    {
         this.values = insertValues;
         return connection.executeCommand(this.toSQLString(QueryType.INSERT, preparedQuery), preparedQuery);
     }
 
 
-
     @Override
-    public boolean update(Map<String, String> updateValues) {
+    public boolean update(Map<String, String> updateValues)
+    {
         this.values = updateValues;
         return connection.executeCommand(this.toSQLString(QueryType.UPDATE, preparedQuery), preparedQuery);
     }
 
     @Override
-    public String toSQLString(QueryType type, PreparedQuery query) {
-        switch (type) {
+    public String toSQLString(QueryType type, PreparedQuery query)
+    {
+        PreparedQuery queryToUse = query == null ? preparedQuery : query;
+        switch (type)
+        {
             case SELECT:
-                return toSelectQuery();
+                return toSelectQuery(queryToUse);
             case INSERT:
-                return toInsertQuery();
+                return toInsertQuery(queryToUse);
             case UPDATE:
-                return toUpdateQuery();
+                return toUpdateQuery(queryToUse);
             case DELETE:
-                return toDeleteString();
+                return toDeleteString(queryToUse);
+            case NONE:
+                return getWhereString(queryToUse);
             default:
                 return "";
         }
     }
 
-    private String toUpdateQuery() {
+    private String toUpdateQuery(PreparedQuery queryToUse)
+    {
         return "UPDATE " + table + " SET " + values.entrySet().stream().map(e -> "`" + e.getKey() + "`" +
-                " = " + preparedQuery.getValueFromString(e.getValue()))
-                .collect(Collectors.joining(", ")) + " " + getWhereString();
+                " = " + queryToUse.getValueFromString(e.getValue()))
+                .collect(Collectors.joining(", ")) + " " + getWhereString(queryToUse);
     }
 
-    protected String toDeleteString() {
-        return "DELETE FROM " + table + getWhereString();
+    protected String toDeleteString(PreparedQuery queryToUse)
+    {
+        return "DELETE FROM " + table + getWhereString(queryToUse);
     }
 
-    protected String toInsertQuery() {
-        return "INSERT INTO "+table+" (" + getColumnsString() + ") VALUES (" + getValuesString() + ")";
+    protected String toInsertQuery(PreparedQuery queryToUse)
+    {
+        return "INSERT INTO " + table + " (" + getColumnsString() + ") VALUES (" + getValuesString(queryToUse) + ")";
     }
 
-    private String getColumnsString() {
-        if (columns.isEmpty()) columns.add("*");
-        return columns.stream().map(c -> c.equals("*") ? c : "`" + c + "`").collect(Collectors.joining(", "));
+    private String getColumnsString()
+    {
+        if (columns.isEmpty())
+        {
+            columns.add("*");
+        }
+        return columns.stream().map(c -> c.equals("*") ? c : ("`" + c + "`")).collect(Collectors.joining(", "));
     }
 
-    private String getValuesString() {
-        return columns.stream().map(c -> preparedQuery.getValueFromString(values.get(c)))
+    private String getValuesString(PreparedQuery query)
+    {
+        return columns.stream().map(c -> query.getValueFromString(values.get(c)))
                 .collect(Collectors.joining(", "));
     }
 
 
-    protected String toSelectQuery() {
-        return "SELECT " + getColumnsString() + " FROM " + table + getWhereString() + getOrderByString();
+    protected String toSelectQuery(PreparedQuery queryToUse)
+    {
+        return "SELECT " + getColumnsString() + " FROM " + table + getWhereString(queryToUse) + getOrderByString();
     }
 
-    private String getOrderByString() {
-        if (orderMap.isEmpty()) return "";
+    private String getOrderByString()
+    {
+        if (orderMap.isEmpty())
+        {
+            return "";
+        }
 
         return " ORDER BY " + orderMap.entrySet().stream().map(e -> e.getKey() + " " + e.getValue())
                 .collect(Collectors.joining(", "));
     }
 
-    protected String getWhereString() {
-        if (!wheres.isEmpty()) {
-            return wheres.stream().map(w -> w.toSQLString(null, preparedQuery))
-              .collect(Collectors.joining());
+    protected String getWhereString(PreparedQuery queryToUse)
+    {
+        if (!wheres.isEmpty())
+        {
+            if (wheres.stream().anyMatch(w -> w.getValue() instanceof GroupValue))
+            {
+                log.error("Wheres: {}", wheres);
+            }
+            return wheres.stream().map(w -> w.toSQLString(null, queryToUse))
+                    .collect(Collectors.joining());
         }
         return "";
+    }
+
+    @Override
+    public BaseQueryObject group(IQueryObject object, QueryLink link)
+    {
+        preparedQuery.getPreparedValues().addAll(((BaseQueryObject)object).preparedQuery.getPreparedValues());
+        wheres.add(new WhereStatementObject("", Operator.NONE, new GroupValue((ISQLObject) object), link));
+        return this;
+    }
+
+    @Override
+    public BaseQueryObject group(Consumer<IQueryObject> builder,
+                              QueryLink link)
+    {
+        IQueryObject object = manager.createQueryBuilder(table);
+        builder.accept(object);
+        return group(object, link);
     }
 }

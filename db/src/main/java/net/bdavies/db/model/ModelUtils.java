@@ -33,6 +33,7 @@ import net.bdavies.db.model.fields.TableName;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Locale;
 
 
 /**
@@ -48,14 +49,14 @@ public class ModelUtils {
           .map(c -> c.getAnnotation(TableName.class).value()).findAny()
           .orElse(clazz.isAnnotationPresent(TableName.class) ? clazz.getAnnotation(TableName.class).value() :
                   pluralize(clazz.getSimpleName()))
-                .toLowerCase();
+                .toLowerCase(Locale.ROOT);
     }
 
     public static <T extends Model> String getPrimaryKey(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(c -> c.isAnnotationPresent(PrimaryField.class))
                 .map(Field::getName).findFirst()
-                .orElse("id").toLowerCase();
+                .orElse("id").toLowerCase(Locale.ROOT);
     }
 
     public static String pluralize(String singular) {

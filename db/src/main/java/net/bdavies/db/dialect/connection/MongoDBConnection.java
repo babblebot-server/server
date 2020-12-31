@@ -25,19 +25,23 @@
 
 package net.bdavies.db.dialect.connection;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDatabaseConfig;
+import net.bdavies.db.DatabaseManager;
 import net.bdavies.db.dialect.descriptor.MongoDocumentDescriptor;
+import net.bdavies.db.model.Model;
 import net.bdavies.db.query.PreparedQuery;
 import org.bson.Document;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,16 +55,20 @@ import java.util.stream.Collectors;
  * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
  */
 @Slf4j
-public class MongoDBConnection implements IConnection<MongoDocumentDescriptor> {
+public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
+{
 
     private final MongoDatabase mongoDBInstance;
     private final MongoClient client;
-    protected final IApplication application;
+    protected final DatabaseManager manager;
 
-    public MongoDBConnection(IDatabaseConfig config, IApplication application) {
-        this.application = application;
+    public MongoDBConnection(DatabaseManager manager)
+    {
+        this.manager = manager;
+        IDatabaseConfig config = manager.getApplication().getConfig().getDatabaseConfig();
         String authString = "";
-        if(config.getUsername() != null && config.getPassword() != null) {
+        if (config.getUsername() != null && config.getPassword() != null)
+        {
             authString = config.getUsername() + ":" + config.getPassword() + "@";
         }
         String connectionStr = "mongodb://" + authString +
@@ -72,82 +80,103 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor> {
 
 
     @Override
-    public <T> Set<T> executeQuery(Class<T> clazz, MongoDocumentDescriptor obj, PreparedQuery preparedQuery) {
+    public <T extends Model> Set<T> executeQuery(Class<T> clazz, MongoDocumentDescriptor obj,
+                                                 PreparedQuery preparedQuery)
+    {
         Set<Map<String, String>> values = executeQueryRaw(obj, preparedQuery);
-        //noinspection DuplicatedCode,OverlyLongLambda
+        //noinspection DuplicatedCode
         return values.stream().map(v -> {
-            try {
-                Method method = clazz.getSuperclass().getDeclaredMethod("create", IApplication.class, Class.class,
-                        Map.class, boolean.class);
-                method.setAccessible(true);
-                //noinspection unchecked
-                return (T) method.invoke(null, application, clazz, v, true);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException e1) {
-                e1.printStackTrace();
-                return null;
-            }
+            Map<String, Object> vTransform = v.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                    Map.Entry::getValue));
+            T model = createModel(clazz);
+            model.init(manager, vTransform, true);
+            return model;
         }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    @SneakyThrows
+    private static <T extends Model> T createModel(Class<T> clazz)
+    {
+        Constructor<? extends T> constructor = clazz.getDeclaredConstructor();
+        return constructor.newInstance();
+    }
+
+
     @Override
-    public Set<Map<String, String>> executeQueryRaw(MongoDocumentDescriptor obj, PreparedQuery preparedQuery) {
-        MongoCollection<Document> collection = mongoDBInstance.getCollection(obj.getCollectionName());
-        FindIterable<Document> values = collection.find(obj.getFilter());
+    public Set<Map<String, String>> executeQueryRaw(MongoDocumentDescriptor obj, PreparedQuery preparedQuery)
+    {
         Set<Map<String, String>> set = new LinkedHashSet<>();
-        //noinspection OverlyLongLambda
-        values.forEach((Consumer<? super Document>) v -> { /* NOSONAR */
+        Consumer<? super Document> documentConsumer = v -> {
             Map<String, String> newMap;
             newMap = v.entrySet()
-                        .stream()
-                        .filter(e -> {
-                            if (obj.getColumnsToFetch().get(0).getName().equals("*")) return true;
-                            return obj.getColumnsToFetch().stream()
-                                    .anyMatch(cd -> cd.getName().equalsIgnoreCase(e.getKey()));
-                        })
-                        .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
+                    .stream()
+                    .filter(e -> {
+                        if ("*".equals(obj.getColumnsToFetch().get(0).getName()))
+                        {
+                            return true;
+                        }
+                        return obj.getColumnsToFetch().stream()
+                                .anyMatch(cd -> cd.getName().equalsIgnoreCase(e.getKey()));
+                    })
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
 
             set.add(newMap);
-        });
+        };
+
+        MongoCollection<Document> collection = mongoDBInstance.getCollection(obj.getCollectionName());
+        FindIterable<Document> values = collection.find(obj.getFilter());
+        values.forEach(documentConsumer);
         return set;
     }
 
     @Override
-    public IApplication getApplication() {
-        return application;
+    public IApplication getApplication()
+    {
+        return manager.getApplication();
     }
 
     @Override
-    public boolean executeCommand(MongoDocumentDescriptor obj, PreparedQuery preparedQuery) {
+    public boolean executeCommand(MongoDocumentDescriptor obj, PreparedQuery preparedQuery)
+    {
         MongoCollection<Document> collection = mongoDBInstance.getCollection(obj.getCollectionName());
         Map<String, Object> newMap = obj.getValues().entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        switch (obj.getType()) {
+        switch (obj.getType())
+        {
             case INSERT:
-                try {
+                try
+                {
                     log.info("About to insert Document: {}", newMap);
                     collection.insertOne(new Document(newMap));
                     return true;
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     log.error("Error when inserting", e);
                     return false;
                 }
             case UPDATE:
-                try {
+                try
+                {
                     BasicDBObject dbObject = new BasicDBObject();
                     newMap.forEach(dbObject::append);
                     collection.updateOne(obj.getFilter(), dbObject);
                     return true;
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     log.error("Error when updating", e);
                     return false;
                 }
             case DELETE:
-                try {
+                try
+                {
                     collection.deleteOne(obj.getFilter());
                     return true;
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     log.error("Error when deleting", e);
                     return false;
                 }
@@ -157,7 +186,8 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor> {
     }
 
     @Override
-    public void closeDB() {
+    public void closeDB()
+    {
         client.close();
     }
 

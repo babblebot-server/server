@@ -25,18 +25,32 @@
 
 package net.bdavies.db.model;
 
-import net.bdavies.db.DBSetup;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.model.fields.TableName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Tests for Model Utils
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-class ModelUtilsTest extends DBSetup {
+@Slf4j
+public class ModelUtilsTest
+{
+
+    @Test
+    void construct() {
+        assertThrows(InvocationTargetException.class, () -> {
+            Constructor<ModelUtils> cn = ModelUtils.class.getDeclaredConstructor();
+            cn.setAccessible(true);
+            cn.newInstance();
+        });
+    }
 
     @Test
     void getTableName() {

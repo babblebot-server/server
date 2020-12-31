@@ -28,13 +28,17 @@ package net.bdavies.db.obj;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.Operator;
 import net.bdavies.db.Order;
+import net.bdavies.db.model.Model;
 import net.bdavies.db.query.PreparedQuery;
 import net.bdavies.db.query.QueryLink;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +51,7 @@ import java.util.stream.Collectors;
 @Setter
 @Slf4j
 @NoArgsConstructor
+@ToString
 public abstract class QueryObject implements IQueryObject {
 
     protected List<String> columns = new LinkedList<>();
@@ -101,7 +106,24 @@ public abstract class QueryObject implements IQueryObject {
         return this;
     }
 
+    @Override
+    public IQueryObject group(Consumer<IQueryObject> builder)
+    {
+        return group(builder, QueryLink.AND);
+    }
 
+    @Override
+    public IQueryObject group(IQueryObject object)
+    {
+        return (IQueryObject) group(object, QueryLink.AND);
+    }
+
+    @Override
+    public <T extends Model> IQueryObject addModelPredicate(Predicate<T> wherePredicate)
+    {
+        preparedQuery.getModelPredicates().add(wherePredicate);
+        return this;
+    }
 
     @Override
     public Map<String, String> first() {
@@ -109,7 +131,7 @@ public abstract class QueryObject implements IQueryObject {
     }
 
     @Override
-    public <R> R first(Class<R> clazz) {
+    public <R extends Model> R first(Class<R> clazz) {
         return get(clazz).stream().findFirst().orElse(null);
     }
 
@@ -121,7 +143,7 @@ public abstract class QueryObject implements IQueryObject {
     }
 
     @Override
-    public <R> R last(Class<R> clazz) {
+    public <R extends Model> R last(Class<R> clazz) {
         Set<R> objects = get(clazz);
         long count = objects.size();
         return objects.stream().skip(count - 1).findFirst().orElse(null);
@@ -161,7 +183,7 @@ public abstract class QueryObject implements IQueryObject {
     }
 
     @Override
-    public <T> T insertGet(Map<String, String> insertValues, Class<T> clazz) {
+    public <T extends Model> T insertGet(Map<String, String> insertValues, Class<T> clazz) {
         insert(insertValues);
         Set<T> objects = get(clazz);
         long count = objects.size();
@@ -177,7 +199,7 @@ public abstract class QueryObject implements IQueryObject {
     }
 
     @Override
-    public <T> Set<T> updateGet(Map<String, String> updateValues, Class<T> clazz) {
+    public <T extends Model> Set<T> updateGet(Map<String, String> updateValues, Class<T> clazz) {
         update(updateValues);
         return get(clazz);
     }

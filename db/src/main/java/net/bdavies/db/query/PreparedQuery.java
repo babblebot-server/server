@@ -26,11 +26,14 @@
 package net.bdavies.db.query;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.model.Model;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * This will hold utility classes for the current query planning on getting executed
@@ -42,6 +45,9 @@ import java.util.List;
 @Getter
 public class PreparedQuery {
     private final List<String> preparedValues = new LinkedList<>();
+    private final List<Predicate<? extends Model>> modelPredicates = new LinkedList<>();
+    @Setter
+    private boolean insideGroup;
 
     public void addPreparedValue(String v) {
         preparedValues.add(v);

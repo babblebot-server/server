@@ -28,16 +28,17 @@ package net.bdavies.db.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * a Test class
- *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
+@Slf4j
 @Getter
 @AllArgsConstructor
-public class HelloWorld {
+public class HelloWorld
+{
     @NonNull
     private final String appender;
 }

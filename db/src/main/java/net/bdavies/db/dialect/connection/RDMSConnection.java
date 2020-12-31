@@ -27,15 +27,17 @@ package net.bdavies.db.dialect.connection;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDatabaseConfig;
+import net.bdavies.db.DatabaseManager;
+import net.bdavies.db.model.Model;
 import net.bdavies.db.query.PreparedQuery;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -45,90 +47,127 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Slf4j
-public abstract class RDMSConnection implements IConnection<String> {
+public abstract class RDMSConnection implements IConnection<String>
+{
 
     protected final Connection connection;
-    protected final IApplication application;
+    protected final DatabaseManager manager;
 
     @SneakyThrows
-    public RDMSConnection(IDatabaseConfig config, IApplication application) {
-        this.connection = getConnectionForDB(config, application);
-        this.application = application;
+    protected RDMSConnection(DatabaseManager manager)
+    {
+        this.manager = manager;
+        this.connection = getConnectionForDB(manager.getApplication().getConfig().getDatabaseConfig(),
+                manager.getApplication());
     }
 
     protected abstract Connection getConnectionForDB(IDatabaseConfig config, IApplication application);
 
     @Override
-    public <T> Set<T> executeQuery(Class<T> clazz, String rawSql, PreparedQuery query) {
-        try(PreparedStatement statement = connection.prepareStatement(rawSql)) {
+    public <T extends Model> Set<T> executeQuery(Class<T> clazz, String rawSql, PreparedQuery query)
+    {
+        if (rawSql.contains("("))
+        {
+            log.error("Running SQL: {}", rawSql);
+        }
+        try (PreparedStatement statement = connection.prepareStatement(rawSql))
+        {
             setValues(query, statement);
-            return processResultSet(statement.executeQuery(), clazz);
-        } catch (SQLException e) {
+            return processResultSet(statement.executeQuery(), clazz, query);
+        }
+        catch (SQLException e)
+        {
             log.error("An Error occurred when running command: {}", rawSql, e);
         }
         return new LinkedHashSet<>();
     }
 
-    protected void setValues(PreparedQuery query, PreparedStatement statement) {
+    protected void setValues(PreparedQuery query, PreparedStatement statement)
+    {
         AtomicInteger integer = new AtomicInteger(1);
         query.getPreparedValues().forEach(v -> {
-            try {
+            try
+            {
                 statement.setString(integer.getAndIncrement(), v);
-            } catch (SQLException e) {
-               log.error("Couldn't set value: {}, because of an error", v, e);
+            }
+            catch (SQLException e)
+            {
+                log.error("Couldn't set value: {}, because of an error", v, e);
             }
         });
         query.getPreparedValues().clear();
     }
 
     @Override
-    public Set<Map<String, String>> executeQueryRaw(String rawSql, PreparedQuery query) {
-        try(PreparedStatement statement = connection.prepareStatement(rawSql)) {
+    public Set<Map<String, String>> executeQueryRaw(String rawSql, PreparedQuery query)
+    {
+        try (PreparedStatement statement = connection.prepareStatement(rawSql))
+        {
             setValues(query, statement);
             return processResultSetRaw(statement.executeQuery());
-        } catch (SQLException e) {
+        }
+        catch (SQLException e)
+        {
             log.error("An Error occurred when running command: {}", rawSql, e);
         }
         return new LinkedHashSet<>();
     }
 
     @Override
-    public boolean executeCommand(String rawSql, PreparedQuery query) {
-        try(PreparedStatement statement = connection.prepareStatement(rawSql)) {
+    public boolean executeCommand(String rawSql, PreparedQuery query)
+    {
+        try (PreparedStatement statement = connection.prepareStatement(rawSql))
+        {
             setValues(query, statement);
             return statement.executeUpdate() > 0;
-        } catch (SQLException e) {
+        }
+        catch (SQLException e)
+        {
             log.error("An Error occurred when running command", e);
             return false;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> Set<T> processResultSet(ResultSet resultSet, Class<T> clazz) {
+    private <T extends Model> Set<T> processResultSet(ResultSet resultSet, Class<T> clazz,
+                                                      PreparedQuery query)
+    {
         Set<Map<String, String>> values = processResultSetRaw(resultSet);
-        //noinspection OverlyLongLambda
+        //noinspection DuplicatedCode
         return values.stream().map(v -> {
-            try {
-                Method method = clazz.getSuperclass().getDeclaredMethod("create", IApplication.class, Class.class,
-                  Map.class, boolean.class);
-                method.setAccessible(true);
-                return (T) method.invoke(null, application, clazz, v, true);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-              | InvocationTargetException e1) {
-                e1.printStackTrace();
-                return null;
-            }
+            Map<String, Object> vTransform = v.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                    Map.Entry::getValue));
+            T model = createModel(clazz);
+            model.init(manager, vTransform, true);
+            log.info("Model JSON: {}", model.toJson());
+
+            return model;
+        }).filter(m -> {
+            //TODO: Awful method of doing this, create a dummy model and create sql based on that!
+            //noinspection unchecked
+            return query.getModelPredicates().stream().map(p -> (Predicate<T>) p)
+                    .reduce(x -> true, Predicate::and).test(m);
         }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    @SneakyThrows
+    private static <T extends Model> T createModel(Class<T> clazz)
+    {
+        Constructor<? extends T> constructor = clazz.getDeclaredConstructor();
+        return constructor.newInstance();
+    }
+
     @SuppressWarnings("MethodWithMultipleLoops")
-    private Set<Map<String, String>> processResultSetRaw(ResultSet resultSet) {
+    private Set<Map<String, String>> processResultSetRaw(ResultSet resultSet)
+    {
         Set<Map<String, String>> set = Collections.synchronizedSet(new LinkedHashSet<>());
-        try {
+        try
+        {
             ResultSetMetaData metaData = resultSet.getMetaData();
-            while (resultSet.next()) {
+            while (resultSet.next())
+            {
                 Map<String, String> objectMap = new HashMap<>();
-                for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
+                for (int i = 1; i < metaData.getColumnCount() + 1; i++)
+                {
                     String columnName = metaData.getColumnName(i);
                     String columnValue = resultSet.getString(columnName);
                     objectMap.put(columnName, columnValue);
@@ -137,7 +176,9 @@ public abstract class RDMSConnection implements IConnection<String> {
                 set.add(objectMap);
             }
             resultSet.close();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.error("Error selecting all from the table, most likely the table has not been created.", e);
             return set;
         }
@@ -145,13 +186,15 @@ public abstract class RDMSConnection implements IConnection<String> {
     }
 
     @Override
-    public IApplication getApplication() {
-        return application;
+    public IApplication getApplication()
+    {
+        return manager.getApplication();
     }
 
     @SneakyThrows
     @Override
-    public void closeDB() {
+    public void closeDB()
+    {
         connection.close();
     }
 }

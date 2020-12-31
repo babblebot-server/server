@@ -26,9 +26,11 @@
 package net.bdavies.db.dialect.connection;
 
 import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDatabaseConfig;
+import net.bdavies.db.DatabaseManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,9 +44,11 @@ import java.sql.DriverManager;
  * @since 1.0.0
  */
 @Slf4j
+@ToString
 public class SQLiteConnection extends RDMSConnection {
-    public SQLiteConnection(IDatabaseConfig databaseConfig, IApplication application) {
-        super(databaseConfig, application);
+
+    public SQLiteConnection(DatabaseManager manager) {
+        super(manager);
     }
 
     @SneakyThrows
@@ -53,7 +57,7 @@ public class SQLiteConnection extends RDMSConnection {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+           log.error("Cannot find class for sqlite please install dependency", e);
         }
 
         File file = new File(config.getDatabase());
@@ -63,7 +67,7 @@ public class SQLiteConnection extends RDMSConnection {
                     log.info("Your DB file has been created at: {}", file.getAbsolutePath());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Could not create db file", e);
             }
         }
 

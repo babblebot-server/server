@@ -23,11 +23,11 @@
  *
  */
 
-package uk.co.bjdavies.config;
+package net.bdavies.config;
 
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import net.bdavies.api.config.IDatabaseConfig;
 
 
 /**

@@ -31,7 +31,7 @@ package net.bdavies.db.error;
  * @author me@bdavies (Ben Davies)
  * @since 1.0.0
  */
-public class DBError extends Exception {
+public class DBError extends RuntimeException {
     public DBError(String s) {
         super(s);
     }

@@ -27,11 +27,10 @@ package net.bdavies.core;
 
 import com.google.inject.Inject;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.Model;
-import net.bdavies.db.WhereStatement;
-import reactor.core.publisher.Mono;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.command.Command;
 import net.bdavies.api.command.CommandParam;
@@ -42,9 +41,15 @@ import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.plugins.IPluginEvents;
 import net.bdavies.api.plugins.IPluginSettings;
 import net.bdavies.api.plugins.Plugin;
+import net.bdavies.db.InjectRepository;
+import net.bdavies.db.Repository;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.model.serialization.util.Utilities;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,7 +58,8 @@ import java.util.function.Consumer;
 
 /**
  * This will implement the core Terminal and Discord Commands such as Exit, Help, Ignore, Listen.
- * If your using this as your plugin template when making commands it is wise to name your commands with a prefix so
+ * If your using this as your plugin template when making commands it is wise to name your commands with a
+ * prefix so
  * if doesnt
  * clash with other plugins e.g. !bbhelp, !bbignore, !bblisten
  * <p>
@@ -83,8 +89,9 @@ import java.util.function.Consumer;
  * @since 1.0.0
  */
 @Slf4j
-@Plugin(author = "Ben Davies <ben.davies99@outlook.com>", namespace = "")
-public class CorePlugin implements IPluginEvents {
+@Plugin(author = "Ben Davies <me@bdavies.net>", namespace = "")
+public class CorePlugin implements IPluginEvents
+{
 
     private final ICommandDispatcher commandDispatcher;
 
@@ -94,8 +101,15 @@ public class CorePlugin implements IPluginEvents {
 
     private final AnnouncementService announcementService;
 
+    @InjectRepository(Ignore.class)
+    private Repository<Ignore> ignoreRepo;
+
+    @InjectRepository(AnnouncementChannel.class)
+    private Repository<AnnouncementChannel> announcementChannelRepo;
+
     @Inject
-    public CorePlugin(ICommandDispatcher commandDispatcher, IApplication application, IDiscordConfig config) {
+    public CorePlugin(ICommandDispatcher commandDispatcher, IApplication application, IDiscordConfig config)
+    {
         this.commandDispatcher = commandDispatcher;
         this.application = application;
         this.config = config;
@@ -103,145 +117,177 @@ public class CorePlugin implements IPluginEvents {
     }
 
     @Override
-    public void onReload() {
+    public void onReload()
+    {
         log.info("Plugin reload");
     }
 
     @Override
-    public void onBoot(IPluginSettings settings) {
+    public void onBoot(IPluginSettings settings)
+    {
         log.info("Booting Core Plugin");
-        //        commandDispatcher.registerGlobalMiddleware(context ->
-        //          Ignore.where("channelId", context.getMessage().getChannelId().asString()).doesntExist()
-        //          || context.getCommandName().equals("listen"));
+        log.info("All Ignores: {}", ignoreRepo.getAll());
+        log.info("All Announcement Channels: {}", announcementChannelRepo.getAll());
+        commandDispatcher.registerGlobalMiddleware(context ->
+                ignoreRepo.find(b -> b.where(Ignore::getChannel, context.getMessage().getChannel()))
+                        .isEmpty()
+                        || "listen".equals(context.getCommandName()));
+
         announcementService.start();
         IDiscordFacade discordFacade = application.get(IDiscordFacade.class);
-        discordFacade.registerEventHandler(ReadyEvent.class, (r) -> {
-            if (application.hasArgument("-restart")) {
+        discordFacade.registerEventHandler(ReadyEvent.class, r -> {
+            if (application.hasArgument("-restart"))
+            {
                 announcementService.sendMessage("The bot has now restarted");
             }
         });
+
     }
 
     @Override
-    public void onShutdown() {
+    public void onShutdown()
+    {
         announcementService.stop();
     }
 
     @Command(description = "Start listening again to a channel the bot will then start responding again.")
-    public void listen(ICommandContext commandContext) {
-        //        Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId()
-        //        .asString())
-        //          .first();
-        //        model.ifPresent(Model::delete);
-        //        if (model.isEmpty()) {
-        //            commandContext.getCommandResponse().sendString("Channel is not ignored, so cancelling command.");
-        //        }
-        commandContext.getCommandResponse().sendString("You can now use BabbleBot in this channel again.");
+    public void listen(ICommandContext commandContext)
+    {
+
+        Optional<Ignore> ignore = ignoreRepo.findFirst(b ->
+                b.where(Ignore::getChannel, commandContext.getMessage().getChannel()));
+        if (ignore.isEmpty())
+        {
+            commandContext.getCommandResponse().sendString("Channel is not ignored, so cancelling command.");
+        } else
+        {
+            ignore.get().delete();
+            commandContext.getCommandResponse()
+                    .sendString("You can now use BabbleBot in this channel again.");
+        }
     }
 
     @Command(description = "Ignore a channel so the bot wont respond")
-    public void ignore(ICommandContext commandContext) {
-        //        Optional<Ignore> model = Ignore.where("channelId", commandContext.getMessage().getChannelId()
-        //        .asString())
-        //          .first();
-        //        if (model.isPresent()) {
-        //            commandContext.getCommandResponse().sendString("Channel is already ignored, so cancelling
-        //            command.");
-        //        }
-        //        else {
-        //            Ignore newIgnore = new Ignore();
-        //            newIgnore.setChannelId(commandContext.getMessage().getChannelId().asString());
-        //            newIgnore.setGuildId(commandContext.getMessage().getGuild().block().getId().asString());
-        //            newIgnore.setIgnoredBy(commandContext.getMessage().getAuthor().get().getId().asString());
-        //            newIgnore.save();
-        //        }
+    public void ignore(ICommandContext commandContext)
+    {
+        Optional<Ignore> ignore = ignoreRepo.findFirst(b ->
+                b.where(Ignore::getChannel, commandContext.getMessage().getChannel()));
+
+        if (ignore.isPresent())
+        {
+            commandContext.getCommandResponse()
+                    .sendString("Channel is already ignored, so cancelling command.");
+        } else
+        {
+            Ignore newIgnore = ignoreRepo.create();
+            Message message = commandContext.getMessage();
+            newIgnore.setChannel(Utilities.monoBlock(message.getChannel().cast(TextChannel.class)));
+            newIgnore.setIgnoredBy(message.getAuthor().orElseThrow());
+            newIgnore.setGuild(Utilities.monoBlock(message.getGuild()));
+            newIgnore.save();
+        }
 
         commandContext.getCommandResponse().sendString("BabbleBot is now ignoring this channel");
     }
 
     @Command(aliases = {"register-announcement-channel",
-      "register-ac"}, description = "Register the channel where the command is ran as a announcement channel")
-    public Mono<String> register(ICommandContext commandContext) {
-        //        return commandContext.getMessage().getGuild().flatMap(g -> {
-        //            Optional<AnnouncementChannel> model = AnnouncementChannel.
-        //              where("guildId", g.getId().asString())
-        //              .first();
-        //            if (model.isPresent()) {
-        //                AnnouncementChannel channel = model.get();
-        //                if (channel.getChannelId().equals(commandContext.getMessage().getChannelId().asString())) {
-        //                    return Mono.just("Already registered within this server and channel");
-        //                }
-        //                else {
-        //                    return Mono.just("Already registered within this server.");
-        //                }
-        //            }
-        //            else {
-        //                AnnouncementChannel channel = new AnnouncementChannel();
-        //                channel.setChannelId(commandContext.getMessage().getChannelId().asString());
-        //                channel.setGuildId(g.getId().asString());
-        //                channel.save();
-        //            }
-        //
-        //            return commandContext.getMessage().getChannel()
-        //              .flatMap(c -> Mono.just("Registered " + ((TextChannel) c).getName() + ", as a announcement
-        //              channel."));
-        //        });
-        return Mono.empty();
+            "register-ac"},
+            description = "Register the channel where the command is ran as a announcement channel")
+    public Mono<String> register(ICommandContext commandContext)
+    {
+        return commandContext.getMessage().getGuild().flatMap(g -> {
+            Optional<AnnouncementChannel> model =
+                    announcementChannelRepo
+                            .findFirst(b -> b.where(AnnouncementChannel::getGuild, g));
+            if (model.isPresent())
+            {
+                AnnouncementChannel channel = model.get();
+                return commandContext.getMessage()
+                        .getChannel()
+                        .cast(TextChannel.class)
+                        .flatMap(c ->
+                                c.equals(channel.getChannel())
+                                        ? Mono.just("Already registered within this server and channel")
+                                        : Mono.just("Already registered within this server, on channel: " +
+                                        channel.getChannel().getName() + ". You can remove it by doing " +
+                                        config.getCommandPrefix() + "remove-ac on that channel"));
+            } else
+            {
+                AnnouncementChannel channel = announcementChannelRepo.create();
+                channel.setGuild(g);
+                return commandContext.getMessage()
+                        .getChannel()
+                        .cast(TextChannel.class)
+                        .flatMap(c -> {
+                            channel.setChannel(c);
+                            channel.save();
+                            return Mono.just("Registered " + c.getName() +
+                                    ", as a announcement channel.");
+                        });
+            }
+        });
     }
 
     @Command(aliases = {"remove-announcement-channel",
-      "remove-ac"}, description = "Remove the channel where the command is ran as a announcement channel")
-    public Mono<String> remove(ICommandContext commandContext) {
-        //        return commandContext.getMessage().getGuild().flatMap(g -> {
-        //            Optional<AnnouncementChannel> model = AnnouncementChannel.
-        //              where("guildId", g.getId().asString())
-        //              .and(new WhereStatement("channelId", commandContext.getMessage().getChannelId().asString()))
-        //              .first();
-        //            model.ifPresent(Model::delete);
-        //            if (model.isEmpty()) {
-        //                return Mono.just("Unable to remove this channel as a announcement channel as it is not
-        //                registered");
-        //            }
-        //            return commandContext.getMessage().getChannel()
-        //              .flatMap(c -> Mono.just("Removed " + ((TextChannel) c).getName() + ", as a announcement
-        //              channel."));
-        //        });
-
-        return Mono.empty();
+            "remove-ac"},
+            description = "Remove the channel where the command is ran as a announcement channel")
+    public Mono<String> remove(ICommandContext commandContext)
+    {
+        return commandContext.getMessage().getGuild().flatMap(g -> {
+            Optional<AnnouncementChannel> model = announcementChannelRepo.findFirst(b ->
+                    b.where(AnnouncementChannel::getGuild, g)
+                            .and(AnnouncementChannel::getChannel,
+                                    commandContext.getMessage().getChannel()));
+            model.ifPresent(Model::delete);
+            if (model.isEmpty())
+            {
+                return Mono.just("Unable to remove this channel as a announcement channel " +
+                        "as it is not registered");
+            }
+            return commandContext.getMessage().getChannel()
+                    .flatMap(c -> Mono.just("Removed " + ((TextChannel) c).getName()
+                            + ", as a announcement channel."));
+        });
     }
 
     @Command(description = "Restart bot...")
     @CommandParam(value = "password", optional = false, canBeEmpty = false, exampleValue = "password123")
-    public Mono<String> restart(ICommandContext commandContext) {
-        if (commandContext.hasParameter("password")) {
+    public Mono<String> restart(ICommandContext commandContext)
+    {
+        if (commandContext.hasParameter("password"))
+        {
             String password = commandContext.getParameter("password");
             String serverPassword = config.getShutdownPassword();
-            if (password.equals(serverPassword)) {
+            if (password.equals(serverPassword))
+            {
                 announcementService.sendMessage("Restarting bot...");
                 return Mono.create(sink -> {
                     application.restart();
                     sink.success();
                 });
-            }
-            else {
+            } else
+            {
                 return Mono.just("Password incorrect...");
             }
-        }
-        else {
+        } else
+        {
             return Mono.just("You require a password to ru this command.");
         }
     }
 
-    @Command(description = "This will help you to discover all the commands and their features.", type = "All",
-      exampleValue = "ignore")
+    @Command(description = "This will help you to discover all the commands and their features.",
+            type = "All",
+            exampleValue = "ignore")
     @CommandParam(value = "cmd", canBeEmpty = false,
-      exampleValue = "ignore")
-    public Mono<Consumer<EmbedCreateSpec>> help(ICommandContext commandContext) {
+            exampleValue = "ignore")
+    public Mono<Consumer<EmbedCreateSpec>> help(ICommandContext commandContext)
+    {
 
-        if (commandContext.hasNonEmptyParameter("cmd") || !commandContext.getValue().equals("")) {
+        if (commandContext.hasNonEmptyParameter("cmd") || !commandContext.getValue().isEmpty())
+        {
             String command = commandContext.hasNonEmptyParameter("cmd")
-              ? commandContext.getParameter("cmd")
-              : commandContext.getValue();
+                    ? commandContext.getParameter("cmd")
+                    : commandContext.getValue();
 
 
             return Mono.just(spec -> {
@@ -251,79 +297,84 @@ public class CorePlugin implements IPluginEvents {
                 String alias = command.replace(namespace, "");
                 log.info(command);
                 commandDispatcher.getCommandByAlias(namespace, alias, commandContext.getType())
-                  .subscribe(cmd -> {
-                      hasFoundCommand.set(true);
-                      Optional<IPluginSettings> settings = application.getPluginContainer()
-                        .getPluginSettingsFromNamespace(namespace);
-                      String author = command;
-                      if (settings.isPresent()) {
-                          author = settings.get().getName();
-                          author = author.substring(0, 1).toUpperCase() + author.substring(1);
-                          author = author + " Plugin";
-                          spec.setFooter("Please refer to plugin documentation for further information",
-                            null);
-                      }
-                      spec.setAuthor(author, null, null);
-                      spec.setTitle(alias.substring(0, 1).toUpperCase() + alias.substring(1) + " Command");
-                      spec.addField("Key", "```css\n" +
-                        "[" + config.getCommandPrefix() +
-                        "(alias|alias2....)] : This is displaying the commands aliases.\n" +
-                        "[-(param?)]: This is an optional empty parameter\n" +
-                        "[-(param*)]: Required empty parameter\n" +
-                        "[-(param?)=*]: Optional value based parameter\n" +
-                        "[-(param*)=*]: Required value based parameter\n" +
-                        "[(value?)]: Optional value\n" +
-                        "[(value*)]: Required value\n" +
-                        "```", false);
+                        .subscribe(cmd -> {
+                            hasFoundCommand.set(true);
+                            Optional<IPluginSettings> settings = application.getPluginContainer()
+                                    .getPluginSettingsFromNamespace(namespace);
+                            String author = command;
+                            if (settings.isPresent())
+                            {
+                                author = settings.get().getName();
+                                author =
+                                        author.substring(0, 1).toUpperCase(Locale.ROOT) + author.substring(1);
+                                author = author + " Plugin";
+                                spec.setFooter("Please refer to plugin documentation for further information",
+                                        null);
+                            }
+                            spec.setAuthor(author, null, null);
+                            spec.setTitle(
+                                    alias.substring(0, 1).toUpperCase(Locale.ROOT) + alias.substring(1) +
+                                            " Command");
+                            spec.addField("Key", "```css\n" +
+                                    "[" + config.getCommandPrefix() +
+                                    "(alias|alias2....)] : This is displaying the commands aliases.\n" +
+                                    "[-(param?)]: This is an optional empty parameter\n" +
+                                    "[-(param*)]: Required empty parameter\n" +
+                                    "[-(param?)=*]: Optional value based parameter\n" +
+                                    "[-(param*)=*]: Required value based parameter\n" +
+                                    "[(value?)]: Optional value\n" +
+                                    "[(value*)]: Required value\n" +
+                                    "```", false);
 
-                      spec.addField("Usage", "```\n" + cmd.getUsage() + "\n```", false);
-                      StringBuilder examples = new StringBuilder("```md\n");
-                      AtomicInteger index = new AtomicInteger(1);
-                      Arrays.stream(cmd.getExamples()).forEach(e -> {
-                          examples.append("[")
-                            .append(index.getAndIncrement())
-                            .append("]: ")
-                            .append(e)
-                            .append("\n");
-                      });
-                      examples.append("```");
-                      spec.addField("Examples", examples.toString(), false);
-                  }, null, () -> {
-                      if (!hasFoundCommand.get()) {
-                          spec.setTitle("Command Not found");
-                      }
-                  });
+                            spec.addField("Usage", "```\n" + cmd.getUsage() + "\n```", false);
+                            StringBuilder examples = new StringBuilder("```md\n");
+                            AtomicInteger index = new AtomicInteger(1);
+                            Arrays.stream(cmd.getExamples()).forEach(e -> examples.append("[")
+                                    .append(index.getAndIncrement())
+                                    .append("]: ")
+                                    .append(e)
+                                    .append("\n"));
+                            examples.append("```");
+                            spec.addField("Examples", examples.toString(), false);
+                        }, null, () -> {
+                            if (!hasFoundCommand.get())
+                            {
+                                spec.setTitle("Command Not found");
+                            }
+                        });
             });
-        }
-        else {
+        } else
+        {
             return Mono.just(spec -> {
                 spec.setTitle("Commands");
                 spec.setDescription(
-                  "This is all the commands available to babblebot. Please use **!help** {command-name} for more " +
-                    "information");
+                        "This is all the commands available to babblebot. Please use **!help** " +
+                                "{command-name} for more " +
+                                "information");
                 spec.setTimestamp(Instant.now());
 
                 commandDispatcher.getRegisteredNamespaces().subscribe(namespace -> {
                     AtomicReference<StringBuilder> sb = new AtomicReference<>(new StringBuilder("```css\n"));
                     commandDispatcher.getCommandsFromNamespace(namespace)
-                      .subscribe(cmd -> sb.get().append("[")
-                        .append(config.getCommandPrefix())
-                        .append(namespace)
-                        .append(cmd.getAliases()[0])
-                        .append("]: ")
-                        .append(cmd.getDescription())
-                        .append("\n"), null, () -> {
-                          sb.get().append("```");
-                          Optional<IPluginSettings> settings = application.getPluginContainer()
-                            .getPluginSettingsFromNamespace(namespace);
-                          String name = namespace + " Commands";
-                          if (settings.isPresent()) {
-                              name = settings.get().getName();
-                              name = name.substring(0, 1).toUpperCase() + name.substring(1);
-                              name = name + " Commands";
-                          }
-                          spec.addField(name, sb.get().toString(), false);
-                      });
+                            .subscribe(cmd -> sb.get().append("[")
+                                    .append(config.getCommandPrefix())
+                                    .append(namespace)
+                                    .append(cmd.getAliases()[0])
+                                    .append("]: ")
+                                    .append(cmd.getDescription())
+                                    .append("\n"), null, () -> {
+                                sb.get().append("```");
+                                Optional<IPluginSettings> settings = application.getPluginContainer()
+                                        .getPluginSettingsFromNamespace(namespace);
+                                String name = namespace + " Commands";
+                                if (settings.isPresent())
+                                {
+                                    name = settings.get().getName();
+                                    name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
+                                    name = name + " Commands";
+                                }
+                                spec.addField(name, sb.get().toString(), false);
+                            });
                 });
 
             });

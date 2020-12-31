@@ -26,11 +26,11 @@
 package net.bdavies.http.controllers;
 
 import com.google.inject.Inject;
+import net.bdavies.http.Controller;
+import net.bdavies.http.Get;
 import org.reactivestreams.Publisher;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
-import net.bdavies.http.Controller;
-import net.bdavies.http.Get;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)

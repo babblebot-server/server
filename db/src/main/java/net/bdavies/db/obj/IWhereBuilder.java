@@ -26,6 +26,7 @@
 package net.bdavies.db.obj;
 
 import net.bdavies.db.Operator;
+import net.bdavies.db.query.QueryLink;
 
 /**
  * This will define all where statements
@@ -45,4 +46,8 @@ public interface IWhereBuilder {
     IWhereBuilder and(String col, Operator operator, String val);
 
     IWhereBuilder or(String col, Operator operator, String val);
+
+
+    IWhereBuilder group(IQueryObject object, QueryLink link);
+    IWhereBuilder group(IQueryObject object);
 }

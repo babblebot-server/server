@@ -25,54 +25,45 @@
 
 package net.bdavies.core;
 
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.TextChannel;
 import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.model.Model;
-import net.bdavies.db.model.fields.ObjectIdProperty;
-import net.bdavies.db.model.fields.Property;
-import net.bdavies.db.model.fields.Unique;
 import net.bdavies.db.model.ITimestamps;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.model.fields.PrimaryField;
+import net.bdavies.db.model.fields.Property;
 import net.bdavies.db.model.serialization.UseSerializationObject;
-import net.bdavies.db.model.hooks.ICreateHook;
-import net.bdavies.db.model.hooks.IUpdateHook;
-import net.bdavies.db.model.hooks.OnUpdate;
-import org.bson.types.ObjectId;
+import net.bdavies.db.model.serialization.util.GuildSerializationObject;
+import net.bdavies.db.model.serialization.util.TextChannelSerializationObject;
+import net.bdavies.db.model.serialization.util.UserSerializationObject;
+import org.checkerframework.common.aliasing.qual.Unique;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Getter
-@Setter
-@ToString
+@EqualsAndHashCode(callSuper = false)
+@Data
 @Slf4j
-public class Ignore extends Model implements IUpdateHook, ITimestamps, ICreateHook {
-    @ObjectIdProperty
-    @Setter(AccessLevel.PRIVATE)
-    private ObjectId id;
+public class Ignore extends Model implements ITimestamps
+{
     @Property
-    private String guildId;
+    @PrimaryField
+    @Setter(AccessLevel.PRIVATE)
+    private int id;
+    @Property
+    @UseSerializationObject(GuildSerializationObject.class)
+    private Guild guild;
     @Property
     @Unique
-    private String channelId;
+    @UseSerializationObject(TextChannelSerializationObject.class)
+    private TextChannel channel;
     @Property
-    @UseSerializationObject(PasswordSerializationObject.class)
-    private Password ignoredBy;
-
-    @Property
-    @OnUpdate(IgnoreUpdateHook.class)
-    private String update = "Not Updated!";
-
-    @Override
-    public void onUpdate() {
-        this.ignoredBy = new Password("Updated pass through model OnUpdate!");
-    }
-
-    @Override
-    public void onCreate() {
-        log.info("OnCreateCalled!");
-    }
+    @UseSerializationObject(UserSerializationObject.class)
+    private User ignoredBy;
 }

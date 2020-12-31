@@ -23,15 +23,36 @@
  *
  */
 
-package net.bdavies.db.model;
+package net.bdavies.db;
+
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.model.TestModel;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-public enum Relationship {
-    ONE_TO_ONE,
-    ONE_TO_MANY,
-    MANY_TO_MANY,
-    NONE
+@Slf4j
+class ModelFunctionTest extends DBSetup
+{
+
+    @Test
+    void getName()
+    {
+        ModelFunction<TestModel, String> function = TestModel::toString;
+        assertEquals("TestModel::toString", function.getName());
+
+        ModelFunction<TestModel, String> function1 = m -> "f";
+        assertEquals(":: ", function1.getName());
+    }
+
+    @Test
+    void getMethodName()
+    {
+        ModelFunction<TestModel, String> function = TestModel::toString;
+        assertEquals("toString", function.getMethodName());
+    }
 }

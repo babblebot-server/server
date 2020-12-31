@@ -26,6 +26,7 @@
 package net.bdavies.db.obj;
 
 import net.bdavies.db.Order;
+import net.bdavies.db.model.Model;
 
 import java.util.Map;
 import java.util.Set;
@@ -38,15 +39,16 @@ import java.util.Set;
  */
 public interface IBaseBuilder extends IWhereBuilder {
     IBaseBuilder orderBy(Map<String, Order> cols);
+    @SuppressWarnings("UnusedReturnValue")
     IBaseBuilder orderBy(String... cols);
 
-    <T> Set<T> get(Class<T> clazz);
+    <T extends Model> Set<T> get(Class<T> clazz);
 
     Set<Map<String, String>> get();
 
     Map<String, String> first();
-    <T> T first(Class<T> clazz);
+    <T extends Model> T first(Class<T> clazz);
     Map<String, String> last();
-    <T> T last(Class<T> clazz);
+    <T extends Model> T last(Class<T> clazz);
 
 }

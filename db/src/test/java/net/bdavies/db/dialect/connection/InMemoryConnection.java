@@ -25,49 +25,48 @@
 
 package net.bdavies.db.dialect.connection;
 
-import lombok.SneakyThrows;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDatabaseConfig;
+import net.bdavies.db.DatabaseManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * This will create a sqlite database in memory
- *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-public class InMemoryConnection extends RDMSConnection {
-
-    public InMemoryConnection(IDatabaseConfig databaseConfig, IApplication application) {
-        super(databaseConfig, application);
+@Slf4j
+public class InMemoryConnection extends RDMSConnection
+{
+    public InMemoryConnection(DatabaseManager manager)
+    {
+        super(manager);
     }
 
     @Override
-    protected Connection getConnectionForDB(IDatabaseConfig config, IApplication application) {
-        try {
+    protected Connection getConnectionForDB(IDatabaseConfig config,
+                                            IApplication application)
+    {
+        try
+        {
             Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e)
+        {
             e.printStackTrace();
         }
 
-        try {
+        try
+        {
             return DriverManager.getConnection("jdbc:log4jdbc:sqlite::memory:");
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            log.error("Error when setting up in memory database", e);
         }
         return null;
-    }
-
-    public void closeConnection() {
-        try {
-            connection.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
     }
 }

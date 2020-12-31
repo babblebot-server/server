@@ -23,17 +23,22 @@
  *
  */
 
-package net.bdavies.db.model;
+package net.bdavies.db;
 
-import net.bdavies.db.obj.IBaseBuilder;
+import net.bdavies.db.model.Model;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Edit me
- *
- * @author me@bdavies (Ben Davies)
- * @since 1.0.0
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@SuppressWarnings("unused")
-public interface IModelQueryBuilder<T> extends IBaseBuilder { //NOSONAR
-    boolean delete();
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface InjectRepository
+{
+    Class<? extends Model> value();
 }

@@ -25,8 +25,11 @@
 
 package net.bdavies.db.obj;
 
+import net.bdavies.db.model.Model;
+
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Edit me
@@ -34,10 +37,11 @@ import java.util.Set;
  * @author me@bdavies (Ben Davies)
  * @since 1.0.0
  */
-public interface IQueryObject extends IBaseBuilder {
+public interface IQueryObject extends IBaseBuilder, IGroupableWhereBuilder<IQueryObject> {
+    @SuppressWarnings("UnusedReturnValue")
     IQueryObject columns(String... cols);
 
-    <T> Set<T> get(Class<T> clazz);
+    <T extends Model> Set<T> get(Class<T> clazz);
 
     Set<Map<String, String>> get();
 
@@ -46,8 +50,9 @@ public interface IQueryObject extends IBaseBuilder {
     int insertGetId(String idColName, Map<String, String> insertValues);
     int insertGetId(Map<String, String> insertValues);
     Map<String, String> insertGet(Map<String, String> insertValues);
-    <T> T insertGet(Map<String, String> insertValues, Class<T> clazz);
+    <T extends Model> T insertGet(Map<String, String> insertValues, Class<T> clazz);
     boolean update(Map<String, String> updateValues);
     Set<Map<String, String>> updateGet(Map<String, String> updateValues);
-    <T> Set<T> updateGet(Map<String, String> updateValues, Class<T> clazz);
+    <T extends Model> Set<T> updateGet(Map<String, String> updateValues, Class<T> clazz);
+    <T extends Model> IQueryObject addModelPredicate(Predicate<T> wherePredicate);
 }

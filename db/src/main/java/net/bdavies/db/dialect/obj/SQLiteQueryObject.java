@@ -28,6 +28,7 @@ package net.bdavies.db.dialect.obj;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.DatabaseManager;
 import net.bdavies.db.dialect.connection.IConnection;
 
 /**
@@ -37,11 +38,14 @@ import net.bdavies.db.dialect.connection.IConnection;
  * @since 1.0.0
  */
 @Slf4j
-@ToString
-public class SQLiteQueryObject extends BaseQueryObject {
+@ToString(callSuper = true)
+public class SQLiteQueryObject extends BaseQueryObject
+{
 
-    public SQLiteQueryObject(@NonNull String table, @NonNull IConnection<String> connection) {
-        super(table, connection);
+    public SQLiteQueryObject(@NonNull String table, @NonNull IConnection<String> connection,
+                             @NonNull DatabaseManager manager)
+    {
+        super(table, connection, manager);
     }
 
 }

@@ -31,17 +31,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
-import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import reactor.netty.http.client.HttpClient;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.discord.IDiscordFacade;
+import net.bdavies.db.InjectRepository;
+import net.bdavies.db.ReactiveRepository;
+import reactor.netty.http.client.HttpClient;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -53,7 +56,8 @@ import java.util.function.BiConsumer;
  * @since 1.2.7
  */
 @Slf4j
-public class AnnouncementService {
+public class AnnouncementService
+{
 
     private final IDiscordFacade facade;
 
@@ -62,74 +66,86 @@ public class AnnouncementService {
     private final Timer timer;
     private Version currentVersion;
 
+    @InjectRepository(AnnouncementChannel.class)
+    private ReactiveRepository<AnnouncementChannel> announcementChannelRepo;
+
     @Inject
-    public AnnouncementService(IDiscordFacade facade, IApplication application) {
+    public AnnouncementService(IDiscordFacade facade, IApplication application)
+    {
         this.facade = facade;
         this.application = application;
         this.service = Executors.newFixedThreadPool(2,
-          new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
+                new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
         timer = new Timer();
         currentVersion = Version.valueOf(application.getServerVersion());
     }
 
-    public synchronized void stop() {
+    public synchronized void stop()
+    {
         timer.cancel();
         this.service.shutdown();
     }
 
-    public synchronized void start() {
+    public synchronized void start()
+    {
 
-        timer.scheduleAtFixedRate(new TimerTask() {
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
             @Override
-            public void run() {
-                log.info("Active Threads: " + Thread.activeCount());
-            }
-        }, 1000, 1000 * 60);
-
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
+            public void run()
+            {
                 service.submit(() -> {
-                    try {
+                    try
+                    {
                         String response =
-                          HttpClient.create()
-                            .get()
-                            .uri("https://api.github.com/repos/bendavies99/Babblebot-Server/releases")
-                            .responseContent()
-                            .aggregate()
-                            .asString()
-                            .block();
+                                HttpClient.create()
+                                        .get()
+                                        .uri("https://api.github.com/repos/bendavies99/Babblebot-Server" +
+                                                "/releases")
+                                        .responseContent()
+                                        .aggregate()
+                                        .asString()
+                                        .block();
 
                         Gson gson = new GsonBuilder().create();
 
-                        List<TagItem> res = gson.fromJson(response, new TypeToken<List<TagItem>>() {
+                        List<TagItem> res = gson.fromJson(response, new TypeToken<List<TagItem>>()
+                        {
                         }.getType());
                         assert res != null;
                         TagItem first = res.get(0);
                         int index = 0;
-                        while (first.prerelease) {
+                        while (first.prerelease)
+                        {
                             first = res.get(++index);
                         }
-                        String versionName = first.tag_name.toLowerCase().replace("v", "");
+                        String versionName = first.tag_name.toLowerCase(Locale.ROOT).replace("v", "");
                         Version tagVersion = Version.valueOf(versionName);
                         if (tagVersion.greaterThan(currentVersion) &&
-                                (tagVersion.getMajorVersion() == currentVersion.getMajorVersion() && !application.hasArgument("--updateMajor"))) {
-                            if (application.getConfig().getSystemConfig().isAutoUpdateOn()) {
+                                (tagVersion.getMajorVersion() == currentVersion.getMajorVersion() &&
+                                        !application.hasArgument("--updateMajor")))
+                        {
+                            if (application.getConfig().getSystemConfig().isAutoUpdateOn())
+                            {
                                 log.info("Updating....");
-                                application.get(UpdateService.class).updateTo(first).subscribe((b) -> {
+                                application.get(UpdateService.class).updateTo(first).subscribe(b -> {
 
-                                }, (t) -> log.error("Error", t), () -> {
+                                }, t -> log.error("Error", t), () -> {
                                     currentVersion = tagVersion;
 
                                     sendMessage("New server update to: " + versionName,
-                                      "Server has been updated please use: " +
-                                        application.getConfig().getDiscordConfig().getCommandPrefix() +
-                                        "restart to update now, or the bot will restart automatically in 10 minutes.." +
-                                        ".");
+                                            "Server has been updated please use: " +
+                                                    application.getConfig().getDiscordConfig()
+                                                            .getCommandPrefix() +
+                                                    "restart to update now, or the bot will restart " +
+                                                    "automatically in 10 minutes.." +
+                                                    ".");
 
-                                    timer.schedule(new TimerTask() {
+                                    timer.schedule(new TimerTask()
+                                    {
                                         @Override
-                                        public void run() {
+                                        public void run()
+                                        {
                                             sendMessage("Bot is now restarting for the update...");
                                             application.restart();
                                         }
@@ -137,49 +153,62 @@ public class AnnouncementService {
 
                                 });
                             }
-                        }
-                        else {
+                        } else
+                        {
                             log.info("Up to date");
                         }
-                    } catch (Exception e) {
-                        log.error("Checking for update failed.... Probably a rate limit.. please wait an hour.");
+                    }
+                    catch (Exception e)
+                    {
+                        log.error(
+                                "Checking for update failed.... Probably a rate limit.. please wait an hour" +
+                                        ".", e);
                     }
                 });
             }
         }, 3000, 1000 * 60 * 60);
     }
 
-    public synchronized void sendMessage(String title, String message) {
+    public synchronized void sendMessage(String title, String message)
+    {
 
         BiConsumer<EmbedCreateSpec, Guild> specConsumer = (spec, g) -> {
             spec.setFooter("Server Version: " + application.getServerVersion(), null);
             spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
             spec.setTimestamp(Instant.now());
             facade.getClient().getSelf()
-              .subscribe(u -> u.asMember(g.getId())
-                .subscribe(mem -> mem.getColor()
-                  .subscribe(spec::setColor)));
+                    .subscribe(u -> u.asMember(g.getId())
+                            .subscribe(mem -> mem.getColor()
+                                    .subscribe(spec::setColor)));
             spec.setTitle(title);
             spec.setDescription("```\n" + message + "```");
         };
 
-        AnnouncementChannel.all().stream().map(a -> (AnnouncementChannel) a).forEach(a ->
-          facade.getClient().getGuildById(Snowflake.of(a.getGuildId())).subscribe(g ->
-            g.getChannelById(Snowflake.of(a.getChannelId())).map(c -> (TextChannel) c)
-              .subscribe(c -> c.createEmbed(spec -> specConsumer.accept(spec, g)).subscribe())));
+        announcementChannelRepo.getAll()
+                .flatMap(a -> a.getChannel()
+                        .createEmbed(s -> specConsumer.accept(s, a.getGuild())))
+                .subscribe();
+
     }
 
-    public synchronized void sendMessage(String message) {
+    public synchronized void sendMessage(String message)
+    {
         sendMessage("New announcement", message);
     }
 
-    public static class TagItem {
-        public String tag_name;
-        public List<Asset> assets;
-        public boolean prerelease;
+    @Data
+    @AllArgsConstructor
+    public static class TagItem
+    {
+        private String tag_name; //NOSONAR
+        private List<Asset> assets;
+        private boolean prerelease;
     }
 
-    public static class Asset {
-        public String browser_download_url;
+    @Data
+    @AllArgsConstructor
+    public static class Asset
+    {
+        private String browser_download_url; //NOSONAR
     }
 }

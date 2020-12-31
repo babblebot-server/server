@@ -50,6 +50,8 @@ public interface IModelProperty {
 
     boolean isIncrements();
 
+    boolean isHasDefaultValue();
+
     Class<? extends ISQLObjectSerializer<Model, Object>> getSerializer();
 
     Class<? extends ISQLObjectDeserializer<Model, Object>> getDeSerializer();

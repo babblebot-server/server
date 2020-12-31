@@ -27,6 +27,7 @@ package net.bdavies.db.dialect.obj;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.DatabaseManager;
 import net.bdavies.db.dialect.connection.IConnection;
 
 /**
@@ -37,7 +38,8 @@ import net.bdavies.db.dialect.connection.IConnection;
  */
 @Slf4j
 public class MySQLQueryObject extends BaseQueryObject {
-    public MySQLQueryObject(@NonNull String table, @NonNull IConnection<String> connection) {
-        super(table, connection);
+    public MySQLQueryObject(@NonNull String table, @NonNull IConnection<String> connection, @NonNull
+                            DatabaseManager manager) {
+        super(table, connection, manager);
     }
 }

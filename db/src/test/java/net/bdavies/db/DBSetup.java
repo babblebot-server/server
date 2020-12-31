@@ -25,64 +25,39 @@
 
 package net.bdavies.db;
 
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.dialect.connection.IConnection;
 import net.bdavies.db.dialect.connection.InMemoryConnection;
-import net.bdavies.db.dialect.obj.SQLiteQueryObject;
-import net.bdavies.db.mock.ApplicationMock;
-import net.bdavies.db.model.TestModel;
-import net.bdavies.db.obj.QueryObject;
+import net.bdavies.db.obj.IQueryObject;
 import net.bdavies.db.query.PreparedQuery;
-import net.bdavies.db.query.QueryBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import uk.co.bjdavies.api.IApplication;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-
 /**
- * This is a abstract class to setup a in-memory db
- *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@ExtendWith(MockitoExtension.class)
-public abstract class DBSetup {
-
-    protected IConnection connection;
-    protected IApplication application;
+@Slf4j
+public abstract class DBSetup
+{
+    protected DatabaseManager manager;
 
     @BeforeEach
-    void setUp() {
-
-        application = new ApplicationMock();
-        connection = new InMemoryConnection(new InMemoryDatabaseConfig(), application);
-        try {
-            Field dbConnection = DB.class.getDeclaredField("dbConnection");
-            dbConnection.setAccessible(true);
-            dbConnection.set(null, connection);
-            Field objectMap = DB.class.getDeclaredField("objectMap");
-            objectMap.setAccessible(true);
-            //noinspection unchecked
-            ((Map<Object, Object>)objectMap.get(null)).put(QueryObject.class, SQLiteQueryObject.class);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+    protected void setUp()
+    {
+        DatabaseConfig config = DatabaseConfig.builder().type("sqlite").database("in-memory").build();
+        manager = new DatabaseManager(config, new ApplicationMock(config), InMemoryConnection.class);
         createTestTable();
-        populateTestTable(9);
+        populateTestTable();
     }
 
-    protected void populateTestTable(int number) {
-        if (number > 9) number = 9;
+    protected void populateTestTable()
+    {
+        int number = 9;
         List<String> names = new LinkedList<>();
         names.add("John");
         names.add("Pete");
@@ -93,33 +68,30 @@ public abstract class DBSetup {
         names.add("Rob");
         names.add("Robbie");
         names.add("Lex");
-        for (int i = 0; i < number; i++ ) {
-            QueryBuilder queryBuilder = new QueryBuilder("test");
-            queryBuilder.columns("text").insert(Map.of("text", names.get(i)));
+        for (int i = 0; i < number; i++)
+        {
+            IQueryObject object = manager.createQueryBuilder("test");
+            object.columns("text").insert(Map.of("text", names.get(i)));
         }
     }
 
-    private void createTestTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL);";
-        connection.executeCommand(sql, new PreparedQuery());
+    private void createTestTable()
+    {
+        String sql = "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT " +
+                "NULL);";
+        //noinspection unchecked
+        ((IConnection<String>)manager.getConnection()).executeCommand(sql, new PreparedQuery());
     }
 
-
-    protected TestModel createTestModel(String text) {
-        try {
-            Method method = TestModel.class.getSuperclass().getDeclaredMethod("create", IApplication.class, Class.class,
-                    Map.class, boolean.class);
-            method.setAccessible(true);
-            return (TestModel) method.invoke(null, application, TestModel.class, Map.of("text", text), false);
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     @AfterEach
-    void tearDown() {
-        ((InMemoryConnection)connection).closeConnection();
+    void tearDown()
+    {
+        try
+        {
+            manager.shutdown();
+        } catch (Exception e) {
+            log.error("Already closed!!", e);
+        }
     }
-
-
 }

@@ -27,11 +27,10 @@ package net.bdavies.db.dialect.connection;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import uk.co.bjdavies.api.IApplication;
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDatabaseConfig;
+import net.bdavies.db.DatabaseManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -44,21 +43,16 @@ import java.sql.DriverManager;
 @Slf4j
 public class MySQLConnection extends RDMSConnection {
 
-    public MySQLConnection(IDatabaseConfig config, IApplication application) {
-        super(config, application);
+    public MySQLConnection(DatabaseManager manager) {
+        super(manager);
     }
 
     @Override
     @SneakyThrows
     protected Connection getConnectionForDB(IDatabaseConfig config, IApplication application) {
-        try {
-            Class.forName("com.mysql.jdbc.Driver"); //NOSONAR
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
         return DriverManager.getConnection("jdbc:log4jdbc:mysql://" + config.getHostname() + ":" +
-                (config.getPort().isEmpty() ? "3306" : config.getPort()) +  "/" + config.getDatabase() + "?user=" + config.getUsername() +
+                (config.getPort().isEmpty() ? "3306" : config.getPort()) +  "/" +
+                config.getDatabase() + "?user=" + config.getUsername() +
                 "&password=" + config.getPassword());
     }
 }

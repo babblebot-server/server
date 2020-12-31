@@ -25,29 +25,23 @@
 
 package net.bdavies.db.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.db.model.fields.PrimaryField;
 import net.bdavies.db.model.fields.Property;
 import net.bdavies.db.model.fields.TableName;
 
-
 /**
- * This is a model to test against
- *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Getter
-@Setter
+@Slf4j
 @TableName("test")
-@ToString
-public class TestModel extends Model {
-
-    public TestModel() {
-    }
-
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class TestModel extends Model
+{
     @Property
     @PrimaryField
     private int id;

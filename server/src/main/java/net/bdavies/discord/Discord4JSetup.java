@@ -44,7 +44,8 @@ import net.bdavies.discord.services.Discord4JBotMessageService;
  * @since 1.0.0
  */
 @Slf4j
-public class Discord4JSetup {
+public class Discord4JSetup
+{
 
     private final IApplication application;
     private final IDiscordConfig config;
@@ -52,28 +53,35 @@ public class Discord4JSetup {
     private GatewayDiscordClient client;
 
     @Inject
-    public Discord4JSetup(IApplication application, IDiscordConfig config) {
+    public Discord4JSetup(IApplication application, IDiscordConfig config)
+    {
         this.application = application;
         this.config = config;
         this.setupClient();
     }
 
-    private void setupClient() {
-        try {
+    private void setupClient()
+    {
+        try
+        {
             log.info("Setting up Discord Client");
 
             client = DiscordClient.builder(config.getToken()).build().login().block();
             assert client != null;
             client.getEventDispatcher().on(ReadyEvent.class).subscribe(e -> {
-                client.updatePresence(Presence.online(Activity.playing(config.getPlayingText()))).block();
+                client.updatePresence(Presence.online(Activity.playing(config.getPlayingText())))
+                       .block();
                 log.info("Started Discord Client, waiting for messages...");
             });
-        } catch (NullPointerException e) {
+        }
+        catch (NullPointerException e)
+        {
             e.printStackTrace();
         }
     }
 
-    public void startServices() {
+    public void startServices()
+    {
         Discord4JBotMessageService messageService = application.get(Discord4JBotMessageService.class);
         messageService.register();
 

@@ -51,7 +51,7 @@ public class DiscordConfig implements IDiscordConfig {
      * This will be used to set the playing text on startup.
      */
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
-    private String playingText = "BabbleBot 2020. Ben Davies";
+    private String playingText = "{commandPrefix}help {cmdName}";
 
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
     private String shutdownPassword = "password";
@@ -77,7 +77,7 @@ public class DiscordConfig implements IDiscordConfig {
 
     @Override
     public String getPlayingText() {
-        return playingText;
+        return playingText.replace("{commandPrefix}", getCommandPrefix());
     }
 
     @Override

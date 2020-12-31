@@ -25,39 +25,41 @@
 
 package net.bdavies.core;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.bdavies.db.Model;
-import net.bdavies.db.fields.IntField;
-import net.bdavies.db.fields.PrimaryField;
-import net.bdavies.db.fields.StringField;
-import net.bdavies.db.fields.Unique;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.channel.TextChannel;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.model.fields.PrimaryField;
+import net.bdavies.db.model.fields.Property;
+import net.bdavies.db.model.fields.Unique;
+import net.bdavies.db.model.serialization.UseSerializationObject;
+import net.bdavies.db.model.serialization.util.GuildSerializationObject;
+import net.bdavies.db.model.serialization.util.TextChannelSerializationObject;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
-public class AnnouncementChannel extends Model {
+@Slf4j
+@Getter
+@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class AnnouncementChannel extends Model
+{
+    @Property
     @PrimaryField
-    @Getter
+    @Setter(AccessLevel.PRIVATE)
     private int id;
 
-    @Getter
-    @Setter
+    @Property
     @Unique
-    private String guildId;
+    @UseSerializationObject(GuildSerializationObject.class)
+    private Guild guild;
 
+    @Property
     @Unique
-    @Getter
-    @Setter
-    private String channelId;
-
-    @Override
-    public String toString() {
-        return "AnnouncementChannel{" +
-                "id=" + id +
-                ", guildId='" + guildId + '\'' +
-                ", channelId='" + channelId + '\'' +
-                '}';
-    }
+    @UseSerializationObject(TextChannelSerializationObject.class)
+    private TextChannel channel;
 }

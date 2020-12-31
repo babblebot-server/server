@@ -29,17 +29,23 @@ import com.mongodb.client.model.Filters;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.db.DatabaseManager;
+import net.bdavies.db.Operator;
 import net.bdavies.db.dialect.connection.IConnection;
 import net.bdavies.db.dialect.descriptor.ColumnDescriptor;
 import net.bdavies.db.dialect.descriptor.MongoDocumentDescriptor;
+import net.bdavies.db.model.Model;
+import net.bdavies.db.obj.IQueryObject;
 import net.bdavies.db.obj.QueryObject;
 import net.bdavies.db.obj.WhereStatementObject;
+import net.bdavies.db.query.QueryLink;
 import net.bdavies.db.query.QueryType;
 import org.bson.conversions.Bson;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -50,45 +56,76 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class MongoDBQueryObject extends QueryObject {
+public class MongoDBQueryObject extends QueryObject
+{
 
     @NonNull
     private final String collection;
     @NonNull
     private final IConnection<MongoDocumentDescriptor> connection;
+    @NonNull
+    private final DatabaseManager manager;
 
     @Override
-    public <T> Set<T> get(Class<T> clazz) {
+    public <T extends Model> Set<T> get(Class<T> clazz)
+    {
         return connection.executeQuery(clazz, buildDocumentDescriptor(QueryType.SELECT), null);
     }
 
     @Override
-    public Set<Map<String, String>> get() {
+    public Set<Map<String, String>> get()
+    {
         return connection.executeQueryRaw(buildDocumentDescriptor(QueryType.SELECT), null);
     }
 
     @Override
-    public boolean delete() {
+    public boolean delete()
+    {
         return connection.executeCommand(buildDocumentDescriptor(QueryType.DELETE), null);
     }
 
     @Override
-    public boolean insert(Map<String, String> insertValues) {
+    public boolean insert(Map<String, String> insertValues)
+    {
         return connection.executeCommand(buildDocumentDescriptor(QueryType.INSERT), null);
     }
 
     @Override
-    public boolean update(Map<String, String> updateValues) {
+    public boolean update(Map<String, String> updateValues)
+    {
         return connection.executeCommand(buildDocumentDescriptor(QueryType.UPDATE), null);
     }
 
-    private MongoDocumentDescriptor buildDocumentDescriptor(QueryType type) {
+
+    @Override
+    public MongoDBQueryObject group(IQueryObject object, QueryLink link)
+    {
+        wheres.add(new WhereStatementObject("", Operator.NONE,
+                ((MongoDBQueryObject) object).buildDocumentDescriptor(QueryType.SELECT).getFilter(), link));
+        return this;
+    }
+
+    @Override
+    public IQueryObject group(Consumer<IQueryObject> builder,
+                              QueryLink link)
+    {
+        IQueryObject object = manager.createQueryBuilder(collection);
+        builder.accept(object);
+        return group(object, link);
+    }
+
+    private MongoDocumentDescriptor buildDocumentDescriptor(QueryType type)
+    {
         Bson filter = Filters.exists("_id");
-        if (!wheres.isEmpty()) {
+        if (!wheres.isEmpty())
+        {
             filter = Filters.and(wheres.stream().map(WhereStatementObject::getFilter)
                     .collect(Collectors.toList()));
         }
-        if(columns.isEmpty()) columns.add("*");
+        if (columns.isEmpty())
+        {
+            columns.add("*");
+        }
         List<ColumnDescriptor> columnDescriptors = columns.stream()
                 .map(c -> new ColumnDescriptor(c, c)).collect(Collectors.toList());
 

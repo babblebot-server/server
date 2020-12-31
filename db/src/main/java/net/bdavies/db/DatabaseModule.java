@@ -25,42 +25,32 @@
 
 package net.bdavies.db;
 
-import uk.co.bjdavies.api.config.IDatabaseConfig;
+import com.google.inject.AbstractModule;
+import com.google.inject.matcher.Matchers;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.IApplication;
+import net.bdavies.api.config.IDatabaseConfig;
+
 
 /**
- * This will create an in-memory db
- *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-public class InMemoryDatabaseConfig implements IDatabaseConfig {
-    @Override
-    public String getType() {
-        return "sqlite";
+@Slf4j
+@Getter
+public class DatabaseModule extends AbstractModule
+{
+    private final DatabaseManager manager;
+
+    public DatabaseModule(IDatabaseConfig config, IApplication application) {
+        this.manager = new DatabaseManager(config, application);
     }
 
     @Override
-    public String getUsername() {
-        return null;
-    }
-
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public String getHostname() {
-        return null;
-    }
-
-    @Override
-    public String getPort() {
-        return null;
-    }
-
-    @Override
-    public String getDatabase() {
-        return "in-memory";
+    protected void configure()
+    {
+     bind(DatabaseManager.class).toInstance(manager);
+     bindListener(Matchers.any(), new InjectRepositoryListener(manager));
     }
 }
