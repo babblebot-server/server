@@ -30,5 +30,5 @@ dependencies {
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'de.skuzzle:semantic-version:2.1.0'
-    implementation 'com.discord4j.discord4j:discord4j-voice:3.1.1'
+    implementation 'com.discord4j.discord4j:discord4j-voice:3.1.3'
 }
