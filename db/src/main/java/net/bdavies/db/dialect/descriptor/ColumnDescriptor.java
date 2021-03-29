@@ -31,14 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This will describe a column name: as
+ * <p>
+ * Used for the Mongo Connections
  *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
 @AllArgsConstructor
 @Getter
 @Slf4j
-public class ColumnDescriptor {
+public class ColumnDescriptor
+{
     private final String name;
     private final String as;
 }

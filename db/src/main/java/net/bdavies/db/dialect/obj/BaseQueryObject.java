@@ -47,10 +47,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Edit me
+ * Base class for SQL type queries
+ * <p>
+ * Used as a default SQL language for SQL type queries all methods can be overriden
  *
  * @author me@bdavies (Ben Davies)
- * @since 1.0.0
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 @AllArgsConstructor
@@ -65,6 +67,12 @@ public class BaseQueryObject extends QueryObject implements ISQLObject
     protected final DatabaseManager manager;
 
 
+    /**
+     * Get
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     @Override
     public <T extends Model> Set<T> get(Class<T> clazz)
     {
@@ -134,7 +142,8 @@ public class BaseQueryObject extends QueryObject implements ISQLObject
 
     protected String toInsertQuery(PreparedQuery queryToUse)
     {
-        return "INSERT INTO " + table + " (" + getColumnsString() + ") VALUES (" + getValuesString(queryToUse) + ")";
+        return "INSERT INTO " + table + " (" + getColumnsString() + ") VALUES (" +
+                getValuesString(queryToUse) + ")";
     }
 
     private String getColumnsString()
@@ -143,7 +152,8 @@ public class BaseQueryObject extends QueryObject implements ISQLObject
         {
             columns.add("*");
         }
-        return columns.stream().map(c -> c.equals("*") ? c : ("`" + c + "`")).collect(Collectors.joining(", "));
+        return columns.stream().map(c -> c.equals("*") ? c : ("`" + c + "`"))
+                .collect(Collectors.joining(", "));
     }
 
     private String getValuesString(PreparedQuery query)
@@ -155,7 +165,8 @@ public class BaseQueryObject extends QueryObject implements ISQLObject
 
     protected String toSelectQuery(PreparedQuery queryToUse)
     {
-        return "SELECT " + getColumnsString() + " FROM " + table + getWhereString(queryToUse) + getOrderByString();
+        return "SELECT " + getColumnsString() + " FROM " + table + getWhereString(queryToUse) +
+                getOrderByString();
     }
 
     private String getOrderByString()
@@ -186,14 +197,15 @@ public class BaseQueryObject extends QueryObject implements ISQLObject
     @Override
     public BaseQueryObject group(IQueryObject object, QueryLink link)
     {
-        preparedQuery.getPreparedValues().addAll(((BaseQueryObject)object).preparedQuery.getPreparedValues());
+        preparedQuery.getPreparedValues()
+                .addAll(((BaseQueryObject) object).preparedQuery.getPreparedValues());
         wheres.add(new WhereStatementObject("", Operator.NONE, new GroupValue((ISQLObject) object), link));
         return this;
     }
 
     @Override
     public BaseQueryObject group(Consumer<IQueryObject> builder,
-                              QueryLink link)
+                                 QueryLink link)
     {
         IQueryObject object = manager.createQueryBuilder(table);
         builder.accept(object);

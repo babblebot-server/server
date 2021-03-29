@@ -43,6 +43,7 @@ import net.bdavies.db.model.hooks.TimestampUpdateHook;
 import net.bdavies.db.model.serialization.DateSerializationObject;
 import net.bdavies.db.model.serialization.UseSerializationObject;
 
+import javax.annotation.processing.Generated;
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
@@ -52,7 +53,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
+ * Java Agent for transforming model classes
+ * <p>
+ * Used for transforming an model using interfaces like ITimestamps
+ *
+ * @author me@bdavies.net (Ben Davies)
  * @since 1.0.0
  */
 @Slf4j
@@ -65,8 +70,16 @@ public final class Agent
     private static ClassPool cp;
     private static ScopedClassPoolFactory scopedPool;
 
+    /**
+     * Private constructor (utility class)
+     */
     private Agent() {}
 
+    /**
+     * Pre main function for Java agent (fires before main)
+     * @param args Args passed to the agent
+     * @param instrumentation Instrumentation object for transforming classes
+     */
     public static void premain(String args, Instrumentation instrumentation)
     {
         cp = ClassPool.getDefault();
@@ -106,14 +119,25 @@ public final class Agent
     }
 
 
+    /**
+     * Check if a class is a model
+     *
+     * @param clazz Class to check
+     * @return {@link Boolean} true if is a model
+     */
     @SneakyThrows
     private static boolean isModel(CtClass clazz)
     {
         return notAbstract(clazz) && clazz.getSuperclass().getName().equals(MODEL_CLASS)
-                && !clazz.getName().equals(MODEL_CLASS)
-                && !clazz.getName().equals(Model.class.getName());
+                && !clazz.getName().equals(MODEL_CLASS);
     }
 
+    /**
+     * Check if a model has {@link ITimestamps} interface
+     *
+     * @param clazz Model to check
+     * @return {@link Boolean} true if it has the {@link ITimestamps} interface
+     */
     @SneakyThrows
     private static boolean applyTimestamps(CtClass clazz)
     {
@@ -121,6 +145,12 @@ public final class Agent
                 .anyMatch(c -> c.getName().equals(ITimestamps.class.getName()));
     }
 
+    /**
+     * Instrument a class
+     *
+     * @param target Target class to instrument
+     * @return {@link Byte}[] class byte code to reload
+     */
     private static byte[] instrument(CtClass target)
     {
         try
@@ -139,6 +169,11 @@ public final class Agent
         return BYTES;
     }
 
+    /**
+     * Instrument Models with timestamps
+     *
+     * @param target The target model class
+     */
     @SneakyThrows
     private static void instrumentTimestamps(CtClass target)
     {
@@ -167,12 +202,17 @@ public final class Agent
 
     }
 
-
+    /**
+     * Add a {@link Generated} annotation to the instrumented code
+     *
+     * @param newMethod The new method to add the generated annotation to
+     * @param target The target model class that is being instrumented
+     */
     private static void addGeneratedAnnotation(CtMethod newMethod, CtClass target)
     {
         ConstPool constPool = target.getClassFile().getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-        Annotation annotation = new Annotation("javax.annotation.Generated", constPool);
+        Annotation annotation = new Annotation(Generated.class.getName(), constPool);
         annotation.addMemberValue("value", new StringMemberValue(Agent.class.getName(), constPool));
 
         ZonedDateTime now = ZonedDateTime.now();
@@ -184,6 +224,13 @@ public final class Agent
     }
 
 
+    /**
+     * Add annotations to a field that is being instrumented
+     *
+     * @param field The field being annotated
+     * @param target The model class being instrumented
+     * @param builder Array of annotation builders ready to be built
+     */
     public static void addAnnotationsToField(CtField field, CtClass target, AnnotationBuilder... builder)
     {
         AnnotationsAttribute attr = new AnnotationsAttribute(target.getClassFile().getConstPool(),
@@ -193,6 +240,12 @@ public final class Agent
     }
 
 
+    /**
+     * Check that a class is not abstract
+     *
+     * @param clazz Class getting checked
+     * @return {@link Boolean} true if the class is not abstract
+     */
     private static boolean notAbstract(CtClass clazz)
     {
         int modifiers = clazz.getModifiers();

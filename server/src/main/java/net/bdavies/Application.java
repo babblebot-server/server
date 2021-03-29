@@ -68,7 +68,7 @@ import java.util.concurrent.Executors;
  */
 
 @Log4j2
-public class Application implements IApplication
+public final class Application implements IApplication
 {
 
     private static int triedToMake;
@@ -115,7 +115,7 @@ public class Application implements IApplication
         ApplicationModule applicationModule = new ApplicationModule(this);
         ConfigModule configModule = new ConfigModule(
                 "config.json");
-        //TODO: use commandLine Arguments to fulfill this. e.g. -bconf
+        //use commandLine Arguments to fulfill this. e.g. -bconf
         // .configLocation=config.json
         CommandModule commandModule = new CommandModule();
         VariableModule variableModule = new VariableModule();
@@ -330,7 +330,7 @@ public class Application implements IApplication
             }
             catch (IOException | InterruptedException e) /* NOSONAR */
             {
-                e.printStackTrace();
+                log.error("An error occurred when trying to restart Babblebot", e);
             }
         });
     }

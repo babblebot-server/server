@@ -50,9 +50,11 @@ import java.util.stream.Collectors;
 
 /**
  * Connection class for the MongoDB Driver
+ * <p>
+ * Used for MongoDB configurations setup by the user
  *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
@@ -62,6 +64,11 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
     private final MongoClient client;
     protected final DatabaseManager manager;
 
+    /**
+     * Construct a MongoDB Connection and setup the underlying MongoDB Client
+     *
+     * @param manager The database manager in charge of this connection
+     */
     public MongoDBConnection(DatabaseManager manager)
     {
         this.manager = manager;
@@ -79,6 +86,16 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
     }
 
 
+    /**
+     * Execute a query and get a Model set back
+     *
+     * @param clazz         The class to get back
+     * @param obj           The query to run {@link String} for SQL, {@link MongoDocumentDescriptor} for
+     *                      a Mongo Connection
+     * @param preparedQuery The query data
+     * @param <T>           Type of class to return
+     * @return {@link Set}  collection of Models
+     */
     @Override
     public <T extends Model> Set<T> executeQuery(Class<T> clazz, MongoDocumentDescriptor obj,
                                                  PreparedQuery preparedQuery)
@@ -94,6 +111,13 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
         }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /**
+     * Helper function to create a model from a class
+     *
+     * @param clazz The target model class
+     * @param <T> The type of model class
+     * @return {@link Model} model class
+     */
     @SneakyThrows
     private static <T extends Model> T createModel(Class<T> clazz)
     {
@@ -102,6 +126,14 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
     }
 
 
+    /**
+     * Execute a query and get a Map set back
+     *
+     * @param obj           The query to run {@link String} for SQL, {@link MongoDocumentDescriptor} for
+     *                      a Mongo Connection
+     * @param preparedQuery The query data
+     * @return {@link Set}  collection of Maps
+     */
     @Override
     public Set<Map<String, String>> executeQueryRaw(MongoDocumentDescriptor obj, PreparedQuery preparedQuery)
     {
@@ -129,12 +161,25 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
         return set;
     }
 
+    /**
+     * Get the application interface
+     *
+     * @return {@link IApplication} application interface
+     */
     @Override
     public IApplication getApplication()
     {
         return manager.getApplication();
     }
 
+    /**
+     * Execute a DB Command
+     *
+     * @param obj           The query to run {@link String} for SQL, {@link MongoDocumentDescriptor} for
+     *                      a Mongo Connection
+     * @param preparedQuery The query data
+     * @return {@link Boolean} true if successful
+     */
     @Override
     public boolean executeCommand(MongoDocumentDescriptor obj, PreparedQuery preparedQuery)
     {
@@ -185,6 +230,9 @@ public class MongoDBConnection implements IConnection<MongoDocumentDescriptor>
         }
     }
 
+    /**
+     * Close the underlying connection to the database
+     */
     @Override
     public void closeDB()
     {

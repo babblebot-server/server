@@ -26,6 +26,7 @@
 package net.bdavies.db.dialect.connection;
 
 import net.bdavies.api.IApplication;
+import net.bdavies.db.dialect.descriptor.MongoDocumentDescriptor;
 import net.bdavies.db.model.Model;
 import net.bdavies.db.query.PreparedQuery;
 
@@ -33,20 +34,60 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Edit me
+ * Interface describing a connections public methods
+ * <p>
+ * For executing queries on a DB connection
+ * <p>
+ * {@code Set<Model> models = manager.getConnection().executeQuery(Model.class, "SELECT * FROM example", new
+ * PreparedQuery());}
  *
  * @author me@bdavies (Ben Davies)
- * @since 1.0.0
+ * @since __RELEASE_VERSION__
  */
-public interface IConnection<R> {
+public interface IConnection<R>
+{
 
+    /**
+     * Execute a query and get a Model set back
+     *
+     * @param clazz         The class to get back
+     * @param obj           The query to run {@link String} for SQL, {@link MongoDocumentDescriptor} for
+     *                      a Mongo Connection
+     * @param preparedQuery The query data
+     * @param <T>           Type of class to return
+     * @return {@link Set}  collection of Models
+     */
     <T extends Model> Set<T> executeQuery(Class<T> clazz, R obj, PreparedQuery preparedQuery);
 
+    /**
+     * Execute a query and get a Map set back
+     *
+     * @param obj           The query to run {@link String} for SQL, {@link MongoDocumentDescriptor} for
+     *                      a Mongo Connection
+     * @param preparedQuery The query data
+     * @return {@link Set}  collection of Maps
+     */
     Set<Map<String, String>> executeQueryRaw(R obj, PreparedQuery preparedQuery);
 
+    /**
+     * Get the application interface
+     *
+     * @return {@link IApplication} application interface
+     */
     IApplication getApplication();
 
+    /**
+     * Execute a DB Command
+     *
+     * @param obj           The query to run {@link String} for SQL, {@link MongoDocumentDescriptor} for
+     *                      a Mongo Connection
+     * @param preparedQuery The query data
+     * @return {@link Boolean} true if successful
+     */
     boolean executeCommand(R obj, PreparedQuery preparedQuery);
 
+    /**
+     * Close the underlying connection to the database
+     */
     void closeDB();
 }

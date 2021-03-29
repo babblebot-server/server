@@ -35,18 +35,32 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
- * Connection class for a MySQL connection
+ * Connection class for the MySQL Driver
+ * <p>
+ * Used for MySQL configurations setup by the user
  *
- * @author <a href="mailto:me@bdavies.net">me@bdavies.net (Ben Davies)</a>
- * @since <a href="https://github.com/bendavies99/BabbleBot-Server/releases/tag/v3.0.0">3.0.0</a>
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 public class MySQLConnection extends RDMSConnection {
 
+    /**
+     * Construct a MySQLConnection
+     *
+     * @param manager The database manager that controls this connection
+     */
     public MySQLConnection(DatabaseManager manager) {
         super(manager);
     }
 
+    /**
+     * Set up the underlying MySQL Client
+     *
+     * @param config The database config setup by the user
+     * @param application The application interface
+     * @return {@link Connection} sql connection
+     */
     @Override
     @SneakyThrows
     protected Connection getConnectionForDB(IDatabaseConfig config, IApplication application) {

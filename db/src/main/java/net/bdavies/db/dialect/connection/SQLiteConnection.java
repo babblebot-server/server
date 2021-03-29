@@ -38,19 +38,34 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
- * Edit me
+ * Connection class for the SQLite Driver
+ * <p>
+ * Used for SQLite configurations setup by the user
  *
- * @author me@bdavies (Ben Davies)
- * @since 1.0.0
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
+
 @Slf4j
 @ToString
 public class SQLiteConnection extends RDMSConnection {
 
+    /**
+     * Construct a SQLiteConnection
+     *
+     * @param manager The database manager that controls this connection
+     */
     public SQLiteConnection(DatabaseManager manager) {
         super(manager);
     }
 
+    /**
+     * Set up the underlying SQLite Client
+     *
+     * @param config The database config setup by the user
+     * @param application The application interface
+     * @return {@link Connection} sql connection
+     */
     @SneakyThrows
     @Override
     protected Connection getConnectionForDB(IDatabaseConfig config, IApplication application) {

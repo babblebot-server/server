@@ -41,10 +41,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Edit me
+ * Abstract Class for SQL Connection Drivers
+ * <p>
+ * Used to implement common IConnection interface methods and have the setup different
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 1.0.0
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 public abstract class RDMSConnection implements IConnection<String>
@@ -53,6 +55,11 @@ public abstract class RDMSConnection implements IConnection<String>
     protected final Connection connection;
     protected final DatabaseManager manager;
 
+    /**
+     * Construct a base SQL Connection and setup the underlying SQL Client
+     *
+     * @param manager The manager that controls this connection
+     */
     @SneakyThrows
     protected RDMSConnection(DatabaseManager manager)
     {
@@ -61,8 +68,24 @@ public abstract class RDMSConnection implements IConnection<String>
                 manager.getApplication());
     }
 
+    /**
+     * Set up the underlying SQL Client
+     *
+     * @param config      The database config setup by the user
+     * @param application The application interface
+     * @return {@link Connection} sql connection
+     */
     protected abstract Connection getConnectionForDB(IDatabaseConfig config, IApplication application);
 
+    /**
+     * Execute a query and get a Model set back
+     *
+     * @param clazz  The class to get back
+     * @param rawSql The query to run {@link String} for SQL
+     * @param query  The query data
+     * @param <T>    Type of class to return
+     * @return {@link Set}  collection of Models
+     */
     @Override
     public <T extends Model> Set<T> executeQuery(Class<T> clazz, String rawSql, PreparedQuery query)
     {
@@ -82,6 +105,12 @@ public abstract class RDMSConnection implements IConnection<String>
         return new LinkedHashSet<>();
     }
 
+    /**
+     * Set the values for a prepared statement from the prepared query class
+     *
+     * @param query     the query data
+     * @param statement the prepared statement
+     */
     protected void setValues(PreparedQuery query, PreparedStatement statement)
     {
         AtomicInteger integer = new AtomicInteger(1);
@@ -98,6 +127,13 @@ public abstract class RDMSConnection implements IConnection<String>
         query.getPreparedValues().clear();
     }
 
+    /**
+     * Execute a query and get a Map set back
+     *
+     * @param rawSql The query to run {@link String} for SQL
+     * @param query  The query data
+     * @return {@link Set}  collection of Maps
+     */
     @Override
     public Set<Map<String, String>> executeQueryRaw(String rawSql, PreparedQuery query)
     {
@@ -113,6 +149,13 @@ public abstract class RDMSConnection implements IConnection<String>
         return new LinkedHashSet<>();
     }
 
+    /**
+     * Execute a DB Command
+     *
+     * @param rawSql The query to run {@link String} for SQL
+     * @param query  The query data
+     * @return {@link Boolean} true if successful
+     */
     @Override
     public boolean executeCommand(String rawSql, PreparedQuery query)
     {
@@ -128,6 +171,15 @@ public abstract class RDMSConnection implements IConnection<String>
         }
     }
 
+    /**
+     * Take a Result set and convert it into a set of models
+     *
+     * @param resultSet The result set from the query
+     * @param clazz     The class to convert to
+     * @param query     the query data
+     * @param <T>       The type of class
+     * @return {@link Set} a set of models
+     */
     private <T extends Model> Set<T> processResultSet(ResultSet resultSet, Class<T> clazz,
                                                       PreparedQuery query)
     {
@@ -142,13 +194,19 @@ public abstract class RDMSConnection implements IConnection<String>
 
             return model;
         }).filter(m -> {
-            //TODO: Awful method of doing this, create a dummy model and create sql based on that!
             //noinspection unchecked
             return query.getModelPredicates().stream().map(p -> (Predicate<T>) p)
                     .reduce(x -> true, Predicate::and).test(m);
         }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /**
+     * Helper function to create a model from a class
+     *
+     * @param clazz The target model class
+     * @param <T>   The type of model class
+     * @return {@link Model} model class
+     */
     @SneakyThrows
     private static <T extends Model> T createModel(Class<T> clazz)
     {
@@ -156,6 +214,12 @@ public abstract class RDMSConnection implements IConnection<String>
         return constructor.newInstance();
     }
 
+    /**
+     * Take a Result set and convert it into a set of maps
+     *
+     * @param resultSet The result set from the query
+     * @return {@link Set} a set of maps
+     */
     @SuppressWarnings("MethodWithMultipleLoops")
     private Set<Map<String, String>> processResultSetRaw(ResultSet resultSet)
     {
@@ -185,12 +249,20 @@ public abstract class RDMSConnection implements IConnection<String>
         return set;
     }
 
+    /**
+     * Get the application interface
+     *
+     * @return {@link IApplication} application interface
+     */
     @Override
     public IApplication getApplication()
     {
         return manager.getApplication();
     }
 
+    /**
+     * Close the underlying connection to the database
+     */
     @SneakyThrows
     @Override
     public void closeDB()
