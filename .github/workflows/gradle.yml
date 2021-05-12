@@ -35,7 +35,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
     - name: Run FOSSA scan and upload build data
-      uses: fossa-contrib/fossa-action@v1
+      uses: fossa-contrib/fossa-action@v1.1.4
       with:
         fossa-api-key: ${{ secrets.FOSSA_API_KEY }}
         skip-test: true
