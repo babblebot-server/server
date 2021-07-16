@@ -15,7 +15,7 @@ jar {
 
 
 dependencies {
-    implementation 'net.bytebuddy:byte-buddy:1.10.21'
+    implementation 'net.bytebuddy:byte-buddy:1.11.8'
     implementation 'org.javassist:javassist:3.27.0-GA'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     implementation 'org.projectlombok:lombok:1.18.18'
