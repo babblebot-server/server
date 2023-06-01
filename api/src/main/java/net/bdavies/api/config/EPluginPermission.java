@@ -23,19 +23,22 @@
  *
  */
 
-package net.bdavies.db.model.fields;
+package net.bdavies.api.config;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Unique {
+public enum EPluginPermission
+{
+    REGISTER_GLOBAL_MIDDLEWARE;
 
+    public static List<EPluginPermission> all()
+    {
+        return Arrays.asList(values());
+    }
 }
+
