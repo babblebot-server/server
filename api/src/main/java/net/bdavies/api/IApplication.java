@@ -29,6 +29,7 @@ import net.bdavies.api.command.ICommandDispatcher;
 import net.bdavies.api.config.IConfig;
 import net.bdavies.api.plugins.IPluginContainer;
 import net.bdavies.api.variables.IVariableContainer;
+import org.springframework.stereotype.Component;
 
 /**
  * This is a interface for an application
@@ -36,10 +37,13 @@ import net.bdavies.api.variables.IVariableContainer;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IApplication {
+@Component
+public interface IApplication
+{
 
     /**
-     * This will return of a instance of a class and inject any dependencies that are inside the dependency injector.
+     * This will return of a instance of a class and inject any dependencies that are inside the dependency
+     * injector.
      *
      * @param clazz - this is the class to create
      * @return {@link Object<T>} this is an object of type T
@@ -87,7 +91,8 @@ public interface IApplication {
     void shutdown(int timeout);
 
     /**
-     * This will return true if babblebot has a argument basic at the moment only supports empty arguments e.g. -restart
+     * This will return true if babblebot has a argument basic at the moment only supports empty arguments
+     * e.g. -restart
      *
      * @param argument - argument to test for
      * @return boolean

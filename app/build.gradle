@@ -1,6 +1,10 @@
 plugins {
     id 'application'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
 
 application {
     mainClassName = 'net.bdavies.BabbleBot'
@@ -8,26 +12,16 @@ application {
 }
 
 
-project.startScripts {
-    doLast {
-        String agentFileName = 'babblebot-server-db-' + project(':db').getVersion() + '.jar'
-        String forwardSlash = "/"
-        String unixRegex = $/exec "$$JAVACMD" /$
-        String unixReplacement = $/exec "$$JAVACMD" -javaagent:"$$APP_HOME/lib${forwardSlash}${
-            agentFileName
-        }" /$
-        unixScript.text = unixScript.text.replace(unixRegex, unixReplacement)
-        String windowsRegex = $/"%JAVA_EXE%" %DEFAULT_JVM_OPTS%/$
-        String windowsReplacement = $/"%JAVA_EXE%" %DEFAULT_JVM_OPTS% -javaagent:"%APP_HOME%\lib\$agentFileName"/$
-        windowsScript.text = windowsScript.text.replace(windowsRegex, windowsReplacement)
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.1.0")
     }
 }
 
+
 project.tasks.run {
-    dependsOn ':db:build'
     dependsOn ':server:createProperties'
     doFirst {
-        project.applicationDefaultJvmArgs += ["-javaagent:${project(':db').getBuildDir()}/libs/babblebot-server-db-${project(':db').getVersion()}.jar"]
         project.applicationDefaultJvmArgs += ["-Dname=BabbleBot-Server"]
         project.applicationDefaultJvmArgs += ["-Dio.netty.noUnsafe=true"]
     }
@@ -36,7 +30,6 @@ jar {
     manifest {
         attributes 'Main-Class': 'net.bdavies.BabbleBot'
     }
-
 
     dependsOn createProperties
 }
@@ -48,4 +41,6 @@ repositories {
 dependencies {
     implementation project(':server')
     implementation project(':api')
+
+    implementation 'org.springframework.boot:spring-boot-starter'
 }

@@ -25,11 +25,14 @@
 
 package net.bdavies.api.config;
 
+import java.util.List;
+
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IPluginConfig {
+public interface IPluginConfig
+{
     /**
      * This will return the plugin's location.
      * e.g. audiobot -> plugins/audiobot/....
@@ -52,5 +55,10 @@ public interface IPluginConfig {
      */
     String getPluginType();
 
-
+    /**
+     * This will return all the permissions registered for the plugin
+     *
+     * @return {@link EPluginPermission}
+     */
+    List<EPluginPermission> getPluginPermissions();
 }

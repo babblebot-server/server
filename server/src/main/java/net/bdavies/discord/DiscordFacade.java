@@ -30,13 +30,15 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import discord4j.core.object.presence.Presence;
-import discord4j.discordjson.json.gateway.StatusUpdate;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import reactor.core.publisher.Mono;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.discord.IDiscordFacade;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
 
@@ -44,16 +46,20 @@ import java.util.function.Consumer;
  * This is the Public API for the Discord4JWrapper of the Discord API this will be used for plugins
  * It will include common utilities that will be required to create plugins
  * <p>
- * An example use case being calling {@link #getClient()}  in a plugin will give you access to the {@link DiscordClient}
- * Use DiscordClient at your own risk it is subject to change, I would recommend just using the api given to you
+ * An example use case being calling {@link #getClient()}  in a plugin will give you access to the
+ * {@link DiscordClient}
+ * Use DiscordClient at your own risk it is subject to change, I would recommend just using the api given
+ * to you
  * through the facade.
  * </p>
  *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Log4j2
-public class DiscordFacade implements IDiscordFacade {
+@Slf4j
+@Component
+public class DiscordFacade implements IDiscordFacade
+{
 
     @Getter
     private final GatewayDiscordClient client;
@@ -61,11 +67,10 @@ public class DiscordFacade implements IDiscordFacade {
     @Getter
     private final IApplication application;
 
-    public DiscordFacade(GatewayDiscordClient client, IApplication application) {
-        this.client = client;
+    public DiscordFacade(IApplication application, Discord4JService setup) {
         this.application = application;
+        this.client = setup.getClient();
     }
-
 
     /**
      * This is available to the public through plugins and this will allow for a bot to be logged out
@@ -73,7 +78,8 @@ public class DiscordFacade implements IDiscordFacade {
      *
      * @return {@link Mono<Void>} this is a Mono Stream of a Mono
      */
-    public Mono<Void> logoutBot() {
+    public Mono<Void> logoutBot()
+    {
         log.info("Logging DiscordBot out!");
         return this.client.logout();
     }
@@ -86,7 +92,8 @@ public class DiscordFacade implements IDiscordFacade {
      *
      * @return {@link Mono<User>} this is a Mono Stream of a User
      */
-    public Mono<User> getOurUser() {
+    public Mono<User> getOurUser()
+    {
         return this.client.getSelf();
     }
 
@@ -94,21 +101,23 @@ public class DiscordFacade implements IDiscordFacade {
      * This will update the presence of the bot to the text
      *
      * @param text {@link String} the text to change it to
-     * @see GatewayDiscordClient#updatePresence(StatusUpdate)
+     * @see GatewayDiscordClient#updatePresence(discord4j.core.object.presence.ClientPresence)
      * @see Presence
      * @see Activity
      */
-    public void updateBotPlayingText(String text) {
-        this.client.updatePresence(Presence.online(Activity.playing(text))).block();
+    public void updateBotPlayingText(String text)
+    {
+        this.client.updatePresence(ClientPresence.online(ClientActivity.playing(text))).block();
     }
 
     /**
      * Register a Event Listener to the Discord Client.
      *
      * @param callback A callback for the event handler
-     * @param clazz    The the Event Class
+     * @param clazz    The Event Class
      */
-    public <T extends Event> void registerEventHandler(Class<T> clazz, Consumer<T> callback) {
+    public <T extends Event> void registerEventHandler(Class<T> clazz, Consumer<T> callback)
+    {
         this.client.getEventDispatcher().on(clazz).subscribe(callback);
     }
 }

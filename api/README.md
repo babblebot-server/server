@@ -19,7 +19,7 @@ repositories {
 }
 
 dependancies {
-   implementation 'uk.co.bjdavies:babblebot-server-api:1.0.0'
+   implementation 'net.bdavies:babblebot-server-api:1.0.0'
 }
 ```
 
@@ -35,7 +35,7 @@ dependancies {
 
 <dependencies>
   <dependency>
-    <groupId>uk.co.bjdavies</groupId>
+    <groupId>net.bdavies</groupId>
     <artifactId>babblebot-server-api</artifactId>
     <version>1.0.0</version>
   </dependency>

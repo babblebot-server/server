@@ -25,25 +25,34 @@
 
 package net.bdavies.discord;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
-import net.bdavies.api.command.ICommandContext;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.DiscordCommandContext;
 import net.bdavies.api.discord.IDiscordCommandUtil;
+import net.bdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.obj.message.discord.DiscordMessage;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public class DiscordCommandUtil implements IDiscordCommandUtil {
+@Slf4j
+@RequiredArgsConstructor
+public class DiscordCommandUtil implements IDiscordCommandUtil
+{
 
-    private final ICommandContext commandContext;
-
-    public DiscordCommandUtil(ICommandContext commandContext) {
-        this.commandContext = commandContext;
-    }
+    private final DiscordCommandContext commandContext;
+    private final IDiscordFacade discordFacade;
 
     @Override
-    public void sendPrivateMessage(String text) {
-        commandContext.getMessage().getAuthorAsMember()
+    public void sendPrivateMessage(String text)
+    {
+        DiscordMessage message = commandContext.getMessage();
+        discordFacade.getClient()
+                .getGuildById(Snowflake.of(message.getGuild().getId().toLong()))
+                .flatMap(g -> g.getMemberById(Snowflake.of(message.getAuthor().getId().toLong())))
                 .flatMap(Member::getPrivateChannel)
                 .flatMap(c -> c.createMessage(text))
                 .subscribe();

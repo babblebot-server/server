@@ -25,14 +25,14 @@
 
 package net.bdavies.plugins.importing;
 
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import org.xeustechnologies.jcl.JarClassLoader;
-import reactor.core.publisher.Flux;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.config.IPluginConfig;
 import net.bdavies.api.plugins.IPlugin;
 import net.bdavies.api.plugins.Plugin;
+import org.springframework.stereotype.Service;
+import org.xeustechnologies.jcl.JarClassLoader;
+import reactor.core.publisher.Flux;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,47 +44,66 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 1.2.7
  */
 @Slf4j
-public class JarClassLoaderStrategy implements IPluginImportStrategy {
+@Service
+public class JarClassLoaderStrategy implements IPluginImportStrategy
+{
 
     private final JarClassLoader jcl;
 
     private final IApplication application;
 
-    @Inject
-    public JarClassLoaderStrategy(IApplication application) {
+    public JarClassLoaderStrategy(IApplication application)
+    {
         this.application = application;
         this.jcl = new JarClassLoader();
     }
 
     @Override
-    public Flux<Object> importPlugin(IPluginConfig config) {
+    public Flux<Object> importPlugin(IPluginConfig config)
+    {
         String pluginLocation = "plugins/" + config.getPluginLocation().replace("plugins/", "");
+        String finalPluginLocation;
 
-        if (pluginLocation.contains(".jar")) {
+        if (pluginLocation.contains(".jar"))
+        {
+            finalPluginLocation = config.getPluginLocation();
             jcl.add(config.getPluginLocation());
-        } else {
+        } else
+        {
+            finalPluginLocation = pluginLocation + "/";
             jcl.add(pluginLocation + "/");
         }
 
-        try {
-
-
-            if (config.getPluginClassPath().equals("")) {
+        try
+        {
+            if (config.getPluginClassPath().equals(""))
+            {
                 //Load All
                 return Flux.create(sink -> {
-                    log.info("Loading plugins: ");
+                    log.info("Attempting to load plugin in dir: {}", finalPluginLocation);
                     List<String> check = Arrays.asList("Proxy", "java/lang", "com/sun", "Guice", "google",
                             "GeneratedMethodAccessor", "GeneratedConstructorAccessor", "javax");
+                    if (jcl.getLoadedResources().keySet().isEmpty())
+                    {
+                        log.error("Unable to load resources in dir: {}", finalPluginLocation);
+                    }
                     jcl.getLoadedResources().keySet().stream()
                             .map(c -> {
-                                if (c.endsWith(".class") && !c.contains("module-info")) {
-                                    try {
+                                if (c.endsWith(".class") && !c.contains("module-info"))
+                                {
+                                    try
+                                    {
                                         return jcl.loadClass(c.replaceAll("/", ".").replace(".class", ""));
-                                    } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                                        if (contains(c, e.getMessage(), check)) {
+                                    }
+                                    catch (ClassNotFoundException | NoClassDefFoundError e)
+                                    {
+                                        if (contains(c, e.getMessage(), check))
+                                        {
                                             return null;
-                                        } else {
-                                            log.error("Failed to load class: " + c + ", please ensure that is is included in the libs.", e);
+                                        } else
+                                        {
+                                            log.error("Failed to load class: " + c +
+                                                    ", please ensure that is is included in the libs.", e);
                                         }
                                         return null;
                                     }
@@ -102,23 +121,29 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy {
                 });
 
 
-            } else {
+            } else
+            {
                 Class<?> clazz = jcl.loadClass(config.getPluginClassPath());
                 return Flux.just(application.get(clazz));
             }
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e)
+        {
             log.info("Plugin cannot be found please check your classpath.");
         }
 
         return Flux.empty();
     }
 
-    private boolean contains(String s, String s1, List<String> contains) {
+    private boolean contains(String s, String s1, List<String> contains)
+    {
         AtomicBoolean b = new AtomicBoolean(false);
 
         contains.forEach(c -> {
-            if (!b.get()) {
-                if (s.contains(c) || s1.contains(c)) {
+            if (!b.get())
+            {
+                if (s.contains(c) || s1.contains(c))
+                {
                     b.set(true);
                 }
             }

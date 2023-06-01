@@ -25,6 +25,8 @@
 
 package net.bdavies.variables;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,6 +40,7 @@ import java.util.regex.Pattern;
  * Date Created: 02/02/2018
  */
 
+@Slf4j
 public class DollarSignStrategy implements VariableStrategy {
     @Override
     public String[] parseAllVariables(String toParse) {

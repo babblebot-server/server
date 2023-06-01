@@ -25,12 +25,15 @@
 
 package net.bdavies.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import net.bdavies.api.config.IHttpConfig;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HttpConfig implements IHttpConfig {
 
     private int port;

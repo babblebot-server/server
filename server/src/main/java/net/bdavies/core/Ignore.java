@@ -25,48 +25,29 @@
 
 package net.bdavies.core;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.bdavies.db.Model;
-import net.bdavies.db.fields.IntField;
-import net.bdavies.db.fields.PrimaryField;
-import net.bdavies.db.fields.StringField;
-import net.bdavies.db.fields.Unique;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.obj.message.discord.DiscordUser;
+import net.bdavies.api.obj.message.discord.DiscordChannel;
+import net.bdavies.api.obj.message.discord.DiscordGuild;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public class Ignore extends Model {
-
-    @IntField
-    @PrimaryField
-    @Getter
-    private int id;
-
-    @StringField(charLimit = 255)
-    @Getter
-    @Setter
-    private String guildId;
-
-    @StringField(charLimit = 255)
-    @Unique
-    @Getter
-    @Setter
-    private String channelId;
-
-    @StringField(charLimit = 255)
-    @Getter
-    @Setter
-    private String ignoredBy;
-
-    @Override
-    public String toString() {
-        return "Ignore{" +
-                "id=" + id +
-                ", guildId='" + guildId + '\'' +
-                ", channelId='" + channelId + '\'' +
-                ", ignoredBy='" + ignoredBy + '\'' +
-                '}';
-    }
+@Data
+@Entity
+@Slf4j
+public class Ignore
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    private DiscordGuild guild;
+    private DiscordChannel channel;
+    private DiscordUser ignoredBy;
 }

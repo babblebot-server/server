@@ -26,12 +26,9 @@
 package net.bdavies.command;
 
 
-import discord4j.core.object.entity.Message;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.command.ICommandContext;
 import net.bdavies.api.command.ICommandResponse;
-import net.bdavies.api.discord.IDiscordCommandUtil;
-import net.bdavies.discord.DiscordCommandUtil;
 
 import java.util.Map;
 
@@ -39,8 +36,8 @@ import java.util.Map;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Log4j2
-public class CommandContext implements ICommandContext {
+@Slf4j
+public abstract class CommandContext implements ICommandContext {
     /**
      * This is the Map for all the command's paramaters.
      */
@@ -65,11 +62,6 @@ public class CommandContext implements ICommandContext {
     private final String type;
 
     /**
-     * This is used for discord messages.
-     */
-    private Message message;
-
-    /**
      * This is the response system for babblebot.
      */
     private final ICommandResponse commandResponse;
@@ -90,26 +82,6 @@ public class CommandContext implements ICommandContext {
         this.type = type;
         commandResponse = new CommandResponse();
     }
-
-
-    /**
-     * This is the CommandContext Constructor.
-     *
-     * @param commandName - The name of the command.
-     * @param parameters  - THe command's parameters.
-     * @param value       - The value of the command (if any).
-     * @param type        - The type of the command.
-     * @param message     - IMessage of which was created when the message was sent.
-     */
-    public CommandContext(String commandName, Map<String, String> parameters, String value, String type, Message message) {
-        this.commandName = commandName;
-        this.parameters = parameters;
-        this.value = value;
-        this.type = type;
-        this.message = message;
-        commandResponse = new CommandResponse();
-    }
-
 
     /**
      * This will return the value of a given parameter.
@@ -168,20 +140,6 @@ public class CommandContext implements ICommandContext {
      */
     public String getType() {
         return type;
-    }
-
-    @Override
-    public IDiscordCommandUtil getCommandUtils() {
-        return new DiscordCommandUtil(this);
-    }
-
-    /**
-     * This will return the message object.
-     *
-     * @return IMessage
-     */
-    public Message getMessage() {
-        return message;
     }
 
     @Override

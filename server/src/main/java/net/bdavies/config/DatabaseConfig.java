@@ -25,16 +25,23 @@
 
 package net.bdavies.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.IDatabaseConfig;
+
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
+@ToString
+@Slf4j
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseConfig implements IDatabaseConfig {
 
-    private final String type = "sqlite";
-    private final String database = "Core.db";
+    private String type = "sqlite";
+    private String database = "Core.db";
     private String username;
     private String password;
     private String hostname;

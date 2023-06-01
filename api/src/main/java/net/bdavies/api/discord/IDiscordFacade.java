@@ -31,6 +31,7 @@ import discord4j.core.event.domain.Event;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
@@ -38,16 +39,20 @@ import java.util.function.Consumer;
 /**
  * This is the Public API for the Discord4JWrapper of the Discord API this will be used for plugins
  * <p>
- * An example use case being calling {@link IDiscordFacade#getClient()}  in a plugin will give you access to the
+ * An example use case being calling {@link IDiscordFacade#getClient()}  in a plugin will give you access
+ * to the
  * {@link DiscordClient}
- * Use DiscordClient at your own risk it is subject to change, I would recommend just using the api given to you
+ * Use DiscordClient at your own risk it is subject to change, I would recommend just using the api given
+ * to you
  * through the facade.
  * </p>
  *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IDiscordFacade {
+@Component
+public interface IDiscordFacade
+{
     /**
      * This is available to the public through plugins and this will allow for a bot to be logged out
      * I wouldn't recommend using this only if you would like to implement a logout command for the bot.
@@ -65,7 +70,8 @@ public interface IDiscordFacade {
 
     /**
      * This is available to the public through plugins and this will return the bot user.
-     * To use try doing {@code facade.getOurUser().subscribe(user -> System.out.println(user.getUsername()));} look
+     * To use try doing {@code facade.getOurUser().subscribe(user -> System.out.println(user.getUsername())
+     * );} look
      * at {@link Mono#subscribe(java.util.function.Consumer)}
      *
      * @return {@link Mono} this is a Mono Stream of a User

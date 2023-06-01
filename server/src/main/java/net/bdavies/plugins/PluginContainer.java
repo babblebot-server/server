@@ -26,49 +26,58 @@
 package net.bdavies.plugins;
 
 import de.skuzzle.semantic.Version;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
+import net.bdavies.api.config.EPluginPermission;
 import net.bdavies.api.plugins.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Log4j2
-public class PluginContainer implements IPluginContainer {
-
-    private final IApplication application;
-
+@Slf4j
+@Component
+public class PluginContainer implements IPluginContainer
+{
     private final Map<String, Object> plugins;
+    private final ApplicationContext applicationContext;
     private final Map<String, IPluginSettings> settings;
+    private final Map<Object, List<EPluginPermission>> pluginPermissionsMap;
 
-    public PluginContainer(IApplication application) {
-        this.application = application;
+    public PluginContainer(ApplicationContext applicationContext)
+    {
+        this.applicationContext = applicationContext;
         plugins = new HashMap<>();
         settings = new HashMap<>();
+        pluginPermissionsMap = new HashMap<>();
     }
 
     @Override
-    public void addPlugin(String name, Object obj) {
-        if (plugins.containsKey(name) || plugins.containsValue(obj)) {
+    public void addPlugin(String name, Object obj, List<EPluginPermission> pluginPermissions)
+    {
+        IApplication application = applicationContext.getBean(IApplication.class);
+        if (plugins.containsKey(name) || plugins.containsValue(obj))
+        {
             log.error("The key or plugin is already in the container.");
-        } else {
-
+        } else
+        {
             String pName, author, namespace, minServerVersion, maxServerVersion;
+            pluginPermissionsMap.put(obj, pluginPermissions);
 
-            if (obj instanceof IPlugin) {
+            if (obj instanceof IPlugin)
+            {
                 IPlugin plugin = (IPlugin) obj;
                 pName = plugin.getName();
                 author = plugin.getAuthor();
                 namespace = plugin.getNamespace();
                 minServerVersion = plugin.getMinimumServerVersion();
                 maxServerVersion = plugin.getMaximumServerVersion();
-            } else if (obj.getClass().isAnnotationPresent(Plugin.class)) {
+            } else if (obj.getClass().isAnnotationPresent(Plugin.class))
+            {
                 Plugin plugin = obj.getClass().getAnnotation(Plugin.class);
 
                 pName = plugin.value().equals("")
@@ -84,25 +93,37 @@ public class PluginContainer implements IPluginContainer {
                         ? pName + "-"
                         : plugin.namespace();
 
-            } else {
-                log.error("Cannot add Plugin because it does have the Plugin annotation or implement IPlugin");
+            } else
+            {
+                log.error(
+                        "Cannot add Plugin because it does have the Plugin annotation or implement IPlugin");
                 return;
             }
 
-            IPluginSettings settings = getPluginSettings(pName, author, namespace, minServerVersion, maxServerVersion);
-            if (settings != null) {
+            IPluginSettings settings = getPluginSettings(pName, author, namespace, minServerVersion,
+                    maxServerVersion);
+            if (settings != null)
+            {
                 PluginConfigParser.parsePlugin(application, settings, obj);
-                if (obj instanceof IPluginEvents) {
-                    try {
+                if (obj instanceof IPluginEvents)
+                {
+                    try
+                    {
                         ((IPluginEvents) obj).onBoot(settings);
-                    } catch (AbstractMethodError e) {
-                        log.warn("Old Plugin version, please consider upgrading. onBoot will not run. Plugin: " + name);
+                    }
+                    catch (AbstractMethodError e)
+                    {
+                        log.warn(
+                                "Old Plugin version, please consider upgrading. onBoot will not run. " +
+                                        "Plugin: " +
+                                        name);
                     }
                 }
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
                 application.getCommandDispatcher().addNamespace(settings.getNamespace(),
-                        commandParser.parseCommands());
-                log.info("Added plugin: " + settings.getName() + ", using namespace: \"" + settings.getNamespace() + "\"");
+                        commandParser.parseCommands(), application);
+                log.info("Added plugin: " + settings.getName() + ", using namespace: \"" +
+                        settings.getNamespace() + "\"");
                 this.settings.put(name, settings);
                 plugins.put(name, obj);
             }
@@ -110,49 +131,66 @@ public class PluginContainer implements IPluginContainer {
     }
 
     @Override
-    public void addPlugin(Object plugin) {
-        addPlugin(plugin.getClass().getSimpleName().toLowerCase().replace("plugin", ""), plugin);
+    public void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions)
+    {
+        addPlugin(plugin.getClass().getSimpleName().toLowerCase().replace("plugin", ""), plugin,
+                pluginPermissions);
     }
 
     private IPluginSettings getPluginSettings(String name,
                                               String author,
                                               String namespace,
                                               String minimumServerVersion,
-                                              String maximumServerVersion) {
-
+                                              String maximumServerVersion)
+    {
+        IApplication application = applicationContext.getBean(IApplication.class);
         Version serverVersion = Version.parseVersion(application.getServerVersion());
         Version minVersion = Version.parseVersion(minimumServerVersion);
 
-        if (serverVersion.isGreaterThanOrEqualTo(minVersion)) {
-            if (maximumServerVersion.equals("0")) {
+        if (serverVersion.isGreaterThanOrEqualTo(minVersion))
+        {
+            if (maximumServerVersion.equals("0"))
+            {
                 return new PluginSettings(name, author, namespace,
                         minimumServerVersion, maximumServerVersion);
-            } else {
+            } else
+            {
                 Version maxVersion = Version.parseVersion(maximumServerVersion);
-                if (serverVersion.isLowerThanOrEqualTo(maxVersion)) {
+                if (serverVersion.isLowerThanOrEqualTo(maxVersion))
+                {
                     return new PluginSettings(name, author, namespace,
                             minimumServerVersion, maximumServerVersion);
-                } else {
-                    log.error("Plugin not supported for this server version please downgrade server version is too high, please refer to the documentation" +
-                            " for further help.");
+                } else
+                {
+                    log.error(
+                            "Plugin not supported for this server version please downgrade server version " +
+                                    "is too high, please refer to the documentation" +
+                                    " for further help.");
                     return null;
                 }
             }
-        } else {
-            log.error("Plugin not supported for this server version please update, please refer to the documentation" +
-                    " for further help.");
+        } else
+        {
+            log.error(
+                    "Plugin not supported for this server version please update, please refer to the " +
+                            "documentation" +
+                            " for further help.");
             return null;
         }
 
     }
 
     @Override
-    public void removePlugin(String name) {
-        if (!plugins.containsKey(name)) {
+    public void removePlugin(String name)
+    {
+        if (!plugins.containsKey(name))
+        {
             log.error("The module name entered does not exist inside this container.");
-        } else {
+        } else
+        {
             Object o = plugins.get(name);
-            if (o instanceof IPluginEvents) {
+            if (o instanceof IPluginEvents)
+            {
                 ((IPluginEvents) o).onShutdown();
             }
             plugins.remove(name);
@@ -160,34 +198,47 @@ public class PluginContainer implements IPluginContainer {
     }
 
     @Override
-    public boolean doesPluginExist(String name) {
-        return plugins.keySet().stream().anyMatch(e -> e.toLowerCase().equals(name.toLowerCase()));
+    public boolean doesPluginExist(String name)
+    {
+        return plugins.keySet().stream().anyMatch(e -> e.equalsIgnoreCase(name));
     }
 
     @Override
-    @Nullable
-    public Object getPlugin(String name) {
+    public Object getPlugin(String name)
+    {
         return plugins.get(name);
     }
 
     @Override
-    public void shutDownPlugins() {
+    public boolean doesPluginHavePermission(Object pluginObj, EPluginPermission pluginPermission)
+    {
+        return Objects.requireNonNull(pluginPermissionsMap.get(pluginObj))
+                .stream()
+                .anyMatch(p -> p.equals(pluginPermission));
+    }
+
+    @Override
+    public void shutDownPlugins()
+    {
         this.plugins.forEach((k, v) -> {
-            if (v instanceof IPluginEvents) {
+            if (v instanceof IPluginEvents)
+            {
                 ((IPluginEvents) v).onShutdown();
             }
         });
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "PluginContainer{" +
                 "plugins=" + plugins +
                 '}';
     }
 
     @Override
-    public Optional<IPluginSettings> getPluginSettingsFromNamespace(String namespace) {
+    public Optional<IPluginSettings> getPluginSettingsFromNamespace(String namespace)
+    {
         return settings.values()
                 .stream()
                 .filter(pluginSettings -> pluginSettings.getNamespace()

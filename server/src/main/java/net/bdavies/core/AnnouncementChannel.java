@@ -25,42 +25,31 @@
 
 package net.bdavies.core;
 
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.bdavies.db.Model;
-import net.bdavies.db.fields.IntField;
-import net.bdavies.db.fields.PrimaryField;
-import net.bdavies.db.fields.StringField;
-import net.bdavies.db.fields.Unique;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.obj.message.discord.DiscordChannel;
+import net.bdavies.api.obj.message.discord.DiscordGuild;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
-public class AnnouncementChannel extends Model {
-    @IntField
-    @PrimaryField
-    @Getter
-    private int id;
-
-    @StringField(charLimit = 255)
-    @Getter
-    @Setter
-    @Unique
-    private String guildId;
-
-    @StringField(charLimit = 255)
-    @Unique
-    @Getter
-    @Setter
-    private String channelId;
-
-    @Override
-    public String toString() {
-        return "AnnouncementChannel{" +
-                "id=" + id +
-                ", guildId='" + guildId + '\'' +
-                ", channelId='" + channelId + '\'' +
-                '}';
-    }
+@Slf4j
+@Getter
+@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Entity
+public class AnnouncementChannel
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    private DiscordGuild guild;
+    @Column(unique = true)
+    private DiscordChannel channel;
 }

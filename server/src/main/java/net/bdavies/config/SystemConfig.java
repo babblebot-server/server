@@ -25,6 +25,11 @@
 
 package net.bdavies.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.ISystemConfig;
 
 /**
@@ -35,19 +40,28 @@ import net.bdavies.api.config.ISystemConfig;
  * Date Created: 31/01/2018
  */
 
-public class SystemConfig implements ISystemConfig {
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@Builder
+@Jacksonized
+@Slf4j
+public class SystemConfig implements ISystemConfig
+{
+    @Builder.Default
     private final boolean autoUpdate = true;
 
     /**
-     * This will show all the logs for the discord client and other problems that occur throughout the program and all the info.
+     * This will show all the logs for the discord client and other problems that occur throughout the
+     * program and all the info.
      */
+    @Builder.Default
     private final boolean debug = true;
 
 
     @Override
-    public boolean isAutoUpdateOn() {
+    public boolean isAutoUpdateOn()
+    {
         return autoUpdate;
     }
 
@@ -56,7 +70,8 @@ public class SystemConfig implements ISystemConfig {
      *
      * @return boolean
      */
-    public boolean isDebugOn() {
+    public boolean isDebugOn()
+    {
         return debug;
     }
 
