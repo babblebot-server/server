@@ -23,33 +23,32 @@
  *
  */
 
-package net.bdavies.db.dialect.descriptor;
+package net.bdavies.api.obj.message.discord;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.query.QueryType;
-import org.bson.conversions.Bson;
-
-import java.util.List;
-import java.util.Map;
+import net.bdavies.api.obj.message.Message;
 
 /**
- * This will describe a filter and query to the db
- * <p>
- * Used for mongo connections
+ * Discord Message Object for the Command Context
  *
  * @author me@bdavies.net (Ben Davies)
  * @since __RELEASE_VERSION__
  */
-@AllArgsConstructor
-@Getter
 @Slf4j
-public class MongoDocumentDescriptor
+@Data
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DiscordMessage extends Message
 {
-    private final QueryType type;
-    private final String collectionName;
-    private final List<ColumnDescriptor> columnsToFetch;
-    private final Bson filter;
-    private final Map<String, String> values;
+    private final DiscordId id;
+    private final DiscordGuild guild;
+    private final DiscordChannel channel;
+    private final DiscordUser author;
 }

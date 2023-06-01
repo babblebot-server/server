@@ -23,34 +23,44 @@
  *
  */
 
-package net.bdavies.db;
+package net.bdavies.discord.obj.converters;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.matcher.Matchers;
-import lombok.Getter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.IApplication;
-import net.bdavies.api.config.IDatabaseConfig;
-
+import net.bdavies.api.obj.message.discord.DiscordGuild;
+import net.bdavies.api.obj.message.discord.DiscordId;
+import net.bdavies.discord.obj.factories.DiscordObjectFactory;
 
 /**
+ * DB Converter for Text Channel
+ *
  * @author me@bdavies.net (Ben Davies)
  * @since __RELEASE_VERSION__
  */
 @Slf4j
-@Getter
-public class DatabaseModule extends AbstractModule
+@Converter(autoApply = true)
+@RequiredArgsConstructor
+public class GuildConverter implements AttributeConverter<DiscordGuild, String>
 {
-    private final DatabaseManager manager;
+    private final DiscordIdConverter discordIdConverter = new DiscordIdConverter();
+    private final DiscordObjectFactory discordObjectFactory;
 
-    public DatabaseModule(IDatabaseConfig config, IApplication application) {
-        this.manager = new DatabaseManager(config, application);
+    @Override
+    public String convertToDatabaseColumn(DiscordGuild attribute)
+    {
+        if (attribute == null)
+        {
+            return null;
+        }
+        return discordIdConverter.convertToDatabaseColumn(attribute.getId());
     }
 
     @Override
-    protected void configure()
+    public DiscordGuild convertToEntityAttribute(String dbData)
     {
-     bind(DatabaseManager.class).toInstance(manager);
-     bindListener(Matchers.any(), new InjectRepositoryListener(manager));
+        DiscordId guildId = discordIdConverter.convertToEntityAttribute(dbData);
+        return discordObjectFactory.guildFromId(guildId).orElse(null);
     }
 }

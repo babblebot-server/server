@@ -23,57 +23,28 @@
  *
  */
 
-package net.bdavies.config;
+package net.bdavies.api.obj.message.discord;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.ToString;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.config.IDatabaseConfig;
-
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * Text Channel Object POJO
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@ToString
 @Slf4j
+@Data
+@SuperBuilder
+@Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DatabaseConfig implements IDatabaseConfig {
-
-    private String type = "sqlite";
-    private String database = "Core.db";
-    private String username;
-    private String password;
-    private String hostname;
-    private String port;
-
-    @Override
-    public String getType() {
-        return type;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getHostname() {
-        return hostname;
-    }
-
-    @Override
-    public String getPort() {
-        return port;
-    }
-
-    @Override
-    public String getDatabase() {
-        return database;
-    }
+public class DiscordChannel
+{
+    private final DiscordId id;
+    private final DiscordId guildId;
+    private final String name;
 }

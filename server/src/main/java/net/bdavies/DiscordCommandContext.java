@@ -23,16 +23,39 @@
  *
  */
 
-package net.bdavies.db.error;
+package net.bdavies;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.obj.message.discord.DiscordMessage;
+import net.bdavies.command.CommandContext;
+
+import java.util.Map;
 
 /**
- * Edit me
+ * DiscordCommandContext
  *
- * @author me@bdavies (Ben Davies)
- * @since 1.0.0
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-public class DBError extends RuntimeException {
-    public DBError(String s) {
-        super(s);
+@Slf4j
+public class DiscordCommandContext extends CommandContext
+{
+    @Getter
+    private final DiscordMessage message;
+
+    /**
+     * This is the CommandContext Constructor.
+     *
+     * @param commandName - The name of the command.
+     * @param parameters  - THe command's parameters.
+     * @param value       - The value of the command (if any).
+     * @param type        - The type of the command.
+     */
+    public DiscordCommandContext(String commandName, Map<String, String> parameters, String value,
+                                 String type, DiscordMessage message)
+    {
+        super(commandName, parameters, value, type);
+        this.message = message;
     }
 }

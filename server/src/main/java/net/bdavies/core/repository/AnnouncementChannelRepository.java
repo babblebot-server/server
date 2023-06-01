@@ -23,22 +23,26 @@
  *
  */
 
-package net.bdavies.db;
+package net.bdavies.core.repository;
 
-import net.bdavies.db.model.Model;
+import net.bdavies.api.obj.message.discord.DiscordChannel;
+import net.bdavies.api.obj.message.discord.DiscordGuild;
+import net.bdavies.core.AnnouncementChannel;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Optional;
 
 /**
+ * Repository for Announcement Channels
+ *
  * @author me@bdavies.net (Ben Davies)
  * @since __RELEASE_VERSION__
  */
-@Target({ElementType.FIELD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface InjectRepository
+@Repository
+public interface AnnouncementChannelRepository extends JpaRepository<AnnouncementChannel, Long>
 {
-    Class<? extends Model> value();
+    Optional<AnnouncementChannel> findByGuild(DiscordGuild guild);
+
+    Optional<AnnouncementChannel> findByGuildAndChannel(DiscordGuild guild, DiscordChannel channel);
 }

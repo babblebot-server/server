@@ -23,32 +23,23 @@
  *
  */
 
-package net.bdavies.db.dialect.obj;
+package net.bdavies.core.repository;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.obj.ISQLObject;
-import net.bdavies.db.query.PreparedQuery;
-import net.bdavies.db.query.QueryType;
+import net.bdavies.api.obj.message.discord.DiscordChannel;
+import net.bdavies.core.Ignore;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
+ * Repository for the Ignore Entity
+ *
  * @author me@bdavies.net (Ben Davies)
  * @since __RELEASE_VERSION__
  */
-@Slf4j
-@Data
-@AllArgsConstructor
-public class GroupValue implements ISQLObject
+@Repository
+public interface IgnoreRepository extends JpaRepository<Ignore, Long>
 {
-    private final ISQLObject object;
-
-    @Override
-    public String toSQLString(QueryType type, PreparedQuery query)
-    {
-        query.setInsideGroup(true);
-        String returnVal = " ( " + object.toSQLString(QueryType.NONE, query) + " ) ";
-        query.setInsideGroup(false);
-        return returnVal;
-    }
+    Optional<Ignore> findByChannel(DiscordChannel channel);
 }
