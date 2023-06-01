@@ -25,6 +25,7 @@
 
 package net.bdavies.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.IDatabaseConfig;
@@ -36,6 +37,7 @@ import net.bdavies.api.config.IDatabaseConfig;
  */
 @ToString
 @Slf4j
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatabaseConfig implements IDatabaseConfig {
 
     private String type = "sqlite";

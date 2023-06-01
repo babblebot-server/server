@@ -25,9 +25,6 @@
 
 package net.bdavies.api.command;
 
-import discord4j.core.object.entity.Message;
-import net.bdavies.api.discord.IDiscordCommandUtil;
-
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
@@ -79,15 +76,6 @@ public interface ICommandContext {
      * @return String
      */
     String getType();
-
-    IDiscordCommandUtil getCommandUtils();
-
-    /**
-     * This will return the message object.
-     *
-     * @return IMessage
-     */
-    Message getMessage();
 
     /**
      * This will return a response instance so you can send responses to the discord client.

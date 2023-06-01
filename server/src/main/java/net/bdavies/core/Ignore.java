@@ -25,45 +25,29 @@
 
 package net.bdavies.core;
 
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.User;
-import discord4j.core.object.entity.channel.TextChannel;
-import lombok.AccessLevel;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.model.ITimestamps;
-import net.bdavies.db.model.Model;
-import net.bdavies.db.model.fields.PrimaryField;
-import net.bdavies.db.model.fields.Property;
-import net.bdavies.db.model.serialization.UseSerializationObject;
-import net.bdavies.db.model.serialization.util.GuildSerializationObject;
-import net.bdavies.db.model.serialization.util.TextChannelSerializationObject;
-import net.bdavies.db.model.serialization.util.UserSerializationObject;
-import org.checkerframework.common.aliasing.qual.Unique;
+import net.bdavies.api.obj.message.discord.DiscordUser;
+import net.bdavies.api.obj.message.discord.DiscordChannel;
+import net.bdavies.api.obj.message.discord.DiscordGuild;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@EqualsAndHashCode(callSuper = false)
 @Data
+@Entity
 @Slf4j
-public class Ignore extends Model implements ITimestamps
+public class Ignore
 {
-    @Property
-    @PrimaryField
-    @Setter(AccessLevel.PRIVATE)
-    private int id;
-    @Property
-    @UseSerializationObject(GuildSerializationObject.class)
-    private Guild guild;
-    @Property
-    @Unique
-    @UseSerializationObject(TextChannelSerializationObject.class)
-    private TextChannel channel;
-    @Property
-    @UseSerializationObject(UserSerializationObject.class)
-    private User ignoredBy;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    private DiscordGuild guild;
+    private DiscordChannel channel;
+    private DiscordUser ignoredBy;
 }

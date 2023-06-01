@@ -68,17 +68,6 @@ public interface ICommand {
      */
     String getType();
 
-
-    /**
-     * This is the execution point for the command.
-     *
-     * @param application    - The application instance.
-     * @param commandContext - The command context for all command parameters and values.
-     * @return String - This return method is deprecated. use {@link ICommandResponse}
-     * @deprecated - To be removed in 2.0.0
-     */
-    String run(IApplication application, ICommandContext commandContext);
-
     /**
      * This is the execution point for the command.
      *

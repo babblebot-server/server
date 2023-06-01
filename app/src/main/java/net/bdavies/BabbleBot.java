@@ -25,21 +25,28 @@
 
 package net.bdavies;
 
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+
 /**
  * A Server for the Discord App this server provides a way for the user to give commands
  * and then this bot acts on those commands
  *
  * @author Ben Davies
- * @see Application
+ * @see BabblebotApplication
  */
-public final class BabbleBot {
+@SpringBootApplication
+@Import(BabblebotApplication.class)
+public class BabbleBot
+{
 
     /**
      * Constructs a {@code BabbleBot}
      * <p>
      * This constructor is <strong>not</strong> used as this is the entry point for the server.
      */
-    private BabbleBot() {
+    public BabbleBot()
+    {
     }
 
     /**
@@ -47,7 +54,8 @@ public final class BabbleBot {
      *
      * @param args the {@link String} passed in by the command line.
      */
-    public static void main(final String[] args) {
-        Application.make(BabbleBot.class, args);
+    public static void main(final String[] args)
+    {
+        BabblebotApplication.make(BabbleBot.class, args);
     }
 }

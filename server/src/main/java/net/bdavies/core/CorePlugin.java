@@ -25,12 +25,11 @@
 
 package net.bdavies.core;
 
-import com.google.inject.Inject;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.EmbedCreateSpec;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import net.bdavies.DiscordCommandContext;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.command.Command;
 import net.bdavies.api.command.CommandParam;
@@ -38,13 +37,16 @@ import net.bdavies.api.command.ICommandContext;
 import net.bdavies.api.command.ICommandDispatcher;
 import net.bdavies.api.config.IDiscordConfig;
 import net.bdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.obj.message.discord.DiscordMessage;
+import net.bdavies.api.obj.message.discord.embed.EmbedAuthor;
+import net.bdavies.api.obj.message.discord.embed.EmbedFooter;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.api.plugins.IPluginEvents;
 import net.bdavies.api.plugins.IPluginSettings;
 import net.bdavies.api.plugins.Plugin;
-import net.bdavies.db.InjectRepository;
-import net.bdavies.db.Repository;
-import net.bdavies.db.model.Model;
-import net.bdavies.db.model.serialization.util.Utilities;
+import net.bdavies.core.repository.AnnouncementChannelRepository;
+import net.bdavies.core.repository.IgnoreRepository;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -54,7 +56,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * This will implement the core Terminal and Discord Commands such as Exit, Help, Ignore, Listen.
@@ -90,6 +92,8 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @Plugin(author = "Ben Davies <me@bdavies.net>", namespace = "")
+@RequiredArgsConstructor
+@Component
 public class CorePlugin implements IPluginEvents
 {
 
@@ -100,21 +104,8 @@ public class CorePlugin implements IPluginEvents
     private final IDiscordConfig config;
 
     private final AnnouncementService announcementService;
-
-    @InjectRepository(Ignore.class)
-    private Repository<Ignore> ignoreRepo;
-
-    @InjectRepository(AnnouncementChannel.class)
-    private Repository<AnnouncementChannel> announcementChannelRepo;
-
-    @Inject
-    public CorePlugin(ICommandDispatcher commandDispatcher, IApplication application, IDiscordConfig config)
-    {
-        this.commandDispatcher = commandDispatcher;
-        this.application = application;
-        this.config = config;
-        announcementService = application.get(AnnouncementService.class);
-    }
+    private final IgnoreRepository ignoreRepo;
+    private final AnnouncementChannelRepository announcementChannelRepo;
 
     @Override
     public void onReload()
@@ -126,14 +117,20 @@ public class CorePlugin implements IPluginEvents
     public void onBoot(IPluginSettings settings)
     {
         log.info("Booting Core Plugin");
-        log.info("All Ignores: {}", ignoreRepo.getAll());
-        log.info("All Announcement Channels: {}", announcementChannelRepo.getAll());
-        commandDispatcher.registerGlobalMiddleware(context ->
-                ignoreRepo.find(b -> b.where(Ignore::getChannel, context.getMessage().getChannel()))
-                        .isEmpty()
-                        || "listen".equals(context.getCommandName()));
+        log.info("All Ignores: {}", ignoreRepo.findAll());
+        log.info("All Announcement Channels: {}", announcementChannelRepo.findAll());
+        commandDispatcher.registerGlobalMiddleware(context -> {
+            if (context instanceof DiscordCommandContext)
+            {
+                return ignoreRepo
+                        .findByChannel(((DiscordCommandContext) context).getMessage().getChannel())
+                        .isEmpty() || "listen".equals(context.getCommandName());
+            }
 
-        announcementService.start();
+            return true;
+        }, this, application);
+
+//        announcementService.start();
         IDiscordFacade discordFacade = application.get(IDiscordFacade.class);
         discordFacade.registerEventHandler(ReadyEvent.class, r -> {
             if (application.hasArgument("-restart"))
@@ -151,27 +148,25 @@ public class CorePlugin implements IPluginEvents
     }
 
     @Command(description = "Start listening again to a channel the bot will then start responding again.")
-    public void listen(ICommandContext commandContext)
+    public void listen(ICommandContext commandContext, DiscordMessage message)
     {
 
-        Optional<Ignore> ignore = ignoreRepo.findFirst(b ->
-                b.where(Ignore::getChannel, commandContext.getMessage().getChannel()));
+        Optional<Ignore> ignore = ignoreRepo.findByChannel(message.getChannel());
         if (ignore.isEmpty())
         {
             commandContext.getCommandResponse().sendString("Channel is not ignored, so cancelling command.");
         } else
         {
-            ignore.get().delete();
+            ignoreRepo.delete(ignore.get());
             commandContext.getCommandResponse()
                     .sendString("You can now use BabbleBot in this channel again.");
         }
     }
 
     @Command(description = "Ignore a channel so the bot wont respond")
-    public void ignore(ICommandContext commandContext)
+    public void ignore(ICommandContext commandContext, DiscordMessage message)
     {
-        Optional<Ignore> ignore = ignoreRepo.findFirst(b ->
-                b.where(Ignore::getChannel, commandContext.getMessage().getChannel()));
+        Optional<Ignore> ignore = ignoreRepo.findByChannel(message.getChannel());
 
         if (ignore.isPresent())
         {
@@ -179,12 +174,11 @@ public class CorePlugin implements IPluginEvents
                     .sendString("Channel is already ignored, so cancelling command.");
         } else
         {
-            Ignore newIgnore = ignoreRepo.create();
-            Message message = commandContext.getMessage();
-            newIgnore.setChannel(Utilities.monoBlock(message.getChannel().cast(TextChannel.class)));
-            newIgnore.setIgnoredBy(message.getAuthor().orElseThrow());
-            newIgnore.setGuild(Utilities.monoBlock(message.getGuild()));
-            newIgnore.save();
+            Ignore newIgnore = new Ignore();
+            newIgnore.setChannel(message.getChannel());
+            newIgnore.setIgnoredBy(message.getAuthor());
+            newIgnore.setGuild(message.getGuild());
+            ignoreRepo.save(newIgnore);
         }
 
         commandContext.getCommandResponse().sendString("BabbleBot is now ignoring this channel");
@@ -193,61 +187,51 @@ public class CorePlugin implements IPluginEvents
     @Command(aliases = {"register-announcement-channel",
             "register-ac"},
             description = "Register the channel where the command is ran as a announcement channel")
-    public Mono<String> register(ICommandContext commandContext)
+    public Mono<String> register(ICommandContext commandContext, DiscordMessage message)
     {
-        return commandContext.getMessage().getGuild().flatMap(g -> {
-            Optional<AnnouncementChannel> model =
-                    announcementChannelRepo
-                            .findFirst(b -> b.where(AnnouncementChannel::getGuild, g));
-            if (model.isPresent())
+        val g = message.getGuild();
+        Optional<AnnouncementChannel> model = announcementChannelRepo.findByGuild(g);
+        if (model.isPresent())
+        {
+            AnnouncementChannel channel = model.get();
+            val c = message.getChannel();
+            if (c.equals(channel.getChannel()))
             {
-                AnnouncementChannel channel = model.get();
-                return commandContext.getMessage()
-                        .getChannel()
-                        .cast(TextChannel.class)
-                        .flatMap(c ->
-                                c.equals(channel.getChannel())
-                                        ? Mono.just("Already registered within this server and channel")
-                                        : Mono.just("Already registered within this server, on channel: " +
-                                        channel.getChannel().getName() + ". You can remove it by doing " +
-                                        config.getCommandPrefix() + "remove-ac on that channel"));
+                return Mono.just("Already registered within this server and channel");
             } else
             {
-                AnnouncementChannel channel = announcementChannelRepo.create();
-                channel.setGuild(g);
-                return commandContext.getMessage()
-                        .getChannel()
-                        .cast(TextChannel.class)
-                        .flatMap(c -> {
-                            channel.setChannel(c);
-                            channel.save();
-                            return Mono.just("Registered " + c.getName() +
-                                    ", as a announcement channel.");
-                        });
+                return Mono.just("Already registered within this server, on channel: " +
+                        channel.getChannel().getName() + ". You can remove it by doing " +
+                        config.getCommandPrefix() + "remove-ac on that channel");
             }
-        });
+        } else
+        {
+            AnnouncementChannel channel = new AnnouncementChannel();
+            channel.setGuild(g);
+            val c = message.getChannel();
+            channel.setChannel(c);
+            announcementChannelRepo.save(channel);
+            return Mono.just("Registered " + c.getName() +
+                    ", as a announcement channel.");
+        }
     }
 
     @Command(aliases = {"remove-announcement-channel",
             "remove-ac"},
             description = "Remove the channel where the command is ran as a announcement channel")
-    public Mono<String> remove(ICommandContext commandContext)
+    public Mono<String> remove(ICommandContext commandContext, DiscordMessage message)
     {
-        return commandContext.getMessage().getGuild().flatMap(g -> {
-            Optional<AnnouncementChannel> model = announcementChannelRepo.findFirst(b ->
-                    b.where(AnnouncementChannel::getGuild, g)
-                            .and(AnnouncementChannel::getChannel,
-                                    commandContext.getMessage().getChannel()));
-            model.ifPresent(Model::delete);
-            if (model.isEmpty())
-            {
-                return Mono.just("Unable to remove this channel as a announcement channel " +
-                        "as it is not registered");
-            }
-            return commandContext.getMessage().getChannel()
-                    .flatMap(c -> Mono.just("Removed " + ((TextChannel) c).getName()
-                            + ", as a announcement channel."));
-        });
+        val g = message.getGuild();
+        Optional<AnnouncementChannel> model = announcementChannelRepo.findByGuildAndChannel(g,
+                message.getChannel());
+        model.ifPresent(announcementChannelRepo::delete);
+        if (model.isEmpty())
+        {
+            return Mono.just("Unable to remove this channel as a announcement channel " +
+                    "as it is not registered");
+        }
+        return Mono.just("Removed " + message.getChannel().getName()
+                + ", as a announcement channel.");
     }
 
     @Command(description = "Restart bot...")
@@ -280,7 +264,7 @@ public class CorePlugin implements IPluginEvents
             exampleValue = "ignore")
     @CommandParam(value = "cmd", canBeEmpty = false,
             exampleValue = "ignore")
-    public Mono<Consumer<EmbedCreateSpec>> help(ICommandContext commandContext)
+    public Mono<Supplier<EmbedMessage>> help(ICommandContext commandContext)
     {
 
         if (commandContext.hasNonEmptyParameter("cmd") || !commandContext.getValue().isEmpty())
@@ -290,7 +274,8 @@ public class CorePlugin implements IPluginEvents
                     : commandContext.getValue();
 
 
-            return Mono.just(spec -> {
+            return Mono.just(() -> {
+                EmbedMessage spec = EmbedMessage.builder().build();
                 spec.setTimestamp(Instant.now());
                 AtomicBoolean hasFoundCommand = new AtomicBoolean(false);
                 String namespace = commandDispatcher.getNamespaceFromCommandName(command);
@@ -308,10 +293,11 @@ public class CorePlugin implements IPluginEvents
                                 author =
                                         author.substring(0, 1).toUpperCase(Locale.ROOT) + author.substring(1);
                                 author = author + " Plugin";
-                                spec.setFooter("Please refer to plugin documentation for further information",
-                                        null);
+                                spec.setFooter(EmbedFooter.builder()
+                                        .text("Please refer to plugin documentation for further information")
+                                        .build());
                             }
-                            spec.setAuthor(author, null, null);
+                            spec.setAuthor(EmbedAuthor.builder().name(author).build());
                             spec.setTitle(
                                     alias.substring(0, 1).toUpperCase(Locale.ROOT) + alias.substring(1) +
                                             " Command");
@@ -342,10 +328,12 @@ public class CorePlugin implements IPluginEvents
                                 spec.setTitle("Command Not found");
                             }
                         });
+                return spec;
             });
         } else
         {
-            return Mono.just(spec -> {
+            return Mono.just(() -> {
+                EmbedMessage spec = EmbedMessage.builder().build();
                 spec.setTitle("Commands");
                 spec.setDescription(
                         "This is all the commands available to babblebot. Please use **!help** " +
@@ -376,7 +364,7 @@ public class CorePlugin implements IPluginEvents
                                 spec.addField(name, sb.get().toString(), false);
                             });
                 });
-
+                return spec;
             });
         }
     }

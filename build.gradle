@@ -16,7 +16,7 @@ ext {
     project_version = "$version".toString()
     project_description = "A fully modular bot for Discord using Discord4j as the back-end"
     project_url = 'https://babblebot.bdavies.net'
-    project_jdk = JavaVersion.VERSION_11
+    project_jdk = JavaVersion.VERSION_17
     jdk = JavaVersion.current().majorVersion
     jdk_javadoc = "https://docs.oracle.com/javase/$jdk/docs/api/".toString()
     if (JavaVersion.current().isJava11Compatible()) {
@@ -91,7 +91,7 @@ subprojects {
     if (!isJitpack && isRelease) apply plugin: 'signing'
 
     project.afterEvaluate {
-        if (project.name != "server" && project.name != "app" && project.name != "web-client") {
+        if (project.name != "server" && project.name != "app") {
             task javadocJar(type: Jar) {
                 dependsOn project.tasks.javadoc
                 from project.tasks.javadoc.destinationDir

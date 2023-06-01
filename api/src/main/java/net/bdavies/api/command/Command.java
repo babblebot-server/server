@@ -25,7 +25,7 @@
 
 package net.bdavies.api.command;
 
-import javax.annotation.CheckReturnValue;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,8 +44,8 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@CheckReturnValue
-public @interface Command {
+public @interface Command
+{
     /**
      * The aliases of the command.
      *
@@ -60,14 +60,6 @@ public @interface Command {
      * @return String
      */
     String description() default "";
-
-    /**
-     * The Usage for the command.
-     *
-     * @return String
-     * @deprecated automatically generated
-     */
-    String usage() default "";
 
     /**
      * This determines where the command requires a value or not
@@ -89,12 +81,4 @@ public @interface Command {
      * @return String
      */
     String type() default "Discord";
-
-    /**
-     * A list of required params for the command.
-     *
-     * @return String[]
-     * @deprecated please use {@link CommandParam}
-     */
-    String[] requiredParams() default "";
 }

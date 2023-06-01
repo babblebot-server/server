@@ -25,40 +25,41 @@
 
 package net.bdavies.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.zafarkhaja.semver.Version;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.google.inject.Inject;
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.PartialMember;
+import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Color;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.discord.IDiscordFacade;
-import net.bdavies.db.InjectRepository;
-import net.bdavies.db.ReactiveRepository;
+import net.bdavies.core.repository.AnnouncementChannelRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
 @Slf4j
+@Service
 public class AnnouncementService
 {
-
     private final IDiscordFacade facade;
 
     private final IApplication application;
@@ -66,16 +67,16 @@ public class AnnouncementService
     private final Timer timer;
     private Version currentVersion;
 
-    @InjectRepository(AnnouncementChannel.class)
-    private ReactiveRepository<AnnouncementChannel> announcementChannelRepo;
+    private final AnnouncementChannelRepository announcementChannelRepo;
 
-    @Inject
-    public AnnouncementService(IDiscordFacade facade, IApplication application)
+    @Autowired
+    public AnnouncementService(IDiscordFacade facade, IApplication application,
+                               AnnouncementChannelRepository announcementChannelRepo)
     {
         this.facade = facade;
         this.application = application;
-        this.service = Executors.newFixedThreadPool(2,
-                new ThreadFactoryBuilder().setNameFormat("announcement-thread-%d").build());
+        this.announcementChannelRepo = announcementChannelRepo;
+        this.service = Executors.newFixedThreadPool(2);
         timer = new Timer();
         currentVersion = Version.valueOf(application.getServerVersion());
     }
@@ -107,11 +108,11 @@ public class AnnouncementService
                                         .asString()
                                         .block();
 
-                        Gson gson = new GsonBuilder().create();
+                        ObjectMapper mapper = new ObjectMapper();
 
-                        List<TagItem> res = gson.fromJson(response, new TypeToken<List<TagItem>>()
+                        List<TagItem> res = mapper.readValue(response, new TypeReference<>()
                         {
-                        }.getType());
+                        });
                         assert res != null;
                         TagItem first = res.get(0);
                         int index = 0;
@@ -172,23 +173,27 @@ public class AnnouncementService
     public synchronized void sendMessage(String title, String message)
     {
 
-        BiConsumer<EmbedCreateSpec, Guild> specConsumer = (spec, g) -> {
-            spec.setFooter("Server Version: " + application.getServerVersion(), null);
-            spec.setAuthor("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null);
-            spec.setTimestamp(Instant.now());
-            facade.getClient().getSelf()
-                    .subscribe(u -> u.asMember(g.getId())
-                            .subscribe(mem -> mem.getColor()
-                                    .subscribe(spec::setColor)));
-            spec.setTitle(title);
-            spec.setDescription("```\n" + message + "```");
+        Function<Guild, EmbedCreateSpec> specConsumer = (g) -> {
+            Optional<Color> col = facade.getClient().getSelf()
+                    .flatMap(u -> u.asMember(g.getId()))
+                    .flatMap(PartialMember::getColor).blockOptional();
+
+            return EmbedCreateSpec.builder()
+                    .footer(EmbedCreateFields.Footer.of("Server Version: " + application.getServerVersion(),
+                            null))
+                    .author("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null)
+                    .timestamp(Instant.now())
+                    .color(col.orElse(Color.BLUE))
+                    .title(title)
+                    .description("```\n" + message + "```")
+                    .build();
         };
 
-        announcementChannelRepo.getAll()
-                .flatMap(a -> a.getChannel()
-                        .createEmbed(s -> specConsumer.accept(s, a.getGuild())))
-                .subscribe();
-
+        announcementChannelRepo.findAll().forEach(ac -> facade.getClient()
+                .getGuildById(Snowflake.of(ac.getGuild().getId().toLong()))
+                .subscribe(g -> g.getChannelById(Snowflake.of(ac.getChannel().getId().toLong()))
+                        .cast(TextChannel.class)
+                        .subscribe(ch -> ch.createMessage(specConsumer.apply(g)))));
     }
 
     public synchronized void sendMessage(String message)
@@ -198,17 +203,19 @@ public class AnnouncementService
 
     @Data
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TagItem
     {
-        private String tag_name; //NOSONAR
+        private String tag_name;
         private List<Asset> assets;
         private boolean prerelease;
     }
 
     @Data
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Asset
     {
-        private String browser_download_url; //NOSONAR
+        private String browser_download_url;
     }
 }

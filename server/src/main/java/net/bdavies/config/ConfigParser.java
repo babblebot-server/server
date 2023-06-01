@@ -25,7 +25,8 @@
 
 package net.bdavies.config;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 
 import java.io.Reader;
 
@@ -37,7 +38,8 @@ import java.io.Reader;
  * Date Created: 30/01/2018
  */
 
-public class ConfigParser {
+public class ConfigParser
+{
     /**
      * This is the config variable that can be used after parsing through a getter.
      */
@@ -48,8 +50,10 @@ public class ConfigParser {
      *
      * @param json - The inputted file / string.
      */
-    public ConfigParser(String json) {
-        config = new Gson().fromJson(json, Config.class);
+    @SneakyThrows
+    public ConfigParser(String json)
+    {
+        config = new ObjectMapper().readValue(json, Config.class);
     }
 
     /**
@@ -57,8 +61,10 @@ public class ConfigParser {
      *
      * @param reader - The reader from which you wish to read the json from.
      */
-    public ConfigParser(Reader reader) {
-        config = new Gson().fromJson(reader, Config.class);
+    @SneakyThrows
+    public ConfigParser(Reader reader)
+    {
+        config = new ObjectMapper().readValue(reader, Config.class);
     }
 
 
@@ -67,7 +73,8 @@ public class ConfigParser {
      *
      * @return Config
      */
-    public Config getConfig() {
+    public Config getConfig()
+    {
         return config;
     }
 }

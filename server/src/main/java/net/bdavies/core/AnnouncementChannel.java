@@ -25,17 +25,14 @@
 
 package net.bdavies.core;
 
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.channel.TextChannel;
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.db.model.Model;
-import net.bdavies.db.model.fields.PrimaryField;
-import net.bdavies.db.model.fields.Property;
-import net.bdavies.db.model.fields.Unique;
-import net.bdavies.db.model.serialization.UseSerializationObject;
-import net.bdavies.db.model.serialization.util.GuildSerializationObject;
-import net.bdavies.db.model.serialization.util.TextChannelSerializationObject;
+import net.bdavies.api.obj.message.discord.DiscordChannel;
+import net.bdavies.api.obj.message.discord.DiscordGuild;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -46,20 +43,13 @@ import net.bdavies.db.model.serialization.util.TextChannelSerializationObject;
 @Setter
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class AnnouncementChannel extends Model
+@Entity
+public class AnnouncementChannel
 {
-    @Property
-    @PrimaryField
-    @Setter(AccessLevel.PRIVATE)
-    private int id;
-
-    @Property
-    @Unique
-    @UseSerializationObject(GuildSerializationObject.class)
-    private Guild guild;
-
-    @Property
-    @Unique
-    @UseSerializationObject(TextChannelSerializationObject.class)
-    private TextChannel channel;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    private DiscordGuild guild;
+    @Column(unique = true)
+    private DiscordChannel channel;
 }

@@ -25,7 +25,16 @@
 
 package net.bdavies.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.config.EPluginPermission;
 import net.bdavies.api.config.IPluginConfig;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * BabbleBot, open-source Discord Bot
@@ -35,37 +44,51 @@ import net.bdavies.api.config.IPluginConfig;
  * Date Created: 31/01/2018
  */
 
-public class PluginConfig implements IPluginConfig {
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@Builder
+@Jacksonized
+@Slf4j
+public class PluginConfig implements IPluginConfig
+{
     /**
      * This is the location that the plugin's Jar file and configs are kept
      * Keep in mind there is a convention for the structure. Convention over Configuration approach.
      * e.g. AudioDJ -> AudioDJ.jar , AudioDJ.json
      */
-    private String pluginLocation;
+    private final String pluginLocation;
 
     /**
      * This is the class path that the class that implements
      */
-    private String pluginClassPath = "";
+    @Builder.Default
+    private final String pluginClassPath = "";
 
     /**
      * This is the type of module it is either "js" or "java" <strong>default</strong> is java
      */
-    private String pluginType = "java";
+    @Builder.Default
+    private final String pluginType = "java";
 
+    @Builder.Default
+    private final List<EPluginPermission> pluginPermissions = new LinkedList<>();
 
     @Override
-    public String getPluginLocation() {
+    public String getPluginLocation()
+    {
         return pluginLocation;
     }
 
     @Override
-    public String getPluginClassPath() {
+    public String getPluginClassPath()
+    {
         return pluginClassPath;
     }
 
     @Override
-    public String getPluginType() {
+    public String getPluginType()
+    {
         return pluginType;
     }
 }

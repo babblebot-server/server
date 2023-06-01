@@ -25,19 +25,21 @@
 
 package net.bdavies.command.response.handlers;
 
-import discord4j.core.spec.EmbedCreateSpec;
-import net.bdavies.command.ResponseFactory;
-import reactor.core.publisher.FluxProcessor;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.command.IResponse;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
+import net.bdavies.command.ResponseFactory;
 import net.bdavies.command.response.ResponseHandler;
+import reactor.core.publisher.FluxProcessor;
 
 import java.lang.reflect.Type;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
+@Slf4j
 public class EmbedHandler extends ResponseHandler {
 
     public EmbedHandler(Type type, FluxProcessor<IResponse, IResponse> processor) {
@@ -46,7 +48,12 @@ public class EmbedHandler extends ResponseHandler {
 
     @Override
     protected <T> IResponse getResponse(T o) {
-        //noinspection unchecked
-        return ResponseFactory.createEmbedResponse((Consumer<EmbedCreateSpec>) o);
+        if (o instanceof Supplier<?>)
+        {
+            //noinspection unchecked
+            return ResponseFactory.createEmbedResponse((Supplier<EmbedMessage>) o);
+        } else {
+            return ResponseFactory.createEmbedResponse((EmbedMessage) o);
+        }
     }
 }
