@@ -25,16 +25,15 @@
 
 package net.bdavies.command.response;
 
-import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.api.command.IResponse;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
+import net.bdavies.command.response.handlers.EmbedHandler;
+import net.bdavies.command.response.handlers.StringHandler;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
-import net.bdavies.api.command.IResponse;
-import net.bdavies.command.response.handlers.EmbedHandler;
-import net.bdavies.command.response.handlers.StringHandler;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
@@ -44,36 +43,45 @@ import java.util.function.Consumer;
  * @since 1.2.7
  */
 @Slf4j
-public class ResponseHandlerFactory {
+public class ResponseHandlerFactory
+{
 
-    @Nullable
-    public static ResponseHandler getHandler(Type t, FluxProcessor<IResponse, IResponse> processor) {
+    public static ResponseHandler getHandler(Type t, FluxProcessor<IResponse, IResponse> processor)
+    {
 
-        if (t instanceof ParameterizedType) {
+        if (t instanceof ParameterizedType)
+        {
 
             ParameterizedType pType = (ParameterizedType) t;
-            if (isAMono(pType.getRawType()) || isAFlux(pType.getRawType())) {
+            if (isAMono(pType.getRawType()) || isAFlux(pType.getRawType()))
+            {
                 Type type = pType.getActualTypeArguments()[0];
                 return getBaseHandler(t, type, processor);
-            } else if (pType.getRawType().equals(Consumer.class)) {
+            } else if (pType.getRawType().equals(Consumer.class))
+            {
                 return getBaseHandler(t, t, processor);
             }
             return null;
-        } else {
+        } else
+        {
             return getBaseHandler(t, t, processor);
         }
     }
 
 
-    @Nullable
-    private static ResponseHandler getBaseHandler(Type raw, Type base, FluxProcessor<IResponse, IResponse> processor) {
+    private static ResponseHandler getBaseHandler(Type raw, Type base,
+                                                  FluxProcessor<IResponse, IResponse> processor)
+    {
         log.info("Handling a type of: " + base);
-        if (base.equals(String.class)) {
+        if (base.equals(String.class))
+        {
             return new StringHandler(raw, processor);
-        } else if (base instanceof ParameterizedType) {
+        } else if (base instanceof ParameterizedType)
+        {
             ParameterizedType pType = (ParameterizedType) base;
             Type type = pType.getActualTypeArguments()[0];
-            if (type.equals(EmbedCreateSpec.class)) {
+            if (type.equals(EmbedMessage.class))
+            {
                 return new EmbedHandler(raw, processor);
             }
         }
@@ -81,11 +89,13 @@ public class ResponseHandlerFactory {
         return null;
     }
 
-    private static boolean isAFlux(Type o) {
+    private static boolean isAFlux(Type o)
+    {
         return o == Flux.class;
     }
 
-    private static boolean isAMono(Type o) {
+    private static boolean isAMono(Type o)
+    {
         return o == Mono.class;
     }
 

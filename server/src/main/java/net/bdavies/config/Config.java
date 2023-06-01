@@ -25,10 +25,18 @@
 
 package net.bdavies.config;
 
-import net.bdavies.api.config.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+import net.bdavies.api.config.IConfig;
+import net.bdavies.api.config.IDiscordConfig;
+import net.bdavies.api.config.IPluginConfig;
+import net.bdavies.api.config.ISystemConfig;
 
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * BabbleBot, open-source Discord Bot
@@ -38,7 +46,12 @@ import java.util.List;
  * Date Created: 30/01/2018
  */
 
-public class Config implements IConfig {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@Builder
+@Jacksonized
+public class Config implements IConfig
+{
     /**
      * This is the config settings for the discord part of this bot.
      */
@@ -54,55 +67,23 @@ public class Config implements IConfig {
     /**
      * This is the config settings for the modules used in this bot.
      */
-    private PluginConfig[] plugins;
+    @Builder.Default
+    private List<PluginConfig> plugins = new LinkedList<>();
 
-    private DatabaseConfig database;
-
-    private HttpConfig http;
-
-
-    /**
-     * This will return the config for the discord part of this bot.
-     *
-     * @return DiscordConfig
-     */
-    public IDiscordConfig getDiscordConfig() {
+    @Override
+    public IDiscordConfig getDiscordConfig()
+    {
         return discord;
     }
 
-
-    /**
-     * This will return the config for the system part of this bot.
-     *
-     * @return SystemConfig
-     */
-    public ISystemConfig getSystemConfig() {
+    @Override
+    public ISystemConfig getSystemConfig()
+    {
         return system;
     }
 
-    @Override
-    public IHttpConfig getHttpConfig() {
-        return http;
+    public List<IPluginConfig> getPlugins()
+    {
+        return plugins.stream().map(p -> (IPluginConfig) p).collect(Collectors.toList());
     }
-
-    /**
-     * This will return database configuration for the bot.
-     *
-     * @return {@link IDatabaseConfig}
-     */
-    @Override
-    public IDatabaseConfig getDatabaseConfig() {
-        return database;
-    }
-
-
-    /**
-     * This will return the config for the modules used in this bot.
-     *
-     * @return Collection(ModuleConfig)
-     */
-    public List<IPluginConfig> getPlugins() {
-        return Arrays.asList(plugins);
-    }
-
 }

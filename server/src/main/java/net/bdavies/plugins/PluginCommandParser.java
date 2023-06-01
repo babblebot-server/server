@@ -25,15 +25,21 @@
 
 package net.bdavies.plugins;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
+import net.bdavies.DiscordCommandContext;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.command.*;
+import net.bdavies.api.discord.IDiscordCommandUtil;
+import net.bdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.obj.message.discord.DiscordMessage;
 import net.bdavies.api.plugins.IPluginSettings;
+import net.bdavies.discord.DiscordCommandUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,95 +47,101 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Log4j2
-public final class PluginCommandParser {
-
+@Slf4j
+public final class PluginCommandParser
+{
     private final IPluginSettings pluginSettings;
     private final Object pluginObj;
     private final IApplication application;
 
 
-    public PluginCommandParser(IApplication application, IPluginSettings pluginSettings, Object pluginObj) {
+    public PluginCommandParser(IApplication application, IPluginSettings pluginSettings, Object pluginObj)
+    {
         this.pluginSettings = pluginSettings;
         this.pluginObj = pluginObj;
         this.application = application;
     }
 
-    public List<ICommand> parseCommands() {
+    public List<ICommand> parseCommands()
+    {
 
         List<ICommand> commands = new ArrayList<>();
 
-        for (final Method method : pluginObj.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(Command.class)) {
-                if (Arrays.asList(method.getParameterTypes()).contains(ICommandContext.class) && method.getParameterTypes().length == 1) {
+        for (final Method method : pluginObj.getClass().getDeclaredMethods())
+        {
+            if (method.isAnnotationPresent(Command.class))
+            {
+                if (Arrays.asList(method.getParameterTypes()).contains(ICommandContext.class))
+                {
                     Command command = method.getAnnotation(Command.class);
                     List<String> newAliases = new ArrayList<>(Arrays.asList(command.aliases()));
-                    if (command.aliases().length == 0) {
+                    if (command.aliases().length == 0)
+                    {
                         newAliases.add(method.getName());
                     }
 
-                    commands.add(new ICommand() {
+                    commands.add(new ICommand()
+                    {
                         @Override
-                        public String[] getAliases() {
+                        public String[] getAliases()
+                        {
                             return newAliases.toArray(new String[0]);
                         }
 
                         @Override
-                        public String[] getExamples() {
+                        public String[] getExamples()
+                        {
                             return generateExamples(method);
                         }
 
                         @Override
-                        public String getDescription() {
+                        public String getDescription()
+                        {
                             return command.description();
                         }
 
                         @Override
-                        public String getUsage() {
-                            return command.usage().equals("") ? generateUsage(method) : command.usage();
+                        public String getUsage()
+                        {
+                            return generateUsage(method);
                         }
 
                         @Override
-                        public String getType() {
+                        public String getType()
+                        {
                             return command.type();
                         }
 
                         @Override
-                        public String run(IApplication application, ICommandContext commandContext) {
-                            return "";
-                        }
-
-
-                        @Override
-                        public void exec(IApplication application, ICommandContext commandContext) {
+                        public void exec(IApplication application, ICommandContext commandContext)
+                        {
                             PluginCommandDefinition cd = new PluginCommandExecutionBuilder(method.getName(),
-                                    pluginObj.getClass()).setParameterTypes(ICommandContext.class)
-                                    .setArgs(commandContext).build();
-                            if (method.getReturnType().equals(Void.class)) {
+                                    pluginObj.getClass())
+                                    .setParameterTypes(method.getParameterTypes())
+                                    .setArgs(setupArgs(method, commandContext))
+                                    .build();
+                            if (method.getReturnType().equals(Void.class))
+                            {
                                 executePluginCommand(cd);
-                            } else {
-                                if (!commandContext.getCommandResponse().send(method.getGenericReturnType(), executePluginCommand(cd))) {
-                                    log.error("Plugin command: " + pluginSettings.getName() + "#" + method.getName() +
-                                            " is not supported, command will not run please return a valid response type or use void and use commandContext.getCommandResponse()" +
+                            } else
+                            {
+                                if (!commandContext.getCommandResponse()
+                                        .send(method.getGenericReturnType(), executePluginCommand(cd)))
+                                {
+                                    log.error("Plugin command: " + pluginSettings.getName() + "#" +
+                                            method.getName() +
+                                            " is not supported, command will not run please return a valid " +
+                                            "response type or use void and use commandContext" +
+                                            ".getCommandResponse()" +
                                             ".send(Data)");
                                 }
                             }
                         }
 
                         @Override
-                        public boolean validateUsage(ICommandContext commandContext) {
-                            boolean[] isValid = new boolean[]{true};
-
-                            //TODO: Remove this as is deprecated.
-                            Arrays.stream(command.requiredParams()).forEach(e -> {
-                                if (!commandContext.hasParameter(e) && !e.isEmpty()) {
-                                    if (isValid[0]) {
-                                        isValid[0] = false;
-                                    }
-                                }
-                            });
-
-                            return isValid[0] && (!command.requiresValue() || !commandContext.getValue().equals("")) &&
+                        public boolean validateUsage(ICommandContext commandContext)
+                        {
+                            return (!command.requiresValue() || !commandContext.getValue().equals("")) &&
                                     hasRequiredParams(commandContext, method);
                         }
                     });
@@ -140,15 +152,64 @@ public final class PluginCommandParser {
         return commands;
     }
 
-    private boolean hasRequiredParams(ICommandContext commandContext, Method method) {
+    private Object[] setupArgs(Method method, ICommandContext commandContext)
+    {
+        //TODO: Move this into a discord handler
+        List<Object> objs = new LinkedList<>();
+        Arrays.stream(method.getParameterTypes()).forEach(t -> {
+            if (t.equals(ICommandContext.class))
+            {
+                objs.add(commandContext);
+            } else if (t.equals(DiscordMessage.class))
+            {
+                if (isDiscordCommandContext(commandContext))
+                {
+                    objs.add(((DiscordCommandContext) commandContext).getMessage());
+                }
+            } else if (t.equals(IDiscordCommandUtil.class))
+            {
+                if (isDiscordCommandContext(commandContext))
+                {
+                    objs.add(new DiscordCommandUtil((DiscordCommandContext)
+                            commandContext, application.get(IDiscordFacade.class)));
+                }
+            } else
+            {
+                log.error("Cannot handle parameter type: {}", t);
+            }
+        });
+        return objs.toArray(new Object[0]);
+    }
+
+    private boolean isDiscordCommandContext(ICommandContext commandContext)
+    {
+        if (commandContext instanceof DiscordCommandContext)
+        {
+            return true;
+        } else
+        {
+            log.error(
+                    "Unable to pass DiscordMessage as the context of the command is not Discord it " +
+                            "is {}",
+                    commandContext.getClass().getSimpleName());
+
+            return false;
+        }
+    }
+
+    private boolean hasRequiredParams(ICommandContext commandContext, Method method)
+    {
         AtomicBoolean isValid = new AtomicBoolean(true);
         Arrays.stream(method.getAnnotationsByType(CommandParam.class))
                 .filter(cp -> !cp.optional())
                 .forEach(cp -> {
-                    if (isValid.get()) {
-                        if (cp.canBeEmpty()) {
+                    if (isValid.get())
+                    {
+                        if (cp.canBeEmpty())
+                        {
                             isValid.set(commandContext.hasParameter(cp.value()));
-                        } else {
+                        } else
+                        {
                             isValid.set(commandContext.hasNonEmptyParameter(cp.value()));
                         }
                     }
@@ -156,17 +217,24 @@ public final class PluginCommandParser {
         return isValid.get();
     }
 
-    private String generateUsage(Method method) {
-        StringBuilder stringBuilder = new StringBuilder(application.getConfig().getDiscordConfig().getCommandPrefix());
+    private String generateUsage(Method method)
+    {
+        StringBuilder stringBuilder = new StringBuilder(
+                application.getConfig().getDiscordConfig().getCommandPrefix());
         Command command = method.getAnnotation(Command.class);
-        if (command.aliases().length == 0) {
+        if (command.aliases().length == 0)
+        {
             stringBuilder.append(method.getName()).append(" ");
-        } else {
+        } else
+        {
             stringBuilder.append("(");
-            for (int i = 0; i < command.aliases().length; i++) {
-                if (i != command.aliases().length - 1) {
+            for (int i = 0; i < command.aliases().length; i++)
+            {
+                if (i != command.aliases().length - 1)
+                {
                     stringBuilder.append(command.aliases()[i]).append("|");
-                } else {
+                } else
+                {
                     stringBuilder.append(command.aliases()[i]);
                 }
             }
@@ -175,37 +243,45 @@ public final class PluginCommandParser {
 
         Arrays.stream(method.getAnnotationsByType(CommandParam.class)).forEach(cp -> {
             stringBuilder.append("-(").append(cp.value());
-            if (cp.optional()) {
+            if (cp.optional())
+            {
                 stringBuilder.append("?)");
-            } else {
+            } else
+            {
                 stringBuilder.append("*)");
             }
 
-            if (!cp.canBeEmpty()) {
+            if (!cp.canBeEmpty())
+            {
                 stringBuilder.append("=*");
             }
             stringBuilder.append(" ");
         });
         stringBuilder.append("(value");
-        if (command.requiresValue()) {
+        if (command.requiresValue())
+        {
             stringBuilder.append("*)");
-        } else {
+        } else
+        {
             stringBuilder.append("?)");
         }
 
         return stringBuilder.toString();
     }
 
-    private String[] generateExamples(Method method) {
+    private String[] generateExamples(Method method)
+    {
         List<String> examples = new ArrayList<>();
         List<String> requiredParams = new ArrayList<>();
         List<String> optionalParams = new ArrayList<>();
 
         Arrays.stream(method.getAnnotationsByType(CommandParam.class))
                 .forEach(cp -> {
-                    if (!cp.optional()) {
+                    if (!cp.optional())
+                    {
                         addToExamplesParamList(requiredParams, cp);
-                    } else {
+                    } else
+                    {
                         addToExamplesParamList(optionalParams, cp);
                     }
                 });
@@ -214,9 +290,11 @@ public final class PluginCommandParser {
         StringBuilder sb = new StringBuilder(application.getConfig().getDiscordConfig().getCommandPrefix());
         String defaultCommand = "";
 
-        if (command.aliases().length == 0) {
+        if (command.aliases().length == 0)
+        {
             sb.append(method.getName()).append(" ");
-        } else {
+        } else
+        {
             sb.append(command.aliases()[0]).append(" ");
         }
 
@@ -237,16 +315,21 @@ public final class PluginCommandParser {
         return examples.toArray(new String[0]);
     }
 
-    private void addToExamplesParamList(List<String> params, CommandParam cp) {
-        if (cp.canBeEmpty()) {
+    private void addToExamplesParamList(List<String> params, CommandParam cp)
+    {
+        if (cp.canBeEmpty())
+        {
             params.add("-" + cp.value() + " ");
-        } else {
-            if (!cp.exampleValue().equals("")) {
+        } else
+        {
+            if (!cp.exampleValue().equals(""))
+            {
                 String exampleValue = cp.exampleValue().split(" ").length == 0
                         ? cp.exampleValue()
                         : "\"" + cp.exampleValue() + "\"";
                 params.add("-" + cp.value() + "=" + exampleValue + " ");
-            } else {
+            } else
+            {
                 params.add("-" + cp.value() + "=value ");
             }
         }
@@ -261,22 +344,29 @@ public final class PluginCommandParser {
      * @param pluginCommandDefinition - This is the set of data that will be used to run the command.
      * @return Object
      */
-    public Object executePluginCommand(PluginCommandDefinition pluginCommandDefinition) {
+    public Object executePluginCommand(PluginCommandDefinition pluginCommandDefinition)
+    {
         Class<?> pluginClass = pluginCommandDefinition.getPluginClass();
-        try {
+        try
+        {
 
             Method method = pluginClass.getDeclaredMethod(pluginCommandDefinition.getName(),
                     pluginCommandDefinition.getParameterTypes());
             method.setAccessible(true);
 
 
-            if (method.isAnnotationPresent(Command.class)) {
+            if (method.isAnnotationPresent(Command.class))
+            {
                 return method.invoke(pluginObj, pluginCommandDefinition.getArgs());
             }
 
-        } catch (NoSuchMethodException e) {
+        }
+        catch (NoSuchMethodException e)
+        {
             log.error("The module command entered does not exist inside this module.", e);
-        } catch (InvocationTargetException | IllegalAccessException e) {
+        }
+        catch (InvocationTargetException | IllegalAccessException e)
+        {
             log.error("The module command did not execute correctly.", e);
         }
         return null;

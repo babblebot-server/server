@@ -9,8 +9,15 @@
             <PatternLayout
                     pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"/>
         </File>
+        <File name="dbLogFile" fileName="logs/db.log">
+            <PatternLayout
+                    pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"/>
+        </File>
         <Async name="Async">
             <AppenderRef ref="logFile"/>
+        </Async>
+        <Async name="DbAsync">
+            <AppenderRef ref="dbLogFile" />
         </Async>
     </Appenders>
     <Loggers>
@@ -21,5 +28,9 @@
         <logger name="io.netty" level="ERROR"/>
         <logger name="reactor" level="ERROR"/>
         <logger name="discord4j" level="ERROR"/>
+        <logger name="log4jdbc.log4j2" level="debug" additivity="false">
+            <MarkerFilter marker="LOG4JDBC_OTHER" onMatch="DENY" onMismatch="NEUTRAL"/>
+            <AppenderRef ref="DbAsync" />
+        </logger>
     </Loggers>
 </Configuration>

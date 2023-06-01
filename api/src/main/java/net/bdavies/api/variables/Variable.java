@@ -36,13 +36,13 @@ import java.lang.annotation.Target;
  * Usages for variables
  * <p>
  * Field:
- * {@code @uk.co.bjdavies.api.variables.Variable private String testVariable = "I am Test uk.co.bjdavies.api.variables.Variable";}
+ * {@code @net.bdavies.api.variables.Variable private String testVariable = "I am Test net.bdavies.api.variables.Variable";}
  * <p>
  * You would then declare this in command as $(testVar)
  * <p>
  * <p>
  * Method:
- * {@code @uk.co.bjdavies.api.variables.Variable private String printString(String s) {
+ * {@code @net.bdavies.api.variables.Variable private String printString(String s) {
  * return s;
  * }}
  * <p>

@@ -25,9 +25,9 @@
 
 package net.bdavies.api.command;
 
-import discord4j.core.spec.EmbedCreateSpec;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -37,7 +37,7 @@ public interface IResponse {
 
     String getStringResponse();
 
-    Consumer<EmbedCreateSpec> getEmbedCreateSpecResponse();
+    Supplier<EmbedMessage> getEmbedCreateSpecResponse();
 
     boolean isStringResponse();
 }

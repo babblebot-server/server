@@ -25,9 +25,11 @@
 
 package net.bdavies.api.command;
 
+import net.bdavies.api.IApplication;
+import net.bdavies.api.plugins.IPlugin;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import net.bdavies.api.plugins.IPlugin;
 
 import java.util.List;
 
@@ -35,21 +37,23 @@ import java.util.List;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface ICommandDispatcher {
+@Component
+public interface ICommandDispatcher
+{
 
     /**
      * This is where you can a command to the command dispatcher.
      *
      * @param command - The command you wish to add.
      */
-    void addCommand(String namespace, ICommand command);
+    void addCommand(String namespace, ICommand command, IApplication application);
 
     /**
      * This is where you can a command to the command dispatcher.
      *
      * @param commands - The commands you wish to add.
      */
-    void addNamespace(String namespace, List<ICommand> commands);
+    void addNamespace(String namespace, List<ICommand> commands, IApplication application);
 
 
     /**
@@ -90,13 +94,45 @@ public interface ICommandDispatcher {
      */
     Flux<ICommand> getCommands(String type);
 
+    /**
+     * Get all the commands for a certain namespace
+     *
+     * @param namespace the namespace to lookup
+     * @return {@link Flux} of {@link ICommand}s
+     */
     Flux<ICommand> getCommandsFromNamespace(String namespace);
 
+    /**
+     * Get all the namespaces that are registered inside the command dispatcher
+     *
+     * @return {@link Flux} of {@link String}s
+     */
     Flux<String> getRegisteredNamespaces();
 
+    /**
+     * Get the namespace from a command
+     *
+     * @param commandName the whole command name
+     * @return {@link String}
+     */
     String getNamespaceFromCommandName(String commandName);
 
-    void registerGlobalMiddleware(ICommandMiddleware middleware);
+    /**
+     * Register Global middleware that will run before the execution of the command implementation for all
+     * commands regardless of the namespace it can stop execution of the command at this point
+     *
+     * @param middleware  {@link ICommandMiddleware} the middleware object that will be run
+     * @param registrar   the object that is registering the middleware
+     * @param application {@link IApplication} instance of the application
+     */
+    void registerGlobalMiddleware(ICommandMiddleware middleware, Object registrar, IApplication application);
 
+    /**
+     * Register Plugin middleware that will run before the execution of the command implementation for all
+     * commands of the namespace of the plugin it can stop execution of the command at this point
+     *
+     * @param plugin     the plugin object
+     * @param middleware {@link ICommandMiddleware} the middleware object that will be run
+     */
     void registerPluginMiddleware(IPlugin plugin, ICommandMiddleware middleware);
 }

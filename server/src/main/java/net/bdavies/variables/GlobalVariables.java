@@ -26,6 +26,7 @@
 package net.bdavies.variables;
 
 
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.variables.Variable;
 
 /**
@@ -36,14 +37,11 @@ import net.bdavies.api.variables.Variable;
  * Date Created: 30/01/2018
  */
 
-public class GlobalVariables {
-    /*
-        This class is used to hold all the global variables that you can use when creating custom commands
-     */
-
+@Slf4j
+public class GlobalVariables
+{
     @Variable
     public String testVar = "I am just a test variable!";
-
 
     /**
      * This allows you get a random GIF image say you want a !randomGIF command for example.
@@ -51,7 +49,8 @@ public class GlobalVariables {
      * @return String
      */
     @Variable
-    public String getRandomGIF(Float printMe) {
+    public String getRandomGIF(Float printMe)
+    {
         return String.valueOf(printMe
                 * Math.PI);
     }

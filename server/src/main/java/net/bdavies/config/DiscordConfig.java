@@ -25,6 +25,11 @@
 
 package net.bdavies.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.IDiscordConfig;
 
 /**
@@ -35,25 +40,33 @@ import net.bdavies.api.config.IDiscordConfig;
  * Date Created: 31/01/2018
  */
 
-public class DiscordConfig implements IDiscordConfig {
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@Builder
+@Jacksonized
+@Slf4j
+public class DiscordConfig implements IDiscordConfig
+{
     /**
      * This is used to connect to the discord api with your selected bot.
      */
-    private String token;
+    private final String token;
 
 
     /**
      * This is what will be used to determine if a discord message can be considered a command.
      */
-    private String commandPrefix;
+    @Builder.Default
+    private final String commandPrefix = "!";
 
     /**
      * This will be used to set the playing text on startup.
      */
-    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
-    private String playingText = "BabbleBot 2020. Ben Davies";
+    @Builder.Default
+    private final String playingText = "{commandPrefix}help {cmdName}";
 
-    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
+    @Builder.Default
     private String shutdownPassword = "password";
 
 
@@ -62,7 +75,8 @@ public class DiscordConfig implements IDiscordConfig {
      *
      * @return String
      */
-    public String getToken() {
+    public String getToken()
+    {
         return token;
     }
 
@@ -71,17 +85,20 @@ public class DiscordConfig implements IDiscordConfig {
      *
      * @return String
      */
-    public String getCommandPrefix() {
+    public String getCommandPrefix()
+    {
         return commandPrefix;
     }
 
     @Override
-    public String getPlayingText() {
-        return playingText;
+    public String getPlayingText()
+    {
+        return playingText.replace("{commandPrefix}", getCommandPrefix());
     }
 
     @Override
-    public String getShutdownPassword() {
+    public String getShutdownPassword()
+    {
         return shutdownPassword;
     }
 }

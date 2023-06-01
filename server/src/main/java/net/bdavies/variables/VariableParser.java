@@ -44,8 +44,6 @@ import java.util.regex.Pattern;
  * Compiled Class Name: VariableParser.class
  * Date Created: 02/02/2018
  */
-//TODO: Make plugin variables work again.
-//TODO: Fix multiple parameter arguments for variable functions.
 public class VariableParser {
 
     /**

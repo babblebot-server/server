@@ -25,11 +25,11 @@
 
 package net.bdavies.command;
 
-import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.command.IResponse;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class ResponseFactory {
 
-    public static IResponse createResponse(String s, Consumer<EmbedCreateSpec> spec) {
+    public static IResponse createResponse(String s, Supplier<EmbedMessage> spec) {
         return new IResponse() {
             @Override
             public String getStringResponse() {
@@ -46,7 +46,7 @@ public class ResponseFactory {
             }
 
             @Override
-            public Consumer<EmbedCreateSpec> getEmbedCreateSpecResponse() {
+            public Supplier<EmbedMessage> getEmbedCreateSpecResponse() {
                 return spec;
             }
 
@@ -67,8 +67,11 @@ public class ResponseFactory {
         return createResponse(s, null);
     }
 
-    public static IResponse createEmbedResponse(Consumer<EmbedCreateSpec> s) {
-        return createResponse("", s);
+    public static IResponse createEmbedResponse(EmbedMessage s) {
+        return createResponse("", () -> s);
     }
 
+    public static IResponse createEmbedResponse(Supplier<EmbedMessage> s) {
+        return createResponse("", s);
+    }
 }

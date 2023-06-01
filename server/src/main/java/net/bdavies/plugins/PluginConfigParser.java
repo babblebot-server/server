@@ -25,7 +25,8 @@
 
 package net.bdavies.plugins;
 
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.plugins.ICustomPluginConfig;
@@ -41,17 +42,22 @@ import java.util.Arrays;
  * @since 1.2.7
  */
 @Slf4j
-public class PluginConfigParser {
+public class PluginConfigParser
+{
 
-    public static void parsePlugin(IApplication application, IPlugin settings, Object plugin) {
+    public static void parsePlugin(IApplication application, IPlugin settings, Object plugin)
+    {
         Field[] fields = plugin.getClass().getDeclaredFields();
         Arrays.stream(fields).forEach(field -> {
-            if (field.isAnnotationPresent(PluginConfig.class)) {
+            if (field.isAnnotationPresent(PluginConfig.class))
+            {
                 PluginConfig pluginConfig = field.getAnnotationsByType(PluginConfig.class)[0];
                 Class<?> clazz;
-                if (pluginConfig.value() != ICustomPluginConfig.class) {
+                if (pluginConfig.value() != ICustomPluginConfig.class)
+                {
                     clazz = pluginConfig.value();
-                } else {
+                } else
+                {
                     clazz = field.getType();
                 }
 
@@ -60,19 +66,27 @@ public class PluginConfigParser {
                 String fileName = "";
                 boolean autoGenerate = true;
 
-                if (clazz.isAnnotationPresent(PluginConfig.Setup.class)) {
+                if (clazz.isAnnotationPresent(PluginConfig.Setup.class))
+                {
                     //Then handle a setup class
                     PluginConfig.Setup setup = clazz.getAnnotationsByType(PluginConfig.Setup.class)[0];
                     fileName = setup.fileName().equals("") ? settings.getName() : setup.fileName();
                     autoGenerate = setup.autoGenerate();
-                } else {
+                } else
+                {
                     //Handle a interface
-                    try {
+                    try
+                    {
                         ICustomPluginConfig customPluginConfig = (ICustomPluginConfig) application.get(clazz);
                         autoGenerate = customPluginConfig.autoGenerateConfig();
                         fileName = customPluginConfig.fileName();
-                    } catch (ClassCastException exception) {
-                        log.error("Your config field does meet the type requirements it must either use PluginConfig.Setup or implement ICustomPluginConfig...", exception);
+                    }
+                    catch (ClassCastException exception)
+                    {
+                        log.error(
+                                "Your config field does meet the type requirements it must either use " +
+                                        "PluginConfig.Setup or implement ICustomPluginConfig...",
+                                exception);
                         return;
                     }
 
@@ -81,23 +95,32 @@ public class PluginConfigParser {
                 //noinspection ResultOfMethodCallIgnored
                 new File("config").mkdirs();
                 File file = new File("config/" + fileName + ".config.json");
-                if (!file.exists()) {
-                    try {
-                        if (file.createNewFile()) {
-                            if (autoGenerate) {
+                if (!file.exists())
+                {
+                    try
+                    {
+                        if (file.createNewFile())
+                        {
+                            if (autoGenerate)
+                            {
                                 FileWriter writer = new FileWriter(file);
-                                writer.write(new GsonBuilder().setPrettyPrinting().create().toJson(application.get(clazz)));
+                                writer.write(
+                                        new ObjectMapper().setDefaultPrettyPrinter(new DefaultPrettyPrinter())
+                                                .writeValueAsString(application.get(clazz)));
                                 writer.flush();
                                 writer.close();
                             }
                         }
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e)
+                    {
                         e.printStackTrace();
                     }
 
                 }
 
-                try {
+                try
+                {
                     FileReader reader = new FileReader(file);
 
                     BufferedReader bufferedReader = new BufferedReader(reader);
@@ -105,15 +128,18 @@ public class PluginConfigParser {
                     StringBuilder stringBuilder = new StringBuilder();
                     String line;
 
-                    while ((line = bufferedReader.readLine()) != null) {
+                    while ((line = bufferedReader.readLine()) != null)
+                    {
                         stringBuilder.append(line).append("\n");
                     }
 
 
                     field.setAccessible(true);
 
-                    field.set(plugin, new GsonBuilder().create().fromJson(stringBuilder.toString(), clazz));
-                } catch (IOException | IllegalAccessException e) {
+                    field.set(plugin, new ObjectMapper().readValue(stringBuilder.toString(), clazz));
+                }
+                catch (IOException | IllegalAccessException e)
+                {
                     e.printStackTrace();
                 }
             }
