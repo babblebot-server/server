@@ -1,3 +1,10 @@
+# [3.0.0-rc.5](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.4...v3.0.0-rc.5) (2023-06-02)
+
+
+### Bug Fixes
+
+* The Gradle CI file for the Docker pushing ([6149dea](https://github.com/bendavies99/BabbleBot-Server/commit/6149dea4f172b88f0ccfabccc0e546832b007bae))
+
 # [3.0.0-rc.4](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.3...v3.0.0-rc.4) (2023-06-02)
 
 
