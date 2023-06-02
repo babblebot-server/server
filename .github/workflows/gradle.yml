@@ -39,8 +39,3 @@ jobs:
       run: npm run release
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Run FOSSA scan and upload build data
-      uses: fossa-contrib/fossa-action@v1
-      with:
-        fossa-api-key: ${{ secrets.FOSSA_API_KEY }}
-        skip-test: true
