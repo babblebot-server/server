@@ -24,7 +24,7 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.34.0'
     implementation 'net.bytebuddy:byte-buddy:1.11.14'
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.java-websocket:Java-WebSocket:1.5.1'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
     implementation 'org.xeustechnologies:jcl-core:2.8'
 
 
