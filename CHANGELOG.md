@@ -1,3 +1,15 @@
+# [3.0.0-rc.8](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.7...v3.0.0-rc.8) (2023-06-02)
+
+
+### Bug Fixes
+
+* **server:** system doesn't exit on error ([354fb53](https://github.com/bendavies99/BabbleBot-Server/commit/354fb530aec7e9d42938670884a202de11b0e82f))
+
+
+### Features
+
+* **server:** Support all the SQL databases ([fa1933b](https://github.com/bendavies99/BabbleBot-Server/commit/fa1933b1c91663e3ec905a0c13fbf5d4bb602204))
+
 # [3.0.0-rc.7](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.6...v3.0.0-rc.7) (2023-06-02)
 
 
