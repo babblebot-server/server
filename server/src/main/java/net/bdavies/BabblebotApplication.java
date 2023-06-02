@@ -89,15 +89,6 @@ public final class BabblebotApplication implements IApplication
         this.applicationContext = applicationContext;
         log.info("Started Application");
         log.info("Args: " + Arrays.toString(args));
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask()
-        {
-            @Override
-            public void run()
-            {
-                log.info("Active Threads: " + Thread.activeCount());
-            }
-        }, 1000, 1000 * 60 * 60);
 
         try
         {
