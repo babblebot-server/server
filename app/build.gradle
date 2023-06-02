@@ -19,7 +19,9 @@ dependencyManagement {
 }
 
 bootBuildImage {
+    dependsOn ':server:createProperties'
     imageName = "babblebot-server:$project.version"
+
 }
 
 project.tasks.run {
@@ -29,6 +31,7 @@ project.tasks.run {
         project.applicationDefaultJvmArgs += ["-Dio.netty.noUnsafe=true"]
     }
 }
+
 jar {
     manifest {
         attributes 'Main-Class': 'net.bdavies.BabbleBot'
