@@ -18,6 +18,9 @@ dependencyManagement {
     }
 }
 
+bootBuildImage {
+    imageName = "babblebot-server:$project.version"
+}
 
 project.tasks.run {
     dependsOn ':server:createProperties'
