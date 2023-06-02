@@ -34,7 +34,7 @@ import jakarta.persistence.Converter;
  * DB Converter for a Discord Snowflake
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.3
  */
 @Slf4j
 @Converter(autoApply = true)

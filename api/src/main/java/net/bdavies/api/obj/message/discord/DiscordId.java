@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  * An Object for the DiscordId
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.3
  */
 @Slf4j
 @Data

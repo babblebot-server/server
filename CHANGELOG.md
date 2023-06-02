@@ -1,3 +1,10 @@
+# [3.0.0-rc.3](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.2...v3.0.0-rc.3) (2023-06-02)
+
+
+### Bug Fixes
+
+* remove fossa and travis build scripts ([79786f9](https://github.com/bendavies99/BabbleBot-Server/commit/79786f9aa24ed91920cf3c5f88474942ba08d0bf))
+
 # [3.0.0-rc.2](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.1...v3.0.0-rc.2) (2023-06-02)
 
 
