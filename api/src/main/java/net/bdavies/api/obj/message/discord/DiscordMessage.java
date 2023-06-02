@@ -37,7 +37,7 @@ import net.bdavies.api.obj.message.Message;
  * Discord Message Object for the Command Context
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.6
+ * @since 3.0.0-rc.7
  */
 @Slf4j
 @Data

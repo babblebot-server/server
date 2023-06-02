@@ -1,3 +1,10 @@
+# [3.0.0-rc.7](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.6...v3.0.0-rc.7) (2023-06-02)
+
+
+### Bug Fixes
+
+* ensure the server version is in the resources ([61f2ddb](https://github.com/bendavies99/BabbleBot-Server/commit/61f2ddb12c16d49b5020bb6f7aa271c61a65f042))
+
 # [3.0.0-rc.6](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.5...v3.0.0-rc.6) (2023-06-02)
 
 
