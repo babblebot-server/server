@@ -1,3 +1,15 @@
+# [3.0.0-rc.2](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.1...v3.0.0-rc.2) (2023-06-02)
+
+
+### Features
+
+* **BB-5:** Added mongo db support ([a5815aa](https://github.com/bendavies99/BabbleBot-Server/commit/a5815aaa24654f8c9231c9fff565e9dc0cf06ea0))
+* **db:** Begin refactor ([51bf6f3](https://github.com/bendavies99/BabbleBot-Server/commit/51bf6f30e876c555253564b4bfe91ac82bb3f751))
+* **db:** Begin refactor ([d825d75](https://github.com/bendavies99/BabbleBot-Server/commit/d825d7558aef8e957013354db4163277ed5eed96))
+* **db:** Full refactor of current DB system ([819e02c](https://github.com/bendavies99/BabbleBot-Server/commit/819e02c105c467241f73394df29c53ccf3a9bd6a))
+* **test:** Add testing to DB ([e3e525e](https://github.com/bendavies99/BabbleBot-Server/commit/e3e525e7cb58c558dd547c384ef6c540b2ae58f1))
+* **test:** Add testing to DB ([0c8da64](https://github.com/bendavies99/BabbleBot-Server/commit/0c8da640148a265e51f17824aebe95dc68929e82))
+
 # [3.0.0-rc.1](https://github.com/bendavies99/BabbleBot-Server/compare/v2.1.6...v3.0.0-rc.1) (2020-12-17)
 
 
