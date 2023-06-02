@@ -1,3 +1,10 @@
+# [3.0.0-rc.4](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.3...v3.0.0-rc.4) (2023-06-02)
+
+
+### Features
+
+* Add docker support to babblebot ([cf8ab34](https://github.com/bendavies99/BabbleBot-Server/commit/cf8ab342cf1fb2ba2dada2314a80d8db4e59dba7))
+
 # [3.0.0-rc.3](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.2...v3.0.0-rc.3) (2023-06-02)
 
 
