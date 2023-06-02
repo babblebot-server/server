@@ -30,5 +30,6 @@ version=$(grep -E 'version\s*=\s*([a-zA-Z0-9\-\.]+)' ./gradle.properties | cut -
 for i in `find . -name "*.java" -type f`; do
     echo "Updating since in file $i"
     sed -i "/__RELEASE_VERSION__/c\ \* @since \\$version" $i
+    sed -i -E "/([a-zA-Z0-9\-\.]+)-rc.([0-9]+)/c\ \* @since \\$version" $i
 done
 
