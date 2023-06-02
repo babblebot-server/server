@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
  * Author Object POJO
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.5
+ * @since 3.0.0-rc.6
  */
 @Slf4j
 @Data

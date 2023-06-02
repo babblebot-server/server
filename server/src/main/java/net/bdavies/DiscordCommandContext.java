@@ -36,7 +36,7 @@ import java.util.Map;
  * DiscordCommandContext
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.5
+ * @since 3.0.0-rc.6
  */
 @Slf4j
 public class DiscordCommandContext extends CommandContext
