@@ -1,56 +1,58 @@
 {
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bendavies99/BabbleBot-Server.git"
+  "repository" : {
+    "type" : "git",
+    "url" : "git+https://github.com/bendavies99/BabbleBot-Server.git"
   },
-  "bugs": {
-    "url": "https://github.com/bendavies99/BabbleBot-Server/issues"
+  "bugs" : {
+    "url" : "https://github.com/bendavies99/BabbleBot-Server/issues"
   },
-  "homepage": "https://github.com/bendavies99/BabbleBot-Server#readme",
-  "devDependencies": {
-    "@semantic-release/changelog": "^5.0.1",
-    "@semantic-release/commit-analyzer": "^8.0.1",
-    "@semantic-release/exec": "^5.0.0",
-    "@semantic-release/git": "^9.0.0",
-    "@semantic-release/github": "^7.2.0",
-    "@semantic-release/release-notes-generator": "^9.0.1",
-    "commitlint": "^11.0.0",
-    "conventional-changelog-conventionalcommits": "^4.5.0",
-    "cz-conventional-changelog": "^3.3.0",
-    "gradle-semantic-release-plugin": "^1.4.13",
-    "husky": "^4.3.6",
-    "lint-staged": "^10.5.3",
-    "prettier": "^2.2.1",
-    "remark-cli": "^9.0.0",
-    "remark-preset-lint-recommended": "^5.0.0",
-    "semantic-release": "^17.3.0"
+  "homepage" : "https://github.com/bendavies99/BabbleBot-Server#readme",
+  "devDependencies" : {
+    "@semantic-release/changelog" : "^5.0.1",
+    "@semantic-release/commit-analyzer" : "^8.0.1",
+    "@semantic-release/exec" : "^5.0.0",
+    "@semantic-release/git" : "^9.0.0",
+    "@semantic-release/github" : "^7.2.0",
+    "@semantic-release/release-notes-generator" : "^9.0.1",
+    "commitlint" : "^11.0.0",
+    "conventional-changelog-conventionalcommits" : "^4.5.0",
+    "cz-conventional-changelog" : "^3.3.0",
+    "gradle-semantic-release-plugin" : "^1.4.13",
+    "husky" : "^4.3.6",
+    "lint-staged" : "^10.5.3",
+    "prettier" : "^2.2.1",
+    "remark-cli" : "^9.0.0",
+    "remark-preset-lint-recommended" : "^5.0.0",
+    "semantic-release" : "^17.3.0"
   },
-  "scripts": {
-    "release": "semantic-release"
+  "scripts" : {
+    "release" : "semantic-release"
   },
-  "remarkConfig": {
-    "plugins": ["remark-preset-lint-recommended"]
+  "remarkConfig" : {
+    "plugins" : [
+      "remark-preset-lint-recommended"
+    ]
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+  "husky" : {
+    "hooks" : {
+      "commit-msg" : "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
-  "release": {
-    "branches": [
+  "release" : {
+    "branches" : [
       "master",
       {
-        "name": "next",
-        "channel": "channel-next",
-        "prerelease": "rc"
+        "name" : "next",
+        "channel" : "channel-next",
+        "prerelease" : "rc"
       },
       {
-        "name": "2.x.x",
-        "range": "2.x.x",
-        "channel": "2.x.x"
+        "name" : "2.x.x",
+        "range" : "2.x.x",
+        "channel" : "2.x.x"
       }
     ],
-    "plugins": [
+    "plugins" : [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
@@ -58,28 +60,22 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "bash -c \"rm -rf ./app/build/distributions && ./gradlew assembleDist\""
+          "prepareCmd" : "bash -c \"rm -rf ./app/build/distributions && ./gradlew assembleDist\""
         }
       ],
       [
-        "@semantic-release/github",
+        "@semantic-release/exec",
         {
-          "assets": [
-            {
-              "path": "app/build/distributions/*.tar",
-              "label": "Tar Archive"
-            },
-            {
-              "path": "app/build/distributions/*.zip",
-              "label": "Zip Archive"
-            }
-          ]
+          "prepareCmd" : "bash -c \"./scripts/update-since-tags.sh\""
         }
+      ],
+      [
+        "@semantic-release/github"
       ],
       [
         "@semantic-release/git",
         {
-          "assets": [
+          "assets" : [
             "gradle.properties",
             "CHANGELOG.md"
           ]
@@ -87,12 +83,12 @@
       ]
     ]
   },
-  "engines": {
-    "node": "^12.12.0"
+  "engines" : {
+    "node" : "^12.12.0"
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+  "config" : {
+    "commitizen" : {
+      "path" : "./node_modules/cz-conventional-changelog"
     }
   }
 }
