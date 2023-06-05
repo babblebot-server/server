@@ -18,7 +18,7 @@
     "conventional-changelog-conventionalcommits": "^5.0.0",
     "cz-conventional-changelog": "^3.3.0",
     "gradle-semantic-release-plugin": "^1.4.14",
-    "husky": "^7.0.2",
+    "husky": "^8.0.3",
     "lint-staged": "^13.2.2",
     "prettier": "^2.2.1",
     "remark-cli": "^11.0.0",
