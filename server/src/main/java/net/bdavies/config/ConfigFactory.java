@@ -26,9 +26,9 @@
 package net.bdavies.config;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.bdavies.api.config.IConfig;
-
-import java.io.*;
 
 /**
  * BabbleBot, open-source Discord Bot
@@ -38,53 +38,22 @@ import java.io.*;
  * Date Created: 30/01/2018
  */
 
-public class ConfigFactory {
+@Slf4j
+public class ConfigFactory
+{
 
     /**
-     * This factory method will create a config from a json file / string.
+     * This factory method will create a config from the db
      *
-     * @param json - The inputted json file / string.
+     * @param repository - the config repository
      * @return Config
      */
     @SneakyThrows
-    public static IConfig makeConfig(String json) {
-        if (json.equals("config.json")) {
-            //noinspection ResultOfMethodCallIgnored
-            new File("config").mkdirs();
-            File f = new File("config/" + json);
-            if (!f.exists()) {
-                if (f.createNewFile()) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(ConfigFactory.class
-                            .getResourceAsStream("/config.example.json")));
+    public static IConfig makeConfig(ConfigRepository repository)
+    {
+        val config = repository.findById(1L);
 
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        stringBuilder.append(line).append("\n");
-                    }
-
-                    BufferedWriter writer = new BufferedWriter(new FileWriter(f));
-                    writer.write(stringBuilder.toString());
-                    writer.flush();
-                    writer.close();
-                    throw new RuntimeException("You need to insert your bot token into the newly generated config. Exiting now!!");
-                } else {
-                    throw new RuntimeException("Unable to create config file please refer to the document regarding configuration.");
-                }
-            }
-            try {
-                BufferedReader bufferedReader = new BufferedReader(new FileReader("config/" + json));
-                return new ConfigParser(bufferedReader).getConfig();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-
-        } else {
-            return new ConfigParser(json).getConfig();
-        }
-        System.out.println("An error occurred when trying to parse the config");
-        return null;
+        return config.orElseGet(() -> repository.save(Config.builder()
+                .build()));
     }
 }

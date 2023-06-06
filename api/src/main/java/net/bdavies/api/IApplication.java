@@ -26,7 +26,6 @@
 package net.bdavies.api;
 
 import net.bdavies.api.command.ICommandDispatcher;
-import net.bdavies.api.config.IConfig;
 import net.bdavies.api.plugins.IPluginContainer;
 import net.bdavies.api.variables.IVariableContainer;
 import org.springframework.stereotype.Component;
@@ -49,13 +48,6 @@ public interface IApplication
      * @return {@link Object<T>} this is an object of type T
      */
     <T> T get(Class<T> clazz);
-
-    /**
-     * This will return an instance of the application config from config.json file in your root directory.
-     *
-     * @return {@link IConfig}
-     */
-    IConfig getConfig();
 
     /**
      * This will return an instance of the application command dispatcher.

@@ -45,6 +45,7 @@ import net.bdavies.api.obj.message.discord.embed.EmbedFooter;
 import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.api.plugins.IPlugin;
 import net.bdavies.api.plugins.IPluginContainer;
+import net.bdavies.api.plugins.IPluginSettings;
 import net.bdavies.api.plugins.Plugin;
 import net.bdavies.command.errors.UsageException;
 import net.bdavies.command.parser.MessageParser;
@@ -75,7 +76,7 @@ public class CommandDispatcher implements ICommandDispatcher
      */
     private final Map<String, List<ICommand>> commands;
 
-    private final Map<IPlugin, List<ICommandMiddleware>> middlewareList;
+    private final Map<IPluginSettings, List<ICommandMiddleware>> middlewareList;
 
     /**
      * This will initialize the commands list to an ArrayList.
@@ -131,13 +132,17 @@ public class CommandDispatcher implements ICommandDispatcher
         {
             commands.put(namespace, commandsToAdd);
         }
+
+        //TODO: Make this better
         IDiscordFacade facade = application.get(IDiscordFacade.class);
         long applicationId = facade.getClient().getRestClient().getApplicationId().block();
         facade.getClient().getGuilds().subscribe(g -> {
             commandsToAdd.forEach(c -> facade.getClient().getRestClient().getApplicationService()
                     .createGuildApplicationCommand(applicationId, g.getId().asLong(),
-                            ApplicationCommandRequest.builder().name(c.getAliases()[0])
-                                    .description(c.getDescription()).build()).subscribe());
+                            ApplicationCommandRequest.builder()
+                                    .name(namespace + c.getAliases()[0].toLowerCase())
+                                    .description(c.getDescription().equals("") ? c.getAliases()[0]
+                                            : c.getDescription()).build()).subscribe());
         });
     }
 
@@ -443,7 +448,7 @@ public class CommandDispatcher implements ICommandDispatcher
 
 
     @Override
-    public void registerPluginMiddleware(IPlugin plugin, ICommandMiddleware middleware)
+    public void registerPluginMiddleware(IPluginSettings plugin, ICommandMiddleware middleware)
     {
         if (!middlewareList.containsKey(plugin))
         {

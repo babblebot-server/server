@@ -45,14 +45,14 @@ public interface IPluginContainer
      * @param name   - The name of the plugin.
      * @param plugin - The plugin itself.
      */
-    void addPlugin(String name, Object plugin, List<EPluginPermission> pluginPermissions);
+    void addPlugin(String name, Object plugin, List<EPluginPermission> pluginPermissions, String namespace);
 
     /**
      * This method will allow you to add a plugin to the container.
      *
      * @param plugin - The plugin itself.
      */
-    void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions);
+    void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions, String namespace);
 
 
     /**

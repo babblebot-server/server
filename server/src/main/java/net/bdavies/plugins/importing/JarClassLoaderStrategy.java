@@ -25,15 +25,25 @@
 
 package net.bdavies.plugins.importing;
 
+import jakarta.persistence.Entity;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.BabblebotApplication;
 import net.bdavies.api.IApplication;
-import net.bdavies.api.config.IPluginConfig;
 import net.bdavies.api.plugins.IPlugin;
 import net.bdavies.api.plugins.Plugin;
+import net.bdavies.api.plugins.PluginConfig;
+import net.bdavies.plugins.PluginModel;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
 import org.xeustechnologies.jcl.JarClassLoader;
 import reactor.core.publisher.Flux;
 
+import java.io.ByteArrayInputStream;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -55,37 +65,31 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
     public JarClassLoaderStrategy(IApplication application)
     {
         this.application = application;
-        this.jcl = new JarClassLoader();
+        this.jcl = new JarClassLoader(this.getClass().getClassLoader());
     }
 
     @Override
-    public Flux<Object> importPlugin(IPluginConfig config)
+    public Flux<Object> importPlugin(PluginModel config)
     {
-        String pluginLocation = "plugins/" + config.getPluginLocation().replace("plugins/", "");
-        String finalPluginLocation;
-
-        if (pluginLocation.contains(".jar"))
-        {
-            finalPluginLocation = config.getPluginLocation();
-            jcl.add(config.getPluginLocation());
-        } else
-        {
-            finalPluginLocation = pluginLocation + "/";
-            jcl.add(pluginLocation + "/");
-        }
-
         try
         {
-            if (config.getPluginClassPath().equals(""))
+            log.info("Loading plugin jar: {} -- size of jar: {}kb", config.getName(),
+                    ((float) config.getFileData().length / 1000.0f));
+            long now = System.currentTimeMillis();
+            jcl.add(new ByteArrayInputStream(config.getFileData()));
+            if ("".equals(config.getClassPath()) || config.getClassPath() == null)
             {
                 //Load All
                 return Flux.create(sink -> {
-                    log.info("Attempting to load plugin in dir: {}", finalPluginLocation);
                     List<String> check = Arrays.asList("Proxy", "java/lang", "com/sun", "Guice", "google",
                             "GeneratedMethodAccessor", "GeneratedConstructorAccessor", "javax");
                     if (jcl.getLoadedResources().keySet().isEmpty())
                     {
-                        log.error("Unable to load resources in dir: {}", finalPluginLocation);
+                        log.error("Unable to load plugin: {} no classes found", config.getName());
+                    } else
+                    {
+                        log.info("Loaded plugin jar: {} -- time took: {}ms", config.getName(),
+                                System.currentTimeMillis() - now);
                     }
                     jcl.getLoadedResources().keySet().stream()
                             .map(c -> {
@@ -111,19 +115,24 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                 return null;
                             })
                             .filter(Objects::nonNull)
+                            .map(c -> (Class<?>) c)
+                            .filter(this::isRegistrableBean)
+                            .peek(c -> {
+                                BabblebotApplication bbApp = application.get(BabblebotApplication.class);
+                                GenericApplicationContext applicationContext =
+                                        (GenericApplicationContext) bbApp.getApplicationContext();
+                                applicationContext.registerBean(c);
+                            })
                             .filter(c -> c.isAnnotationPresent(Plugin.class) ||
                                     Arrays.stream(c.getInterfaces()).anyMatch(i -> i == IPlugin.class))
-                            .forEach(c -> {
-                                //noinspection unchecked
-                                sink.next(application.get(c));
-                            });
+                            .forEach(c -> sink.next(application.get(c)));
                     sink.complete();
                 });
 
 
             } else
             {
-                Class<?> clazz = jcl.loadClass(config.getPluginClassPath());
+                Class<?> clazz = jcl.loadClass(config.getClassPath());
                 return Flux.just(application.get(clazz));
             }
         }
@@ -133,6 +142,23 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
         }
 
         return Flux.empty();
+    }
+
+    private boolean isRegistrableBean(Class<?> c)
+    {
+        List<Class<? extends Annotation>> registrableAnnotations = List.of(
+                Component.class,
+                Service.class,
+                Plugin.class,
+                PluginConfig.class,
+                Repository.class,
+                Controller.class,
+                RestController.class,
+                Entity.class
+        );
+
+        return Arrays.stream(c.getAnnotations())
+                .anyMatch(a -> registrableAnnotations.stream().anyMatch(ac -> ac.equals(a.annotationType())));
     }
 
     private boolean contains(String s, String s1, List<String> contains)

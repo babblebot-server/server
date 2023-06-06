@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.bdavies.DiscordCommandContext;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.command.*;
+import net.bdavies.api.config.IConfig;
 import net.bdavies.api.discord.IDiscordCommandUtil;
 import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.message.discord.DiscordMessage;
@@ -55,7 +56,8 @@ public final class PluginCommandParser
     private final IApplication application;
 
 
-    public PluginCommandParser(IApplication application, IPluginSettings pluginSettings, Object pluginObj)
+    public PluginCommandParser(IApplication application, IPluginSettings pluginSettings,
+                               Object pluginObj)
     {
         this.pluginSettings = pluginSettings;
         this.pluginObj = pluginObj;
@@ -120,7 +122,7 @@ public final class PluginCommandParser
                                     .setParameterTypes(method.getParameterTypes())
                                     .setArgs(setupArgs(method, commandContext))
                                     .build();
-                            if (method.getReturnType().equals(Void.class))
+                            if (method.getReturnType().equals(Void.TYPE))
                             {
                                 executePluginCommand(cd);
                             } else
@@ -220,7 +222,7 @@ public final class PluginCommandParser
     private String generateUsage(Method method)
     {
         StringBuilder stringBuilder = new StringBuilder(
-                application.getConfig().getDiscordConfig().getCommandPrefix());
+                application.get(IConfig.class).getDiscordConfig().getCommandPrefix());
         Command command = method.getAnnotation(Command.class);
         if (command.aliases().length == 0)
         {
@@ -287,7 +289,8 @@ public final class PluginCommandParser
                 });
 
         Command command = method.getAnnotation(Command.class);
-        StringBuilder sb = new StringBuilder(application.getConfig().getDiscordConfig().getCommandPrefix());
+        StringBuilder sb = new StringBuilder(
+                application.get(IConfig.class).getDiscordConfig().getCommandPrefix());
         String defaultCommand = "";
 
         if (command.aliases().length == 0)

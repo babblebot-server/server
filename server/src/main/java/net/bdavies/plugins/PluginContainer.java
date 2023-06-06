@@ -57,7 +57,8 @@ public class PluginContainer implements IPluginContainer
     }
 
     @Override
-    public void addPlugin(String name, Object obj, List<EPluginPermission> pluginPermissions)
+    public void addPlugin(String name, Object obj, List<EPluginPermission> pluginPermissions,
+                          String namespaceOrig)
     {
         IApplication application = applicationContext.getBean(IApplication.class);
         if (plugins.containsKey(name) || plugins.containsValue(obj))
@@ -65,15 +66,21 @@ public class PluginContainer implements IPluginContainer
             log.error("The key or plugin is already in the container.");
         } else
         {
-            String pName, author, namespace, minServerVersion, maxServerVersion;
+            String pName, author, minServerVersion, maxServerVersion;
             pluginPermissionsMap.put(obj, pluginPermissions);
+
+            String namespace = namespaceOrig;
+
 
             if (obj instanceof IPlugin)
             {
                 IPlugin plugin = (IPlugin) obj;
                 pName = plugin.getName();
+                if (namespace.equals("$name"))
+                {
+                    namespace = pName + "-";
+                }
                 author = plugin.getAuthor();
-                namespace = plugin.getNamespace();
                 minServerVersion = plugin.getMinimumServerVersion();
                 maxServerVersion = plugin.getMaximumServerVersion();
             } else if (obj.getClass().isAnnotationPresent(Plugin.class))
@@ -89,10 +96,10 @@ public class PluginContainer implements IPluginContainer
                         ? application.getServerVersion()
                         : plugin.minServerVersion();
                 maxServerVersion = plugin.maxServerVersion();
-                namespace = plugin.namespace().equals("<bb-def-uniq>")
-                        ? pName + "-"
-                        : plugin.namespace();
-
+                if (namespace.equals("$name"))
+                {
+                    namespace = pName + "-";
+                }
             } else
             {
                 log.error(
@@ -122,8 +129,8 @@ public class PluginContainer implements IPluginContainer
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
                 application.getCommandDispatcher().addNamespace(settings.getNamespace(),
                         commandParser.parseCommands(), application);
-                log.info("Added plugin: " + settings.getName() + ", using namespace: \"" +
-                        settings.getNamespace() + "\"");
+                log.info("Added plugin: " + settings.getName() + " (by {}), using namespace: \"" +
+                        settings.getNamespace() + "\"", settings.getAuthor());
                 this.settings.put(name, settings);
                 plugins.put(name, obj);
             }
@@ -131,10 +138,10 @@ public class PluginContainer implements IPluginContainer
     }
 
     @Override
-    public void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions)
+    public void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions, String namespace)
     {
         addPlugin(plugin.getClass().getSimpleName().toLowerCase().replace("plugin", ""), plugin,
-                pluginPermissions);
+                pluginPermissions, namespace);
     }
 
     private IPluginSettings getPluginSettings(String name,

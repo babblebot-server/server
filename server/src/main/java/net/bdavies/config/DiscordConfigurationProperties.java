@@ -23,31 +23,26 @@
  *
  */
 
-package net.bdavies.core;
+package net.bdavies.config;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.obj.message.discord.DiscordChannel;
-import net.bdavies.api.obj.message.discord.DiscordGuild;
-import net.bdavies.api.obj.message.discord.DiscordUser;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * Configuration Properties for Discord
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Data
-@Entity
 @Slf4j
-public class Ignore
+@ConfigurationProperties(prefix = "discord")
+@Configuration
+@Data
+public class DiscordConfigurationProperties
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private DiscordGuild guild;
-    private DiscordChannel channel;
-    private DiscordUser ignoredBy;
+    @NotEmpty
+    private String token;
 }

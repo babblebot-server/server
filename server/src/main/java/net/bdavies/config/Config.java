@@ -26,17 +26,16 @@
 package net.bdavies.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.IConfig;
 import net.bdavies.api.config.IDiscordConfig;
-import net.bdavies.api.config.IPluginConfig;
 import net.bdavies.api.config.ISystemConfig;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * BabbleBot, open-source Discord Bot
@@ -48,27 +47,33 @@ import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Slf4j
 public class Config implements IConfig
 {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private long id;
     /**
      * This is the config settings for the discord part of this bot.
      */
-    private DiscordConfig discord;
+    @OneToOne(cascade = CascadeType.ALL)
+    @Builder.Default
+    private DiscordConfig discord = DiscordConfig.builder().build();
 
 
     /**
      * This is the config settings for the system part of this bot.
      */
-    private SystemConfig system;
-
-
-    /**
-     * This is the config settings for the modules used in this bot.
-     */
+    @OneToOne(cascade = CascadeType.ALL)
     @Builder.Default
-    private List<PluginConfig> plugins = new LinkedList<>();
+    private SystemConfig system = SystemConfig.builder().build();
+
 
     @Override
     public IDiscordConfig getDiscordConfig()
@@ -80,10 +85,5 @@ public class Config implements IConfig
     public ISystemConfig getSystemConfig()
     {
         return system;
-    }
-
-    public List<IPluginConfig> getPlugins()
-    {
-        return plugins.stream().map(p -> (IPluginConfig) p).collect(Collectors.toList());
     }
 }

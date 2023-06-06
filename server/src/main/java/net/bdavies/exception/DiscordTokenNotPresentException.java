@@ -23,31 +23,21 @@
  *
  */
 
-package net.bdavies.core;
+package net.bdavies.exception;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.obj.message.discord.DiscordChannel;
-import net.bdavies.api.obj.message.discord.DiscordGuild;
-import net.bdavies.api.obj.message.discord.DiscordUser;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * Exception for when the Discord token has not been set
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Data
-@Entity
 @Slf4j
-public class Ignore
+public class DiscordTokenNotPresentException extends RuntimeException
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private DiscordGuild guild;
-    private DiscordChannel channel;
-    private DiscordUser ignoredBy;
+    public DiscordTokenNotPresentException()
+    {
+        super("Discord token not present, please set DISCORD_TOKEN in the env variables");
+    }
 }

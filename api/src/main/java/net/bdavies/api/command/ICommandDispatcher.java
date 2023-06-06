@@ -26,7 +26,7 @@
 package net.bdavies.api.command;
 
 import net.bdavies.api.IApplication;
-import net.bdavies.api.plugins.IPlugin;
+import net.bdavies.api.plugins.IPluginSettings;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -134,5 +134,5 @@ public interface ICommandDispatcher
      * @param plugin     the plugin object
      * @param middleware {@link ICommandMiddleware} the middleware object that will be run
      */
-    void registerPluginMiddleware(IPlugin plugin, ICommandMiddleware middleware);
+    void registerPluginMiddleware(IPluginSettings plugin, ICommandMiddleware middleware);
 }

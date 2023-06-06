@@ -38,15 +38,14 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PluginConfig {
+public @interface PluginConfig
+{
     Class<? extends ICustomPluginConfig> value() default ICustomPluginConfig.class;
 
     @Target({ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
-    @interface Setup {
+    @interface Setup
+    {
         boolean autoGenerate() default true;
-
-        String fileName() default "";
     }
-
 }

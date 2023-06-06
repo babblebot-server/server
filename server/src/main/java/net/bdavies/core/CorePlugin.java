@@ -91,12 +91,11 @@ import java.util.function.Supplier;
  * @since 1.0.0
  */
 @Slf4j
-@Plugin(author = "Ben Davies <me@bdavies.net>", namespace = "")
+@Plugin(author = "Ben Davies <me@bdavies.net>")
 @RequiredArgsConstructor
 @Component
 public class CorePlugin implements IPluginEvents
 {
-
     private final ICommandDispatcher commandDispatcher;
 
     private final IApplication application;
@@ -106,12 +105,6 @@ public class CorePlugin implements IPluginEvents
     private final AnnouncementService announcementService;
     private final IgnoreRepository ignoreRepo;
     private final AnnouncementChannelRepository announcementChannelRepo;
-
-    @Override
-    public void onReload()
-    {
-        log.info("Plugin reload");
-    }
 
     @Override
     public void onBoot(IPluginSettings settings)
@@ -130,7 +123,6 @@ public class CorePlugin implements IPluginEvents
             return true;
         }, this, application);
 
-//        announcementService.start();
         IDiscordFacade discordFacade = application.get(IDiscordFacade.class);
         discordFacade.registerEventHandler(ReadyEvent.class, r -> {
             if (application.hasArgument("-restart"))
@@ -139,12 +131,6 @@ public class CorePlugin implements IPluginEvents
             }
         });
 
-    }
-
-    @Override
-    public void onShutdown()
-    {
-        announcementService.stop();
     }
 
     @Command(description = "Start listening again to a channel the bot will then start responding again.")

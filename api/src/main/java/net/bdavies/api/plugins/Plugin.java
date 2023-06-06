@@ -36,22 +36,23 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Plugin {
-    // This is the name of the plugin
+public @interface Plugin
+{
+    /**
+     * The name of your plugin
+     *
+     * @return String
+     */
     String value() default "";
 
+    /**
+     * The author of the plugin
+     *
+     * @return String
+     */
     String author() default "babblebot-plugin-developer";
 
     String minServerVersion() default "0";
 
     String maxServerVersion() default "0";
-
-    /**
-     * Name space will be default to the value a.k.a name with a -.
-     * e.g. color-
-     *
-     * @return String
-     */
-    String namespace() default "<bb-def-uniq>";
-
 }

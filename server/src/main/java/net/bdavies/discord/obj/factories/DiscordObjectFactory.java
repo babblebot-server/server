@@ -29,13 +29,13 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.message.discord.DiscordChannel;
 import net.bdavies.api.obj.message.discord.DiscordGuild;
 import net.bdavies.api.obj.message.discord.DiscordId;
 import net.bdavies.api.obj.message.discord.DiscordUser;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -49,10 +49,14 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class DiscordObjectFactory
 {
     private final IDiscordFacade discordFacade;
+
+    public DiscordObjectFactory(@Lazy IDiscordFacade discordFacade)
+    {
+        this.discordFacade = discordFacade;
+    }
 
     private Mono<Guild> guildFromBabbleBot(DiscordGuild guild)
     {

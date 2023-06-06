@@ -23,31 +23,15 @@
  *
  */
 
-package net.bdavies.core;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.obj.message.discord.DiscordChannel;
-import net.bdavies.api.obj.message.discord.DiscordGuild;
-import net.bdavies.api.obj.message.discord.DiscordUser;
+package net.bdavies.plugins;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * Plugin type enum
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Data
-@Entity
-@Slf4j
-public class Ignore
+public enum PluginType
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private DiscordGuild guild;
-    private DiscordChannel channel;
-    private DiscordUser ignoredBy;
+    JAVA
 }

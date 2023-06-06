@@ -25,10 +25,6 @@
 
 package net.bdavies.core;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.zafarkhaja.semver.Version;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.PartialMember;
@@ -36,37 +32,29 @@ import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
+import net.bdavies.api.core.IAnnouncementService;
 import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.core.repository.AnnouncementChannelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.netty.http.client.HttpClient;
 
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
+ * @author me@bdavies.net (Ben Davies)
  * @since 1.2.7
  */
 @Slf4j
 @Service
-public class AnnouncementService
+public class AnnouncementService implements IAnnouncementService
 {
     private final IDiscordFacade facade;
 
     private final IApplication application;
-    private final ExecutorService service;
-    private final Timer timer;
-    private Version currentVersion;
-
     private final AnnouncementChannelRepository announcementChannelRepo;
 
     @Autowired
@@ -76,103 +64,11 @@ public class AnnouncementService
         this.facade = facade;
         this.application = application;
         this.announcementChannelRepo = announcementChannelRepo;
-        this.service = Executors.newFixedThreadPool(2);
-        timer = new Timer();
-        currentVersion = Version.valueOf(application.getServerVersion());
-    }
-
-    public synchronized void stop()
-    {
-        timer.cancel();
-        this.service.shutdown();
-    }
-
-    public synchronized void start()
-    {
-
-        timer.scheduleAtFixedRate(new TimerTask()
-        {
-            @Override
-            public void run()
-            {
-                service.submit(() -> {
-                    try
-                    {
-                        String response =
-                                HttpClient.create()
-                                        .get()
-                                        .uri("https://api.github.com/repos/bendavies99/Babblebot-Server" +
-                                                "/releases")
-                                        .responseContent()
-                                        .aggregate()
-                                        .asString()
-                                        .block();
-
-                        ObjectMapper mapper = new ObjectMapper();
-
-                        List<TagItem> res = mapper.readValue(response, new TypeReference<>()
-                        {
-                        });
-                        assert res != null;
-                        TagItem first = res.get(0);
-                        int index = 0;
-                        while (first.prerelease)
-                        {
-                            first = res.get(++index);
-                        }
-                        String versionName = first.tag_name.toLowerCase(Locale.ROOT).replace("v", "");
-                        Version tagVersion = Version.valueOf(versionName);
-                        if (tagVersion.greaterThan(currentVersion) &&
-                                (tagVersion.getMajorVersion() == currentVersion.getMajorVersion() &&
-                                        !application.hasArgument("--updateMajor")))
-                        {
-                            if (application.getConfig().getSystemConfig().isAutoUpdateOn())
-                            {
-                                log.info("Updating....");
-                                application.get(UpdateService.class).updateTo(first).subscribe(b -> {
-
-                                }, t -> log.error("Error", t), () -> {
-                                    currentVersion = tagVersion;
-
-                                    sendMessage("New server update to: " + versionName,
-                                            "Server has been updated please use: " +
-                                                    application.getConfig().getDiscordConfig()
-                                                            .getCommandPrefix() +
-                                                    "restart to update now, or the bot will restart " +
-                                                    "automatically in 10 minutes.." +
-                                                    ".");
-
-                                    timer.schedule(new TimerTask()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            sendMessage("Bot is now restarting for the update...");
-                                            application.restart();
-                                        }
-                                    }, 1000 * 60 * 10);
-
-                                });
-                            }
-                        } else
-                        {
-                            log.info("Up to date");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        log.error(
-                                "Checking for update failed.... Probably a rate limit.. please wait an hour" +
-                                        ".", e);
-                    }
-                });
-            }
-        }, 3000, 1000 * 60 * 60);
     }
 
     public synchronized void sendMessage(String title, String message)
     {
-
+        //TODO: pass to the renderer
         Function<Guild, EmbedCreateSpec> specConsumer = (g) -> {
             Optional<Color> col = facade.getClient().getSelf()
                     .flatMap(u -> u.asMember(g.getId()))
@@ -199,23 +95,5 @@ public class AnnouncementService
     public synchronized void sendMessage(String message)
     {
         sendMessage("New announcement", message);
-    }
-
-    @Data
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class TagItem
-    {
-        private String tag_name;
-        private List<Asset> assets;
-        private boolean prerelease;
-    }
-
-    @Data
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Asset
-    {
-        private String browser_download_url;
     }
 }
