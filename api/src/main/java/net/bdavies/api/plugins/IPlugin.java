@@ -29,21 +29,14 @@ package net.bdavies.api.plugins;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface IPlugin {
+public interface IPlugin
+{
     /**
      * This is the name of the Plugin.
      *
      * @return String
      */
     String getName();
-
-    /**
-     * This is the version of the Plugin.
-     *
-     * @return String
-     * @deprecated Not required for plugin processing
-     */
-    String getVersion();
 
     /**
      * This is the author of the Plugin.
@@ -65,14 +58,4 @@ public interface IPlugin {
      * @return String
      */
     String getMaximumServerVersion();
-
-    /**
-     * This is the namespace for your commands
-     * Please don't use ""
-     * <p>
-     * Because if it clashes with any commands your commands will not be added to system.
-     *
-     * @return String
-     */
-    String getNamespace();
 }

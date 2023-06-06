@@ -26,8 +26,14 @@
 package net.bdavies.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.IDiscordConfig;
@@ -43,15 +49,23 @@ import net.bdavies.api.config.IDiscordConfig;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 @Slf4j
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class DiscordConfig implements IDiscordConfig
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
     /**
      * This is used to connect to the discord api with your selected bot.
      */
-    private final String token;
+    @Builder.Default
+    private String token = "";
 
 
     /**

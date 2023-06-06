@@ -26,8 +26,14 @@
 package net.bdavies.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.config.ISystemConfig;
@@ -45,11 +51,15 @@ import net.bdavies.api.config.ISystemConfig;
 @Data
 @Builder
 @Jacksonized
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public class SystemConfig implements ISystemConfig
 {
-    @Builder.Default
-    private final boolean autoUpdate = true;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     /**
      * This will show all the logs for the discord client and other problems that occur throughout the
@@ -58,12 +68,6 @@ public class SystemConfig implements ISystemConfig
     @Builder.Default
     private final boolean debug = true;
 
-
-    @Override
-    public boolean isAutoUpdateOn()
-    {
-        return autoUpdate;
-    }
 
     /**
      * This will return if debug is on.

@@ -32,15 +32,6 @@ package net.bdavies.api.config;
 public interface ISystemConfig {
 
     /**
-     * This will return if the server will auto-update based on github. If turned off the user will manually have to update.
-     * Default: On
-     *
-     * @return boolean
-     */
-    boolean isAutoUpdateOn();
-
-
-    /**
      * This will return if debug is on.
      *
      * @return boolean

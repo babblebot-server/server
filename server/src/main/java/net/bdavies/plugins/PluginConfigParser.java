@@ -70,7 +70,7 @@ public class PluginConfigParser
                 {
                     //Then handle a setup class
                     PluginConfig.Setup setup = clazz.getAnnotationsByType(PluginConfig.Setup.class)[0];
-                    fileName = setup.fileName().equals("") ? settings.getName() : setup.fileName();
+                    fileName = settings.getName();
                     autoGenerate = setup.autoGenerate();
                 } else
                 {

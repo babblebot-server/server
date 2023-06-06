@@ -57,13 +57,17 @@ public class Discord4JService
     {
         this.application = application;
         this.config = config;
-        this.setupClient();
+        setupClient();
     }
 
-    private void setupClient()
+    public void setupClient()
     {
         try
         {
+            if (config.getToken().equals(""))
+            {
+                return;
+            }
             log.info("Setting up Discord Client");
 
             client = DiscordClient.builder(config.getToken()).build().login().block();

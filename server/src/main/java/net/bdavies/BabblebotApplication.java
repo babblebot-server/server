@@ -27,29 +27,34 @@ package net.bdavies;
 
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.command.ICommandDispatcher;
 import net.bdavies.api.config.EPluginPermission;
-import net.bdavies.api.config.IConfig;
 import net.bdavies.api.config.IDiscordConfig;
-import net.bdavies.api.config.ISystemConfig;
 import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.plugins.IPluginContainer;
 import net.bdavies.api.variables.IVariableContainer;
-import net.bdavies.config.ConfigFactory;
 import net.bdavies.core.CorePlugin;
+import net.bdavies.plugins.PluginModel;
+import net.bdavies.plugins.PluginModelRepository;
+import net.bdavies.plugins.PluginType;
 import net.bdavies.plugins.importing.ImportPluginFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
+import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.Executors;
 
@@ -71,8 +76,6 @@ import java.util.concurrent.Executors;
 @ComponentScan({"net.bdavies"})
 public final class BabblebotApplication implements IApplication
 {
-    private static int triedToMake;
-    private final IConfig config;
     private final ICommandDispatcher commandDispatcher;
     private final IVariableContainer variableContainer;
     private final IPluginContainer pluginContainer;
@@ -84,15 +87,16 @@ public final class BabblebotApplication implements IApplication
     /**
      * Create a {@link BabblebotApplication} for BabbleBot
      */
-    public BabblebotApplication(ApplicationContext applicationContext)
+    public BabblebotApplication(GenericApplicationContext applicationContext)
     {
+        SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
         this.applicationContext = applicationContext;
         log.info("Started Application");
         log.info("Args: " + Arrays.toString(args));
 
         try
         {
-            serverVersion = new String(getClass().getResourceAsStream("/version.txt").readAllBytes()).trim();
+            serverVersion = IOUtils.resourceToString("/version.txt", StandardCharsets.UTF_8).trim();
         }
         catch (IOException e)
         {
@@ -102,34 +106,34 @@ public final class BabblebotApplication implements IApplication
         commandDispatcher = applicationContext.getBean(ICommandDispatcher.class);
         variableContainer = applicationContext.getBean(IVariableContainer.class);
         pluginContainer = applicationContext.getBean(IPluginContainer.class);
-        config = ConfigFactory.makeConfig("config.json");
     }
 
-    void initPlugins()
+    @SneakyThrows
+    public void initPlugins()
     {
-        log.info("Beans: {}", Arrays.toString(applicationContext.getBeanDefinitionNames()));
-        pluginContainer.addPlugin("core", get(CorePlugin.class), EPluginPermission.all());
+        if (get(IDiscordConfig.class).getToken().equals(""))
+        {
+            log.error("Discord token not setup: please visit /v1/config/setup-token");
+            return;
+        }
+        pluginContainer.addPlugin("core", get(CorePlugin.class), EPluginPermission.all(), "");
 
-        assert config != null;
-        config.getPlugins().forEach(pluginConfig ->
-                ImportPluginFactory.importPlugin(pluginConfig, this)
+        //TODO: Remove
+        PluginModel model = PluginModel.builder()
+                .name("test")
+                .pluginType(PluginType.JAVA)
+                .pluginPermissions(EPluginPermission.all())
+                .fileData(FileUtils.readFileToByteArray(new File("plugins/test/test-plugin-1.0.0.jar")))
+                .namespace("$name")
+                .build();
+        get(PluginModelRepository.class).save(model);
+
+        get(PluginModelRepository.class).findAll().forEach(pluginModel ->
+                ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
                         .subscribe(pObj -> pluginContainer.addPlugin(pObj,
-                                pluginConfig.getPluginPermissions())));
+                                pluginModel.getPluginPermissions(), pluginModel.getNamespace())));
     }
 
-
-    @Bean
-    IDiscordConfig discordConfig()
-    {
-        log.info("Config: {}", this.config);
-        return this.getConfig().getDiscordConfig();
-    }
-
-    @Bean
-    ISystemConfig systemConfig()
-    {
-        return this.getConfig().getSystemConfig();
-    }
 
     /**
      * This will make a Application and ensure that only one application can be made.
@@ -150,27 +154,17 @@ public final class BabblebotApplication implements IApplication
      * @param args  The Arguments passed in by the cli.
      * @param clazz Bootstrap your own application useful for developing plugins.
      * @return {@link IApplication}
-     * @throws RuntimeException if the application tried to made twice
      */
-    public static <T extends BabblebotApplication> IApplication make(Class<?> mainClass, Class<T> clazz,
+    public static <T extends BabblebotApplication> IApplication make(Class<?> mainClass,
+                                                                     Class<T> clazz,
                                                                      String[] args)
     {
-        if (triedToMake == 0)
-        {
-            triedToMake++;
-            BabblebotApplication.mainClass = mainClass;
-            BabblebotApplication.args = Arrays.copyOf(args, args.length);
-            val context = SpringApplication.run(mainClass, args);
-            BabblebotApplication app = (BabblebotApplication) context.getBean(IApplication.class);
-            app.initPlugins();
-            return app;
-        } else
-        {
-            log.error("Tried to create Multiple applications, Exiting...",
-                    new RuntimeException("Tried to make multiple Applications"));
-            System.exit(-1);
-            return null;
-        }
+        BabblebotApplication.mainClass = mainClass;
+        BabblebotApplication.args = Arrays.copyOf(args, args.length);
+        val context = SpringApplication.run(mainClass, args);
+        IApplication app = context.getBean(IApplication.class);
+        context.getBean(BabblebotApplication.class).initPlugins();
+        return app;
     }
 
     /**
@@ -185,13 +179,11 @@ public final class BabblebotApplication implements IApplication
         return applicationContext.getBean(clazz);
     }
 
-    @Override
     public String getServerVersion()
     {
         return serverVersion;
     }
 
-    @Override
     public void shutdown(int timeout)
     {
         Executors.newSingleThreadExecutor().submit(() -> {
@@ -211,13 +203,11 @@ public final class BabblebotApplication implements IApplication
         });
     }
 
-    @Override
     public boolean hasArgument(String argument)
     {
         return Arrays.asList(args).contains(argument);
     }
 
-    @Override
     public void restart()
     {
         Executors.newSingleThreadExecutor().submit(() -> {

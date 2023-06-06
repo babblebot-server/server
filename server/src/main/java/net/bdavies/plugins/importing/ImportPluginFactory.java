@@ -26,9 +26,10 @@
 package net.bdavies.plugins.importing;
 
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 import net.bdavies.api.IApplication;
-import net.bdavies.api.config.IPluginConfig;
+import net.bdavies.plugins.PluginModel;
+import net.bdavies.plugins.PluginType;
+import reactor.core.publisher.Flux;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -39,8 +40,8 @@ public final class ImportPluginFactory {
 
     private ImportPluginFactory() {}
 
-    public static Flux<Object> importPlugin(IPluginConfig config, IApplication application) {
-        if (config.getPluginType().equalsIgnoreCase("java")) {
+    public static Flux<Object> importPlugin(PluginModel config, IApplication application) {
+        if (config.getPluginType() == PluginType.JAVA) {
             return application.get(JarClassLoaderStrategy.class).importPlugin(config);
         }
         return Flux.empty();

@@ -25,8 +25,6 @@
 
 package net.bdavies.api.config;
 
-import java.util.List;
-
 /**
  * BabbleBot, open-source Discord Bot
  * Author: Ben Davies
@@ -51,12 +49,4 @@ public interface IConfig
      * @return {@link ISystemConfig}
      */
     ISystemConfig getSystemConfig();
-
-    /**
-     * This will return the config for the plugins used in this bot.
-     *
-     * @return {@link List<IPluginConfig>}
-     */
-    List<IPluginConfig> getPlugins();
-
 }

@@ -67,7 +67,8 @@ public class DiscordFacade implements IDiscordFacade
     @Getter
     private final IApplication application;
 
-    public DiscordFacade(IApplication application, Discord4JService setup) {
+    public DiscordFacade(IApplication application, Discord4JService setup)
+    {
         this.application = application;
         this.client = setup.getClient();
     }
@@ -118,6 +119,12 @@ public class DiscordFacade implements IDiscordFacade
      */
     public <T extends Event> void registerEventHandler(Class<T> clazz, Consumer<T> callback)
     {
-        this.client.getEventDispatcher().on(clazz).subscribe(callback);
+        if (this.client != null)
+        {
+            this.client.getEventDispatcher().on(clazz).subscribe(callback);
+        } else
+        {
+            log.error("Unable to register event dispatcher because the client token is null or invalid");
+        }
     }
 }

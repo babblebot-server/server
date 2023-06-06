@@ -23,31 +23,45 @@
  *
  */
 
-package net.bdavies.core;
+package net.bdavies.plugins;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.obj.message.discord.DiscordChannel;
-import net.bdavies.api.obj.message.discord.DiscordGuild;
-import net.bdavies.api.obj.message.discord.DiscordUser;
+import net.bdavies.api.config.EPluginPermission;
+
+import java.util.List;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * Entity for a Plugin will serialise for a distributed System
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Data
-@Entity
 @Slf4j
-public class Ignore
+@Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+public class PluginModel
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private DiscordGuild guild;
-    private DiscordChannel channel;
-    private DiscordUser ignoredBy;
+
+    private String name;
+    private PluginType pluginType;
+    private String classPath;
+    @Builder.Default
+    private String namespace = "$name";
+    private List<EPluginPermission> pluginPermissions;
+
+    @Lob
+    private byte[] fileData;
 }

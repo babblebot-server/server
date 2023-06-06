@@ -14,7 +14,7 @@ dependencyManagement {
 
 dependencies {
     api 'com.discord4j:discord4j-core:3.2.4'
-    implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.projectlombok:lombok'
+    api 'org.springframework.boot:spring-boot-starter'
+    api 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
