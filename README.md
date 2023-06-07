@@ -72,43 +72,44 @@ NOTE: The emoji "🚧" means that the current features are under heavy developme
 version: '2.8'
 
 volumes:
-    db-data:
-    plugins:
+  db-data:
+  plugins:
 
 networks:
-    bb:
+  bb:
 
 services:
-    db:
-        container_name: db
-        image: postgres:latest
-        restart: unless-stopped
-        environment:
-            POSTGRES_PASSWORD: 'password-goes-here'
-            POSTGRES_USER: 'dbadmin'
-            POSTGRES_DB: 'babblebot'
-        ports:
-            - "5432:5432"
-        volumes:
-            - db-data:/var/lib/postgresql/data
-        networks:
-            - bb
-    babblebot-server:
-        container_name: babblebot-server
-        image: bendavies99/babblebot-server:latest
-        restart: unless-stopped
-        environment:
-            spring.datasource.driver-class-name: 'org.postgresql.Driver'
-            spring.datasource.url: 'jdbc:postgresql://db/babblebot'
-            spring.datasource.username: 'dbadmin'
-            spring.datasource.password: 'password-goes-here'
-            spring.jpa.hibernate.ddl-auto: 'update'
-        volumes:
-            - plugins:/workspace/plugins
-        ports:
-            - "21132:8080"
-        networks:
-            - bb
+  db:
+    container_name: db
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: 'password-goes-here'
+      POSTGRES_USER: 'dbadmin'
+      POSTGRES_DB: 'babblebot'
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - bb
+  babblebot-server:
+    container_name: babblebot-server
+    image: bendavies99/babblebot-server:latest
+    restart: unless-stopped
+    environment:
+      spring.datasource.driver-class-name: 'org.postgresql.Driver'
+      spring.datasource.url: 'jdbc:postgresql://db/babblebot'
+      spring.datasource.username: 'dbadmin'
+      spring.datasource.password: 'password-goes-here'
+      spring.jpa.hibernate.ddl-auto: 'update'
+      DISCORD_TOKEN: 'token-goes-here'
+    volumes:
+        - plugins:/workspace/plugins
+    ports:
+      - "21132:8080"
+    networks:
+      - bb
 ```
 
 ## Configuration
