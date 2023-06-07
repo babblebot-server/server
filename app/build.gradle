@@ -6,7 +6,7 @@ plugins {
 
 sourceCompatibility = '17'
 targetCompatibility = '17'
-mainClassName = 'net.bdavies.BabbleBot'
+mainClassName = 'net.bdavies.babblebot.BabbleBot'
 
 application {
     applicationName = 'Babblebot'
@@ -33,7 +33,7 @@ project.tasks.run {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'net.bdavies.BabbleBot'
+        attributes 'Main-Class': 'net.bdavies.babblebot.BabbleBot'
     }
 
     dependsOn createProperties
