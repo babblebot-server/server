@@ -23,40 +23,20 @@
  *
  */
 
-package net.bdavies.babblebot.command;
+package net.bdavies.babblebot.command.renderer;
 
-import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.command.IResponse;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
-import net.bdavies.babblebot.command.response.BaseResponse;
-
-import java.util.function.Supplier;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * A Command Renderer will determine how a response
+ * from a command will then rendered to the output for discord it will render it on the discord channel
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-public class ResponseFactory
+public interface CommandRenderer
 {
+    void render(IResponse response);
 
-    public static IResponse createResponse(String s, Supplier<EmbedMessage> spec)
-    {
-        return BaseResponse.builder().stringResponse(s).embedMessageResponse(spec).build();
-    }
-
-    public static IResponse createStringResponse(String s)
-    {
-        return createResponse(s, null);
-    }
-
-    public static IResponse createEmbedResponse(EmbedMessage s)
-    {
-        return createResponse("", () -> s);
-    }
-
-    public static IResponse createEmbedResponse(Supplier<EmbedMessage> s)
-    {
-        return createResponse("", s);
-    }
+    boolean onError(Exception e);
 }

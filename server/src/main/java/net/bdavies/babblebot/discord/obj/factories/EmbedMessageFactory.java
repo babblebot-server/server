@@ -25,13 +25,23 @@
 
 package net.bdavies.babblebot.discord.obj.factories;
 
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.PartialMember;
 import discord4j.core.spec.EmbedCreateFields;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import net.bdavies.babblebot.api.IApplication;
+import net.bdavies.babblebot.api.obj.DiscordColor;
+import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedAuthor;
+import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedFooter;
 import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.bdavies.babblebot.discord.DiscordFacade;
+import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -100,5 +110,31 @@ public class EmbedMessageFactory
                 .Field.of(f.getName(), f.getValue(), f.isInline())).collect(Collectors.toList()));
 
         return embedCreateSpec;
+    }
+
+    public static void addDefaults(EmbedMessage em, IApplication application, Mono<Guild> guild)
+    {
+        if (em.getFooter() == null)
+        {
+            em.setFooter(EmbedFooter.builder()
+                    .text("Server Version: " + application.getServerVersion()).build());
+        }
+        if (em.getAuthor() == null)
+        {
+            em.setAuthor(EmbedAuthor.builder().name("BabbleBot")
+                    .url("https://github.com/bendavies99/BabbleBot-Server").build());
+        }
+        if (em.getTimestamp() == null)
+        {
+            em.setTimestamp(Instant.now());
+        }
+        Optional<Color> color = guild.flatMap(
+                        g -> application.get(DiscordFacade.class).getClient().getSelf()
+                                .flatMap(u -> u.asMember(g.getId()).flatMap(PartialMember::getColor)))
+                .blockOptional();
+        if (em.getColor() == null && color.isPresent())
+        {
+            em.setColor(DiscordColor.from(color.get().getRGB()));
+        }
     }
 }

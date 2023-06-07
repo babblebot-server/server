@@ -26,23 +26,19 @@
 package net.bdavies.babblebot.core;
 
 import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.PartialMember;
 import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.EmbedCreateFields;
-import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.rest.util.Color;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
+import net.bdavies.babblebot.api.command.IResponse;
 import net.bdavies.babblebot.api.core.IAnnouncementService;
+import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.bdavies.babblebot.command.ResponseFactory;
+import net.bdavies.babblebot.command.renderer.DiscordCommandRenderer;
 import net.bdavies.babblebot.core.repository.AnnouncementChannelRepository;
 import net.bdavies.babblebot.discord.DiscordFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * @author me@bdavies.net (Ben Davies)
@@ -68,28 +64,19 @@ public class AnnouncementService implements IAnnouncementService
 
     public synchronized void sendMessage(String title, String message)
     {
-        //TODO: pass to the renderer
-        Function<Guild, EmbedCreateSpec> specConsumer = (g) -> {
-            Optional<Color> col = facade.getClient().getSelf()
-                    .flatMap(u -> u.asMember(g.getId()))
-                    .flatMap(PartialMember::getColor).blockOptional();
-
-            return EmbedCreateSpec.builder()
-                    .footer(EmbedCreateFields.Footer.of("Server Version: " + application.getServerVersion(),
-                            null))
-                    .author("BabbleBot", "https://github.com/bendavies99/BabbleBot-Server", null)
-                    .timestamp(Instant.now())
-                    .color(col.orElse(Color.BLUE))
-                    .title(title)
-                    .description("```\n" + message + "```")
-                    .build();
-        };
-
         announcementChannelRepo.findAll().forEach(ac -> facade.getClient()
                 .getGuildById(Snowflake.of(ac.getGuild().getId().toLong()))
                 .subscribe(g -> g.getChannelById(Snowflake.of(ac.getChannel().getId().toLong()))
                         .cast(TextChannel.class)
-                        .subscribe(ch -> ch.createMessage(specConsumer.apply(g)))));
+                        .subscribe(ch -> {
+                            DiscordCommandRenderer renderer = new DiscordCommandRenderer(ch, application);
+                            val em = EmbedMessage.builder()
+                                    .title(title)
+                                    .description("```\n" + message + "```")
+                                    .build();
+                            IResponse response = ResponseFactory.createEmbedResponse(em);
+                            renderer.render(response);
+                        })));
     }
 
     public synchronized void sendMessage(String message)

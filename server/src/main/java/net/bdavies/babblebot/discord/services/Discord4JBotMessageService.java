@@ -29,7 +29,6 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -40,6 +39,8 @@ import net.bdavies.babblebot.api.obj.message.discord.DiscordId;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 import net.bdavies.babblebot.command.CommandDispatcher;
 import net.bdavies.babblebot.command.parser.DiscordMessageParser;
+import net.bdavies.babblebot.command.renderer.DiscordCommandRenderer;
+import net.bdavies.babblebot.command.renderer.DiscordInteractionEventRenderer;
 import net.bdavies.babblebot.discord.Discord4JService;
 import net.bdavies.babblebot.discord.obj.factories.DiscordObjectFactory;
 import org.springframework.stereotype.Service;
@@ -80,42 +81,40 @@ public class Discord4JBotMessageService
                                                 .map(isBot -> !isBot)
                                 ).subscribe(m -> {
                                     CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
-                                    val g = e.getMessage().getGuild().map(gld -> gld.getId().asLong())
+                                    long g = e.getMessage().getGuild().map(gld -> gld.getId().asLong())
                                             .blockOptional().orElseThrow();
-                                    val ch = e.getMessage().getChannel().map(chl -> chl.getId().asLong())
+                                    long ch = e.getMessage().getChannel().map(chl -> chl.getId().asLong())
                                             .blockOptional().orElseThrow();
+                                    long author = e.getMessage().getAuthor().orElseThrow().getId().asLong();
+                                    long msgId = e.getMessage().getId().asLong();
                                     String msg = m.replace(config.getCommandPrefix(), "");
-                                    cd.execute(new DiscordMessageParser(
-                                                    buildMessage(g, ch,
-                                                            e.getMessage().getAuthor().orElseThrow().getId().asLong(),
-                                                            e.getMessage().getId().asLong(),
-                                                            msg)),
-                                            msg,
-                                            e.getMessage().getChannel().cast(TextChannel.class),
-                                            e.getMessage().getGuild(),
-                                            application);
+
+                                    val discordMessage = buildMessage(g, ch, author, msgId, msg);
+                                    val dmp = new DiscordMessageParser(discordMessage);
+                                    val renderer =
+                                            new DiscordCommandRenderer(e.getMessage().getChannel().cast(
+                                                    TextChannel.class).blockOptional().orElseThrow(),
+                                                    application);
+
+                                    cd.execute(dmp, msg, application, renderer);
                                 }));
 
         service.getClient().getEventDispatcher().on(ChatInputInteractionEvent.class)
                 .subscribe(e -> {
                     CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
-                    val g = e.getInteraction().getGuild().map(gld -> gld.getId().asLong())
+                    long g = e.getInteraction().getGuild().map(gld -> gld.getId().asLong())
                             .blockOptional().orElseThrow();
-                    val ch = e.getInteraction().getChannel().map(chl -> chl.getId().asLong())
+                    long ch = e.getInteraction().getChannel().map(chl -> chl.getId().asLong())
                             .blockOptional().orElseThrow();
-                    String msg = e.getCommandName().replace(config.getCommandPrefix(), "");
-                    cd.execute(new DiscordMessageParser(
-                                    buildMessage(g, ch,
-                                            e.getInteraction().getUser().getId().asLong(),
-                                            e.getInteraction().getId().asLong(),
-                                            msg)),
-                            msg,
-                            e.getInteraction().getChannel().cast(TextChannel.class),
-                            e.getInteraction().getGuild(),
-                            application);
-                    e.reply(InteractionApplicationCommandCallbackSpec.builder()
-                            .content("Resp: ")
-                            .build()).subscribe();
+                    long author = e.getInteraction().getUser().getId().asLong();
+                    long msgId = e.getInteraction().getId().asLong();
+                    String msg = e.getCommandName();
+
+                    val discordMessage = buildMessage(g, ch, author, msgId, msg);
+                    val dmp = new DiscordMessageParser(discordMessage);
+                    val renderer = new DiscordInteractionEventRenderer(e, application);
+
+                    cd.execute(dmp, msg, application, renderer);
                 });
     }
 

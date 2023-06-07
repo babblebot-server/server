@@ -25,12 +25,7 @@
 
 package net.bdavies.babblebot.command;
 
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.PartialMember;
-import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import discord4j.rest.util.Color;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.ICommand;
@@ -38,25 +33,21 @@ import net.bdavies.babblebot.api.command.ICommandContext;
 import net.bdavies.babblebot.api.command.ICommandDispatcher;
 import net.bdavies.babblebot.api.command.ICommandMiddleware;
 import net.bdavies.babblebot.api.config.EPluginPermission;
-import net.bdavies.babblebot.api.obj.DiscordColor;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedAuthor;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedFooter;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.babblebot.api.plugins.IPlugin;
 import net.bdavies.babblebot.api.plugins.IPluginContainer;
 import net.bdavies.babblebot.api.plugins.IPluginSettings;
 import net.bdavies.babblebot.api.plugins.Plugin;
 import net.bdavies.babblebot.command.errors.UsageException;
 import net.bdavies.babblebot.command.parser.MessageParser;
+import net.bdavies.babblebot.command.renderer.CommandRenderer;
+import net.bdavies.babblebot.command.response.BaseResponse;
 import net.bdavies.babblebot.discord.DiscordFacade;
-import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
 import net.bdavies.babblebot.variables.VariableParser;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Loggers;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -252,10 +243,11 @@ public class CommandDispatcher implements ICommandDispatcher
      *
      * @param parser      - The way the message is interpreted.
      * @param message     - This is the user's input or any other type of input.
-     * @param application - The application instance.
+     * @param application - The application instance
+     * @param renderer    - The command renderer that will process the command responses
      */
-    public void execute(MessageParser parser, String message, Mono<TextChannel> channel, Mono<Guild> guild,
-                        IApplication application)
+    public void execute(MessageParser parser, String message, IApplication application,
+                        CommandRenderer renderer)
     {
         ICommandContext commandContext = parser.parseString(message);
 
@@ -313,12 +305,12 @@ public class CommandDispatcher implements ICommandDispatcher
                             }, null, () -> {
                                 if (!hasSentMessage.get())
                                 {
-                                    channel.subscribe(
-                                            c -> c.createMessage("Babblebot command couldn't be found.").subscribe());
+                                    renderer.render(ResponseFactory.createStringResponse(
+                                            "Babblebot command couldn't be found."));
                                 } else
                                 {
                                     sb.append("```");
-                                    channel.subscribe(c -> c.createMessage(sb.toString()).subscribe());
+                                    renderer.render(ResponseFactory.createStringResponse(sb.toString()));
                                 }
                             });
                         }
@@ -329,61 +321,36 @@ public class CommandDispatcher implements ICommandDispatcher
                             return Flux.error(new UsageException(c.getUsage()));
                         }
 
-                        //noinspection ReactiveStreamsUnusedPublisher
-//                        commandContext.getMessage().getGuild().doOnNext(g ->
-//                                log.debug(
-//                                        "Running command: " + commandContext.getCommandName() + "In
-//                                        Guild: " +
-//                                                g.getName()));
                         c.exec(application, commandContext);
                         return commandContext.getCommandResponse().getResponses()
                                 .asFlux()
                                 .log(Loggers.getLogger("CommandResponses"));
-                    }).subscribe(s -> {
-                        if (s.isStringResponse())
+                    })
+                    .cast(BaseResponse.class)
+                    .map(br -> {
+                        if (br.isStringResponse())
                         {
-
-                            channel.subscribe(c -> c.createMessage(
-                                    new VariableParser(s.getStringResponse(), application).toString()).subscribe());
-                            hasSentMessage.set(true);
-                        } else if (s.getEmbedCreateSpecResponse() != null)
-                        {
-                            channel.subscribe(c -> {
-                                EmbedMessage em = s.getEmbedCreateSpecResponse().get();
-                                if (em.getFooter() == null)
-                                {
-                                    em.setFooter(EmbedFooter.builder()
-                                            .text("Server Version: " + application.getServerVersion()).build());
-                                }
-                                if (em.getAuthor() == null)
-                                {
-                                    em.setAuthor(EmbedAuthor.builder().name("BabbleBot")
-                                            .url("https://github.com/bendavies99/BabbleBot-Server").build());
-                                }
-                                if (em.getTimestamp() == null)
-                                {
-                                    em.setTimestamp(Instant.now());
-                                }
-                                Optional<Color> color = guild.flatMap(
-                                                g -> application.get(DiscordFacade.class).getClient().getSelf()
-                                                        .flatMap(u -> u.asMember(g.getId()).flatMap(PartialMember::getColor)))
-                                        .blockOptional();
-                                if (em.getColor() == null && color.isPresent())
-                                {
-                                    em.setColor(DiscordColor.from(color.get().getRGB()));
-                                }
-
-                                EmbedCreateSpec spec = EmbedMessageFactory.fromBabblebot(em);
-                                c.typeUntil(c.createMessage(spec)).subscribe();
-                            });
-                            hasSentMessage.set(true);
+                            return br.toBuilder()
+                                    .stringResponse(new VariableParser(br.getStringResponse(),
+                                            application).toString())
+                                    .build();
                         }
-                    }, throwable -> {
-                        if (throwable instanceof UsageException)
-                        {
-                            channel.subscribe(c -> c.createMessage(throwable.getMessage()).subscribe());
-                        }
+                        return br;
+                    })
+                    .subscribe(r -> {
+                        renderer.render(r);
                         hasSentMessage.set(true);
+                    }, e -> {
+                        boolean handled = false;
+                        if (e instanceof Exception)
+                        {
+                            handled = renderer.onError((Exception) e);
+                        }
+
+                        if (!handled)
+                        {
+                            log.error("Unable to render command {}", commandName, e);
+                        }
                     });
 
         } else
@@ -396,7 +363,8 @@ public class CommandDispatcher implements ICommandDispatcher
     private Flux<ICommand> getCommandsLike(String commandName, String type)
     {
         return Flux.create(sink -> getCommands(type).doOnComplete(sink::complete)
-                .filter(c -> Arrays.stream(c.getAliases()).anyMatch(a -> a.contains(commandName)))
+                .filter(c -> Arrays.stream(c.getAliases())
+                        .anyMatch(a -> a.contains(commandName)))
                 .doOnNext(sink::next).subscribe());
     }
 
