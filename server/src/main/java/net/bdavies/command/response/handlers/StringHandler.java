@@ -25,10 +25,10 @@
 
 package net.bdavies.command.response.handlers;
 
-import net.bdavies.command.ResponseFactory;
-import reactor.core.publisher.FluxProcessor;
 import net.bdavies.api.command.IResponse;
+import net.bdavies.command.ResponseFactory;
 import net.bdavies.command.response.ResponseHandler;
+import reactor.core.publisher.Sinks;
 
 import java.lang.reflect.Type;
 
@@ -38,7 +38,7 @@ import java.lang.reflect.Type;
  */
 public class StringHandler extends ResponseHandler {
 
-    public StringHandler(Type type, FluxProcessor<IResponse, IResponse> processor) {
+    public StringHandler(Type type, Sinks.Many<IResponse> processor) {
         super(type, processor);
     }
 

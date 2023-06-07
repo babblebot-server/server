@@ -27,7 +27,6 @@ package net.bdavies.discord;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.Event;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.ClientActivity;
@@ -37,10 +36,12 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.discord.IDiscordFacade;
+import net.bdavies.api.obj.message.discord.DiscordId;
+import net.bdavies.api.obj.message.discord.DiscordUser;
+import net.bdavies.discord.obj.factories.DiscordObjectFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.util.function.Consumer;
 
 /**
  * This is the Public API for the Discord4JWrapper of the Discord API this will be used for plugins
@@ -93,9 +94,11 @@ public class DiscordFacade implements IDiscordFacade
      *
      * @return {@link Mono<User>} this is a Mono Stream of a User
      */
-    public Mono<User> getOurUser()
+    public Mono<DiscordUser> getBotUser()
     {
-        return this.client.getSelf();
+        DiscordObjectFactory objectFactory = application.get(DiscordObjectFactory.class);
+        return this.client.getSelf()
+                .flatMap(u -> Mono.justOrEmpty(objectFactory.userFromId(DiscordId.from(u.getId().asLong()))));
     }
 
     /**
@@ -111,20 +114,9 @@ public class DiscordFacade implements IDiscordFacade
         this.client.updatePresence(ClientPresence.online(ClientActivity.playing(text))).block();
     }
 
-    /**
-     * Register a Event Listener to the Discord Client.
-     *
-     * @param callback A callback for the event handler
-     * @param clazz    The Event Class
-     */
-    public <T extends Event> void registerEventHandler(Class<T> clazz, Consumer<T> callback)
+    @Bean
+    GatewayDiscordClient internalDiscordClient()
     {
-        if (this.client != null)
-        {
-            this.client.getEventDispatcher().on(clazz).subscribe(callback);
-        } else
-        {
-            log.error("Unable to register event dispatcher because the client token is null or invalid");
-        }
+        return this.client;
     }
 }

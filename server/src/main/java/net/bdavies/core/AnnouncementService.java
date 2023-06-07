@@ -35,8 +35,8 @@ import discord4j.rest.util.Color;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.api.IApplication;
 import net.bdavies.api.core.IAnnouncementService;
-import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.core.repository.AnnouncementChannelRepository;
+import net.bdavies.discord.DiscordFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,13 +52,13 @@ import java.util.function.Function;
 @Service
 public class AnnouncementService implements IAnnouncementService
 {
-    private final IDiscordFacade facade;
+    private final DiscordFacade facade;
 
     private final IApplication application;
     private final AnnouncementChannelRepository announcementChannelRepo;
 
     @Autowired
-    public AnnouncementService(IDiscordFacade facade, IApplication application,
+    public AnnouncementService(DiscordFacade facade, IApplication application,
                                AnnouncementChannelRepository announcementChannelRepo)
     {
         this.facade = facade;

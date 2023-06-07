@@ -30,7 +30,7 @@ import net.bdavies.api.command.IResponse;
 import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.command.ResponseFactory;
 import net.bdavies.command.response.ResponseHandler;
-import reactor.core.publisher.FluxProcessor;
+import reactor.core.publisher.Sinks;
 
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class EmbedHandler extends ResponseHandler {
 
-    public EmbedHandler(Type type, FluxProcessor<IResponse, IResponse> processor) {
+    public EmbedHandler(Type type, Sinks.Many<IResponse> processor) {
         super(type, processor);
     }
 

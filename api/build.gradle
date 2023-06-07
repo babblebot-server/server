@@ -13,8 +13,11 @@ dependencyManagement {
 }
 
 dependencies {
-    api 'com.discord4j:discord4j-core:3.2.4'
     api 'org.springframework.boot:spring-boot-starter'
+    api "io.projectreactor:reactor-core:3.5.6"
     api 'org.projectlombok:lombok'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.15.2'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.15.2'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     annotationProcessor 'org.projectlombok:lombok'
 }

@@ -31,10 +31,10 @@ import net.bdavies.api.IApplication;
 import net.bdavies.api.command.*;
 import net.bdavies.api.config.IConfig;
 import net.bdavies.api.discord.IDiscordCommandUtil;
-import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.message.discord.DiscordMessage;
 import net.bdavies.api.plugins.IPluginSettings;
 import net.bdavies.discord.DiscordCommandUtil;
+import net.bdavies.discord.DiscordFacade;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -173,7 +173,7 @@ public final class PluginCommandParser
                 if (isDiscordCommandContext(commandContext))
                 {
                     objs.add(new DiscordCommandUtil((DiscordCommandContext)
-                            commandContext, application.get(IDiscordFacade.class)));
+                            commandContext, application.get(DiscordFacade.class)));
                 }
             } else
             {

@@ -26,44 +26,43 @@
 package net.bdavies.api.command;
 
 
-import discord4j.core.spec.EmbedCreateSpec;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.lang.reflect.Type;
-import java.util.function.Consumer;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
-public interface ICommandResponse {
+public interface ICommandResponse
+{
 
     /**
-     * This will return an embed response
-     * {@link EmbedCreateSpec}
+     * Respond with a {@link EmbedMessage}
      *
-     * @param embed this is the CreateSpec {@link EmbedCreateSpec}
+     * @param embed the embed message to send
+     * @since __RELEASE_VERSION__
      */
-    boolean sendEmbed(Consumer<EmbedCreateSpec> embed);
+    boolean sendEmbed(EmbedMessage embed);
 
     /**
-     * This will return an embed response
-     * {@link EmbedCreateSpec}
+     * Respond with a {@link EmbedMessage} using a {@link  Mono}
      *
-     * @param embed this is the CreateSpec {@link EmbedCreateSpec}
+     * @param embed the embed message to send
+     * @since __RELEASE_VERSION__
      */
-    boolean sendEmbed(Mono<Consumer<EmbedCreateSpec>> embed);
+    boolean sendEmbed(Mono<EmbedMessage> embed);
 
     /**
-     * This will return an embed response
-     * {@link EmbedCreateSpec}
-     * <p>
+     * Respond with a {@link EmbedMessage} using a {@link  Flux}
      *
-     * @param embed this is the CreateSpec {@link EmbedCreateSpec}
+     * @param embed the embed message to send
+     * @since __RELEASE_VERSION__
      */
-    boolean sendEmbed(Flux<Consumer<EmbedCreateSpec>> embed);
+    boolean sendEmbed(Flux<EmbedMessage> embed);
 
     /**
      * This will send one String and then the command has finished
@@ -102,5 +101,5 @@ public interface ICommandResponse {
      */
     boolean send(Type type, Object obj);
 
-    FluxProcessor<IResponse, IResponse> getResponses();
+    Sinks.Many<IResponse> getResponses();
 }

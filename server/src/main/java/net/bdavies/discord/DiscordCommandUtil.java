@@ -31,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.DiscordCommandContext;
 import net.bdavies.api.discord.IDiscordCommandUtil;
-import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.message.discord.DiscordMessage;
 
 /**
@@ -44,7 +43,7 @@ public class DiscordCommandUtil implements IDiscordCommandUtil
 {
 
     private final DiscordCommandContext commandContext;
-    private final IDiscordFacade discordFacade;
+    private final DiscordFacade discordFacade;
 
     @Override
     public void sendPrivateMessage(String text)

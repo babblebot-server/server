@@ -38,6 +38,7 @@ import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.plugins.IPluginContainer;
 import net.bdavies.api.variables.IVariableContainer;
 import net.bdavies.core.CorePlugin;
+import net.bdavies.discord.DiscordFacade;
 import net.bdavies.plugins.PluginModel;
 import net.bdavies.plugins.PluginModelRepository;
 import net.bdavies.plugins.PluginType;
@@ -212,8 +213,9 @@ public final class BabblebotApplication implements IApplication
     {
         Executors.newSingleThreadExecutor().submit(() -> {
             getPluginContainer().shutDownPlugins();
-            IDiscordFacade facade = get(IDiscordFacade.class);
-            facade.registerEventHandler(DisconnectEvent.class, d -> log.info("Bot has been logged out!!!"));
+            DiscordFacade facade = get(DiscordFacade.class);
+            facade.getClient().getEventDispatcher().on(DisconnectEvent.class)
+                    .subscribe(d -> log.info("Bot has been logged out!!!"));
             facade.logoutBot().block();
             try
             {

@@ -27,8 +27,8 @@ package net.bdavies.command.response;
 
 import net.bdavies.api.command.IResponse;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -41,11 +41,11 @@ import java.lang.reflect.Type;
 public abstract class ResponseHandler
 {
 
-    private final FluxProcessor<IResponse, IResponse> processor;
+    private final Sinks.Many<IResponse> processor;
     private final Type type;
 
 
-    protected ResponseHandler(Type type, FluxProcessor<IResponse, IResponse> processor)
+    protected ResponseHandler(Type type, Sinks.Many<IResponse> processor)
     {
         this.processor = processor;
         this.type = type;
@@ -95,17 +95,17 @@ public abstract class ResponseHandler
 
     private void handleFlux(Flux<IResponse> responses)
     {
-        responses.subscribe(processor::onNext, null, processor::onComplete);
+        responses.subscribe(processor::tryEmitNext, null, processor::tryEmitComplete);
     }
 
     private void handleMono(Mono<IResponse> response)
     {
-        response.subscribe(processor::onNext, null, processor::onComplete);
+        response.subscribe(processor::tryEmitNext, null, processor::tryEmitComplete);
     }
 
     private void handleBase(IResponse response)
     {
-        processor.onNext(response);
-        processor.onComplete();
+        processor.tryEmitNext(response);
+        processor.tryEmitComplete();
     }
 }

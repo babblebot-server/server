@@ -31,8 +31,8 @@ import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.command.response.handlers.EmbedHandler;
 import net.bdavies.command.response.handlers.StringHandler;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 public class ResponseHandlerFactory
 {
 
-    public static ResponseHandler getHandler(Type t, FluxProcessor<IResponse, IResponse> processor)
+    public static ResponseHandler getHandler(Type t, Sinks.Many<IResponse> processor)
     {
 
         if (t instanceof ParameterizedType)
@@ -70,7 +70,7 @@ public class ResponseHandlerFactory
 
 
     private static ResponseHandler getBaseHandler(Type raw, Type base,
-                                                  FluxProcessor<IResponse, IResponse> processor)
+                                                  Sinks.Many<IResponse> processor)
     {
         log.info("Handling a type of: " + base);
         if (base.equals(String.class))
@@ -84,6 +84,8 @@ public class ResponseHandlerFactory
             {
                 return new EmbedHandler(raw, processor);
             }
+        } else if (base.equals(EmbedMessage.class)) {
+            return new EmbedHandler(raw, processor);
         }
 
         return null;

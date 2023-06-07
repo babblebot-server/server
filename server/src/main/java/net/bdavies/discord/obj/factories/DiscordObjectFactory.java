@@ -30,11 +30,11 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.message.discord.DiscordChannel;
 import net.bdavies.api.obj.message.discord.DiscordGuild;
 import net.bdavies.api.obj.message.discord.DiscordId;
 import net.bdavies.api.obj.message.discord.DiscordUser;
+import net.bdavies.discord.DiscordFacade;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -51,9 +51,9 @@ import java.util.Optional;
 @Component
 public class DiscordObjectFactory
 {
-    private final IDiscordFacade discordFacade;
+    private final DiscordFacade discordFacade;
 
-    public DiscordObjectFactory(@Lazy IDiscordFacade discordFacade)
+    public DiscordObjectFactory(@Lazy DiscordFacade discordFacade)
     {
         this.discordFacade = discordFacade;
     }

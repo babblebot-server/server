@@ -27,10 +27,8 @@ package net.bdavies.command;
 
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.EmitterProcessor;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
-import reactor.core.publisher.Mono;
+import net.bdavies.api.obj.message.discord.embed.EmbedMessage;
+import reactor.core.publisher.*;
 import net.bdavies.api.command.ICommandResponse;
 import net.bdavies.api.command.IResponse;
 import net.bdavies.command.response.ResponseHandler;
@@ -47,25 +45,28 @@ import java.util.function.Consumer;
 @Slf4j
 public class CommandResponse implements ICommandResponse {
 
-    private final FluxProcessor<IResponse, IResponse> processor;
+    private final Sinks.Many<IResponse> processor;
 
     public CommandResponse() {
         log.info("Constructor");
-        processor = EmitterProcessor.create();
+        processor = Sinks.many().multicast().onBackpressureBuffer();
     }
 
     @Override
-    public boolean sendEmbed(Consumer<EmbedCreateSpec> embed) {
+    public boolean sendEmbed(EmbedMessage embed)
+    {
         return send(createEmbedType(), embed);
     }
 
     @Override
-    public boolean sendEmbed(Mono<Consumer<EmbedCreateSpec>> embed) {
+    public boolean sendEmbed(Mono<EmbedMessage> embed)
+    {
         return send(createMonoType(createEmbedType()), embed);
     }
 
     @Override
-    public boolean sendEmbed(Flux<Consumer<EmbedCreateSpec>> embed) {
+    public boolean sendEmbed(Flux<EmbedMessage> embed)
+    {
         return send(createFluxType(createEmbedType()), embed);
     }
 
@@ -127,13 +128,13 @@ public class CommandResponse implements ICommandResponse {
             return true;
         }
 
-        processor.onComplete();
+        processor.tryEmitComplete();
         log.error("Unable to send Object of type: " + type + ", through the command dispatcher.");
         return false;
     }
 
     @Override
-    public FluxProcessor<IResponse, IResponse> getResponses() {
+    public Sinks.Many<IResponse> getResponses() {
         return processor;
     }
 

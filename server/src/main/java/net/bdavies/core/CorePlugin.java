@@ -25,6 +25,7 @@
 
 package net.bdavies.core;
 
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,6 @@ import net.bdavies.api.command.CommandParam;
 import net.bdavies.api.command.ICommandContext;
 import net.bdavies.api.command.ICommandDispatcher;
 import net.bdavies.api.config.IDiscordConfig;
-import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.message.discord.DiscordMessage;
 import net.bdavies.api.obj.message.discord.embed.EmbedAuthor;
 import net.bdavies.api.obj.message.discord.embed.EmbedFooter;
@@ -123,8 +123,8 @@ public class CorePlugin implements IPluginEvents
             return true;
         }, this, application);
 
-        IDiscordFacade discordFacade = application.get(IDiscordFacade.class);
-        discordFacade.registerEventHandler(ReadyEvent.class, r -> {
+        GatewayDiscordClient discordClient = application.get(GatewayDiscordClient.class);
+        discordClient.getEventDispatcher().on(ReadyEvent.class).subscribe(r -> {
             if (application.hasArgument("-restart"))
             {
                 announcementService.sendMessage("The bot has now restarted");

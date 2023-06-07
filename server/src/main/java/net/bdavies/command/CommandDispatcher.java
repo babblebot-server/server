@@ -38,7 +38,6 @@ import net.bdavies.api.command.ICommandContext;
 import net.bdavies.api.command.ICommandDispatcher;
 import net.bdavies.api.command.ICommandMiddleware;
 import net.bdavies.api.config.EPluginPermission;
-import net.bdavies.api.discord.IDiscordFacade;
 import net.bdavies.api.obj.DiscordColor;
 import net.bdavies.api.obj.message.discord.embed.EmbedAuthor;
 import net.bdavies.api.obj.message.discord.embed.EmbedFooter;
@@ -49,6 +48,7 @@ import net.bdavies.api.plugins.IPluginSettings;
 import net.bdavies.api.plugins.Plugin;
 import net.bdavies.command.errors.UsageException;
 import net.bdavies.command.parser.MessageParser;
+import net.bdavies.discord.DiscordFacade;
 import net.bdavies.discord.obj.factories.EmbedMessageFactory;
 import net.bdavies.variables.VariableParser;
 import org.springframework.stereotype.Component;
@@ -109,7 +109,8 @@ public class CommandDispatcher implements ICommandDispatcher
         } else
         {
             namespaceCommands.add(command);
-            IDiscordFacade facade = application.get(IDiscordFacade.class);
+            //Todo: Move to renderer
+            DiscordFacade facade = application.get(DiscordFacade.class);
             long applicationId = facade.getClient().getRestClient().getApplicationId().block();
             facade.getClient().getGuilds().subscribe(g -> {
                 facade.getClient().getRestClient().getApplicationService()
@@ -134,7 +135,7 @@ public class CommandDispatcher implements ICommandDispatcher
         }
 
         //TODO: Make this better
-        IDiscordFacade facade = application.get(IDiscordFacade.class);
+        DiscordFacade facade = application.get(DiscordFacade.class);
         long applicationId = facade.getClient().getRestClient().getApplicationId().block();
         facade.getClient().getGuilds().subscribe(g -> {
             commandsToAdd.forEach(c -> facade.getClient().getRestClient().getApplicationService()
@@ -299,7 +300,7 @@ public class CommandDispatcher implements ICommandDispatcher
 
             getCommandsFromNamespace(namespace).filter(e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
-                            .anyMatch(alias -> alias.toLowerCase().equals(commandName.toLowerCase())))
+                            .anyMatch(alias -> alias.equalsIgnoreCase(commandName)))
                     .doOnError(e -> log.error("Error in the command dispatcher.", e)).doOnComplete(() -> {
                         if (!hasFoundOne.get())
                         {
@@ -313,7 +314,7 @@ public class CommandDispatcher implements ICommandDispatcher
                                 if (!hasSentMessage.get())
                                 {
                                     channel.subscribe(
-                                            c -> c.createMessage("Babblebot command could'nt be found.").subscribe());
+                                            c -> c.createMessage("Babblebot command couldn't be found.").subscribe());
                                 } else
                                 {
                                     sb.append("```");
@@ -336,6 +337,7 @@ public class CommandDispatcher implements ICommandDispatcher
 //                                                g.getName()));
                         c.exec(application, commandContext);
                         return commandContext.getCommandResponse().getResponses()
+                                .asFlux()
                                 .log(Loggers.getLogger("CommandResponses"));
                     }).subscribe(s -> {
                         if (s.isStringResponse())
@@ -363,7 +365,7 @@ public class CommandDispatcher implements ICommandDispatcher
                                     em.setTimestamp(Instant.now());
                                 }
                                 Optional<Color> color = guild.flatMap(
-                                                g -> application.get(IDiscordFacade.class).getClient().getSelf()
+                                                g -> application.get(DiscordFacade.class).getClient().getSelf()
                                                         .flatMap(u -> u.asMember(g.getId()).flatMap(PartialMember::getColor)))
                                         .blockOptional();
                                 if (em.getColor() == null && color.isPresent())
