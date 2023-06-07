@@ -1,3 +1,10 @@
+# [3.0.0-rc.10](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.9...v3.0.0-rc.10) (2023-06-07)
+
+
+### Features
+
+* Added in command renderers ([dda07ca](https://github.com/bendavies99/BabbleBot-Server/commit/dda07cac65a8a447705d7d4b2c0319bae468a7aa))
+
 # [3.0.0-rc.9](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.8...v3.0.0-rc.9) (2023-06-07)
 
 # [3.0.0-rc.8](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.7...v3.0.0-rc.8) (2023-06-02)

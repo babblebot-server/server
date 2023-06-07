@@ -39,7 +39,7 @@ import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
  * Discord Command Renderer that will send the response to the channel
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.10
  */
 @Slf4j
 @RequiredArgsConstructor

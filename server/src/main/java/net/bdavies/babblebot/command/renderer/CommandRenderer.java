@@ -32,7 +32,7 @@ import net.bdavies.babblebot.api.command.IResponse;
  * from a command will then rendered to the output for discord it will render it on the discord channel
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.10
  */
 public interface CommandRenderer
 {

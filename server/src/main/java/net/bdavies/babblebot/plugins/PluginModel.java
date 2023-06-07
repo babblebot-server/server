@@ -40,7 +40,7 @@ import java.util.List;
  * Entity for a Plugin will serialise for a distributed System
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.9
+ * @since 3.0.0-rc.10
  */
 @Slf4j
 @Entity
