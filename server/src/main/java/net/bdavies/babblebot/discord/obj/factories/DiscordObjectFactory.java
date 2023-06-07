@@ -45,7 +45,7 @@ import java.util.Optional;
  * Factory for creating Discord object from Babblebot to Internal API
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.8
+ * @since 3.0.0-rc.9
  */
 @Slf4j
 @Component

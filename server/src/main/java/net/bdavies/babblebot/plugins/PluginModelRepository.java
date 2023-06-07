@@ -32,7 +32,7 @@ import org.springframework.stereotype.Repository;
  * Plugin Model Repository {@link PluginModel}
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.9
  */
 @Repository
 public interface PluginModelRepository extends JpaRepository<PluginModel, Long>

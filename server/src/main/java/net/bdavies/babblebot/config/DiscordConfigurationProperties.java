@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Configuration;
  * Configuration Properties for Discord
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.9
  */
 @Slf4j
 @ConfigurationProperties(prefix = "discord")

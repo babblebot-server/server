@@ -39,7 +39,7 @@ import org.springframework.context.support.GenericApplicationContext;
  * Configuration for the Config Object
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.9
  */
 @Slf4j
 @Configuration

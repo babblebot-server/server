@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service;
  * Announcement Service to send announcements through the announcement channel for important updates
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.9
  */
 @Service
 public interface IAnnouncementService
