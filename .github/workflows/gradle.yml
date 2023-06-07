@@ -22,9 +22,9 @@ jobs :
           java-version : 17
           distribution : 'temurin'
       - name : Setup Node.js environment
-        uses : actions/setup-node@v2.1.4
+        uses : actions/setup-node@v3
         with :
-          node-version : 12.x
+          node-version : 18
       - name : Run Npm CI
         run : npm ci
       - name : Grant execute permission for update-since-tags
