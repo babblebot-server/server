@@ -28,6 +28,8 @@ package net.bdavies.babblebot.plugins;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Plugin Model Repository {@link PluginModel}
  *
@@ -37,4 +39,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PluginModelRepository extends JpaRepository<PluginModel, Long>
 {
+    Optional<PluginModel> findByName(String name);
 }

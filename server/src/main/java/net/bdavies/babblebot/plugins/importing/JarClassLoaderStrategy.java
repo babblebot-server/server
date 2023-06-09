@@ -133,6 +133,12 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                 BabblebotApplication bbApp = application.get(BabblebotApplication.class);
                                 GenericApplicationContext applicationContext =
                                         (GenericApplicationContext) bbApp.getApplicationContext();
+                                if (applicationContext.getBeanNamesForType(c).length > 0)
+                                {
+                                    Arrays.stream(applicationContext
+                                            .getBeanNamesForType(c)).forEach(
+                                            applicationContext::removeBeanDefinition);
+                                }
                                 applicationContext.registerBean(c);
                             })
                             .filter(c -> c.isAnnotationPresent(Plugin.class) ||

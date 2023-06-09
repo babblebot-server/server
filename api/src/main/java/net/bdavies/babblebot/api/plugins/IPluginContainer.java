@@ -25,10 +25,8 @@
 
 package net.bdavies.babblebot.api.plugins;
 
-import net.bdavies.babblebot.api.config.EPluginPermission;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -42,18 +40,10 @@ public interface IPluginContainer
     /**
      * This method will allow you to add a plugin to the container.
      *
-     * @param name   - The name of the plugin.
      * @param plugin - The plugin itself.
+     * @param model  - The plugin model data
      */
-    void addPlugin(String name, Object plugin, List<EPluginPermission> pluginPermissions, String namespace);
-
-    /**
-     * This method will allow you to add a plugin to the container.
-     *
-     * @param plugin - The plugin itself.
-     */
-    void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions, String namespace);
-
+    void addPlugin(Object plugin, IPluginModel model);
 
     /**
      * This method allows you to remove a plugin from the container.
@@ -79,7 +69,9 @@ public interface IPluginContainer
      */
     Object getPlugin(String name);
 
-    boolean doesPluginHavePermission(Object pluginObj, EPluginPermission pluginPermission);
+    PluginPermissionContainer getPluginPermissions(Object pluginObj);
+
+    PluginPermissionContainer getPluginPermissions(String name);
 
     /**
      * This will attempt to shut down all plugins if they implement {@link IPluginEvents}

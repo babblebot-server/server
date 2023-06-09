@@ -25,8 +25,9 @@
 
 package net.bdavies.babblebot.api.config;
 
+import net.bdavies.babblebot.api.plugins.PluginPermissionContainer;
+
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -34,11 +35,12 @@ import java.util.List;
  */
 public enum EPluginPermission
 {
-    REGISTER_GLOBAL_MIDDLEWARE;
+    REGISTER_GLOBAL_MIDDLEWARE,
+    EMPTY_NAMESPACE;
 
-    public static List<EPluginPermission> all()
+    public static PluginPermissionContainer all()
     {
-        return Arrays.asList(values());
+        return new PluginPermissionContainer(Arrays.asList(values()));
     }
 }
 

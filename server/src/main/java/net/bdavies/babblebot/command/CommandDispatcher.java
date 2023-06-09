@@ -402,7 +402,8 @@ public class CommandDispatcher implements ICommandDispatcher
         if (registrar.getClass().isAnnotationPresent(Plugin.class) || registrar instanceof IPlugin)
         {
             IPluginContainer container = application.getPluginContainer();
-            if (container.doesPluginHavePermission(registrar, EPluginPermission.REGISTER_GLOBAL_MIDDLEWARE))
+            if (container.getPluginPermissions(registrar)
+                    .hasPermission(EPluginPermission.REGISTER_GLOBAL_MIDDLEWARE))
             {
                 log.info("Plugin {} has registered global middleware", registrar.getClass().getSimpleName());
                 this.middlewareList.get(null).add(middleware);

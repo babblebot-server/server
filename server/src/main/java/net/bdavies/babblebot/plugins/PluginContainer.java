@@ -30,10 +30,13 @@ import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.config.EPluginPermission;
 import net.bdavies.babblebot.api.plugins.*;
+import net.bdavies.babblebot.command.CommandDispatcher;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -44,42 +47,38 @@ import java.util.*;
 public class PluginContainer implements IPluginContainer
 {
     private final Map<String, Object> plugins;
+    private final Map<String, String> pluginNamespaces;
     private final ApplicationContext applicationContext;
     private final Map<String, IPluginSettings> settings;
-    private final Map<Object, List<EPluginPermission>> pluginPermissionsMap;
+    private final Map<Object, PluginPermissionContainer> pluginPermissionsMap;
 
     public PluginContainer(ApplicationContext applicationContext)
     {
         this.applicationContext = applicationContext;
         plugins = new HashMap<>();
         settings = new HashMap<>();
+        pluginNamespaces = new HashMap<>();
         pluginPermissionsMap = new HashMap<>();
     }
 
     @Override
-    public void addPlugin(String name, Object obj, List<EPluginPermission> pluginPermissions,
-                          String namespaceOrig)
+    public void addPlugin(Object obj, IPluginModel model)
     {
         IApplication application = applicationContext.getBean(IApplication.class);
-        if (plugins.containsKey(name) || plugins.containsValue(obj))
+        if (plugins.containsKey(model.getName()) || plugins.containsValue(obj))
         {
             log.error("The key or plugin is already in the container.");
         } else
         {
             String pName, author, minServerVersion, maxServerVersion;
-            pluginPermissionsMap.put(obj, pluginPermissions);
-
-            String namespace = namespaceOrig;
-
+            pluginPermissionsMap.put(obj, model.getPluginPermissions());
+            String namespace = calculateNamespace(model);
+            pluginNamespaces.put(model.getName(), namespace);
 
             if (obj instanceof IPlugin)
             {
                 IPlugin plugin = (IPlugin) obj;
                 pName = plugin.getName();
-                if (namespace.equals("$name"))
-                {
-                    namespace = pName + "-";
-                }
                 author = plugin.getAuthor();
                 minServerVersion = plugin.getMinimumServerVersion();
                 maxServerVersion = plugin.getMaximumServerVersion();
@@ -96,10 +95,6 @@ public class PluginContainer implements IPluginContainer
                         ? application.getServerVersion()
                         : plugin.minServerVersion();
                 maxServerVersion = plugin.maxServerVersion();
-                if (namespace.equals("$name"))
-                {
-                    namespace = pName + "-";
-                }
             } else
             {
                 log.error(
@@ -123,7 +118,7 @@ public class PluginContainer implements IPluginContainer
                         log.warn(
                                 "Old Plugin version, please consider upgrading. onBoot will not run. " +
                                         "Plugin: " +
-                                        name);
+                                        model.getName());
                     }
                 }
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
@@ -131,17 +126,29 @@ public class PluginContainer implements IPluginContainer
                         commandParser.parseCommands(), application);
                 log.info("Added plugin: " + settings.getName() + " (by {}), using namespace: \"" +
                         settings.getNamespace() + "\"", settings.getAuthor());
-                this.settings.put(name, settings);
-                plugins.put(name, obj);
+                this.settings.put(model.getName(), settings);
+                plugins.put(model.getName(), obj);
             }
         }
     }
 
-    @Override
-    public void addPlugin(Object plugin, List<EPluginPermission> pluginPermissions, String namespace)
+    private String calculateNamespace(IPluginModel model)
     {
-        addPlugin(plugin.getClass().getSimpleName().toLowerCase().replace("plugin", ""), plugin,
-                pluginPermissions, namespace);
+        if (model.getNamespace().equals(""))
+        {
+            if (model.getPluginPermissions().hasPermission(EPluginPermission.EMPTY_NAMESPACE))
+            {
+                return model.getNamespace();
+            } else
+            {
+                log.warn(
+                        "Plugin {} tried to use an empty namespace and doesn't have the EMPTY_NAMESPACE " +
+                                "permission",
+                        model.getName());
+                return model.getName().toLowerCase() + "-";
+            }
+        }
+        return model.getNamespace() + "-";
     }
 
     private IPluginSettings getPluginSettings(String name,
@@ -200,7 +207,13 @@ public class PluginContainer implements IPluginContainer
             {
                 ((IPluginEvents) o).onShutdown();
             }
+            CommandDispatcher commandDispatcher = applicationContext.getBean(CommandDispatcher.class);
+            commandDispatcher.removeNamespace(pluginNamespaces.get(name));
+            pluginPermissionsMap.remove(o);
+            settings.remove(name);
             plugins.remove(name);
+            pluginNamespaces.remove(name);
+            log.info("Removed plugin {} from the system", name);
         }
     }
 
@@ -217,12 +230,17 @@ public class PluginContainer implements IPluginContainer
     }
 
     @Override
-    public boolean doesPluginHavePermission(Object pluginObj, EPluginPermission pluginPermission)
+    public PluginPermissionContainer getPluginPermissions(Object pluginObj)
     {
-        return Objects.requireNonNull(pluginPermissionsMap.get(pluginObj))
-                .stream()
-                .anyMatch(p -> p.equals(pluginPermission));
+        return pluginPermissionsMap.get(pluginObj);
     }
+
+    @Override
+    public PluginPermissionContainer getPluginPermissions(String name)
+    {
+        return getPluginPermissions(plugins.get(name));
+    }
+
 
     @Override
     public void shutDownPlugins()

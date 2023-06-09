@@ -23,28 +23,16 @@
  *
  */
 
-package net.bdavies.babblebot.plugins.importing;
-
-import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.plugins.PluginModel;
-import net.bdavies.babblebot.api.plugins.PluginType;
-import reactor.core.publisher.Flux;
+package net.bdavies.babblebot.api.util;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * A Function that is Exceptional
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-public final class ImportPluginFactory {
-
-    private ImportPluginFactory() {}
-
-    public static Flux<Object> importPlugin(PluginModel config, IApplication application) {
-        if (config.getPluginType() == PluginType.JAVA) {
-            return application.get(JarClassLoaderStrategy.class).importPlugin(config);
-        }
-        return Flux.empty();
-    }
-
+@FunctionalInterface
+public interface FunctionEx<I, R>
+{
+    R apply(I input) throws Exception;
 }

@@ -23,15 +23,19 @@
  *
  */
 
-package net.bdavies.babblebot.plugins;
+package net.bdavies.babblebot.api.plugins;
 
 /**
- * Plugin type enum
+ * Plugin model Interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.11
+ * @since __RELEASE_VERSION__
  */
-public enum PluginType
+public interface IPluginModel
 {
-    JAVA
+    String getName();
+
+    String getNamespace();
+
+    PluginPermissionContainer getPluginPermissions();
 }

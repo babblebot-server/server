@@ -23,58 +23,40 @@
  *
  */
 
-package net.bdavies.babblebot.plugins;
+package net.bdavies.babblebot.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.plugins.IPluginModel;
-import net.bdavies.babblebot.api.plugins.PluginPermissionContainer;
-import net.bdavies.babblebot.api.plugins.PluginType;
 
 /**
- * Entity for a Plugin will serialise for a distributed System
+ * Response Object
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.11
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@Entity
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@SuperBuilder
 @Jacksonized
-public class PluginModel implements IPluginModel
+public class Response
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    private String name;
-    private PluginType pluginType;
-    private String classPath;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private final String message;
     @Builder.Default
-    private String namespace = "$name";
-    private PluginPermissionContainer pluginPermissions;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private final int status = 200;
 
-    @Lob
-    @JsonIgnore
-    private byte[] fileData;
-
-    public String getNamespace()
+    public static Response from(String message)
     {
-        if (namespace.equals("$name"))
-        {
-            return this.name.toLowerCase();
-        } else
-        {
-            return this.namespace;
-        }
+        return Response.builder().message(message).build();
+    }
+
+    public static Response from(String message, int status)
+    {
+        return Response.builder().message(message).status(status).build();
     }
 }

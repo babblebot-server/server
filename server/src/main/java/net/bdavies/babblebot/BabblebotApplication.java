@@ -42,6 +42,7 @@ import net.bdavies.babblebot.connect.ConnectConfigurationProperties;
 import net.bdavies.babblebot.core.CorePlugin;
 import net.bdavies.babblebot.discord.DiscordFacade;
 import net.bdavies.babblebot.discord.services.Discord4JBotMessageService;
+import net.bdavies.babblebot.plugins.PluginModel;
 import net.bdavies.babblebot.plugins.PluginModelRepository;
 import net.bdavies.babblebot.plugins.importing.ImportPluginFactory;
 import org.apache.commons.io.IOUtils;
@@ -125,12 +126,15 @@ public final class BabblebotApplication implements IApplication
         ConnectConfigurationProperties connectConfig = get(ConnectConfigurationProperties.class);
         if (!connectConfig.isUseConnect() || connectConfig.isWorker())
         {
-            pluginContainer.addPlugin("core", get(CorePlugin.class), EPluginPermission.all(), "");
+            pluginContainer.addPlugin(get(CorePlugin.class), PluginModel.builder()
+                    .name("core")
+                    .pluginPermissions(EPluginPermission.all())
+                    .namespace("")
+                    .build());
 
             get(PluginModelRepository.class).findAll().forEach(pluginModel ->
                     ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
-                            .subscribe(pObj -> pluginContainer.addPlugin(pObj,
-                                    pluginModel.getPluginPermissions(), pluginModel.getNamespace())));
+                            .subscribe(pObj -> pluginContainer.addPlugin(pObj, pluginModel)));
         }
         get(Discord4JBotMessageService.class).registerConnectHandler();
     }

@@ -23,58 +23,36 @@
  *
  */
 
-package net.bdavies.babblebot.plugins;
+package net.bdavies.babblebot.api.plugins;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.plugins.IPluginModel;
-import net.bdavies.babblebot.api.plugins.PluginPermissionContainer;
-import net.bdavies.babblebot.api.plugins.PluginType;
+import net.bdavies.babblebot.api.config.EPluginPermission;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
- * Entity for a Plugin will serialise for a distributed System
+ * Plugin Permission Container
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.11
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@Entity
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Jacksonized
-public class PluginModel implements IPluginModel
+public class PluginPermissionContainer extends ArrayList<EPluginPermission>
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    private String name;
-    private PluginType pluginType;
-    private String classPath;
-    @Builder.Default
-    private String namespace = "$name";
-    private PluginPermissionContainer pluginPermissions;
-
-    @Lob
-    @JsonIgnore
-    private byte[] fileData;
-
-    public String getNamespace()
+    public PluginPermissionContainer()
     {
-        if (namespace.equals("$name"))
-        {
-            return this.name.toLowerCase();
-        } else
-        {
-            return this.namespace;
-        }
+        super();
+    }
+
+    public PluginPermissionContainer(Collection<EPluginPermission> list)
+    {
+        super();
+        this.addAll(list);
+    }
+
+    public boolean hasPermission(EPluginPermission permission)
+    {
+        return stream().anyMatch(p -> p.equals(permission));
     }
 }

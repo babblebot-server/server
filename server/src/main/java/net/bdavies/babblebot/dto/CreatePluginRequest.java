@@ -23,58 +23,32 @@
  *
  */
 
-package net.bdavies.babblebot.plugins;
+package net.bdavies.babblebot.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.plugins.IPluginModel;
 import net.bdavies.babblebot.api.plugins.PluginPermissionContainer;
 import net.bdavies.babblebot.api.plugins.PluginType;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Entity for a Plugin will serialise for a distributed System
+ * Create plugin request DTO
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.11
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@Entity
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Jacksonized
-public class PluginModel implements IPluginModel
+public class CreatePluginRequest
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
+    private MultipartFile plugin;
     private String name;
-    private PluginType pluginType;
-    private String classPath;
-    @Builder.Default
+    private PluginType type;
+    private String classPath = null;
     private String namespace = "$name";
-    private PluginPermissionContainer pluginPermissions;
-
-    @Lob
-    @JsonIgnore
-    private byte[] fileData;
-
-    public String getNamespace()
-    {
-        if (namespace.equals("$name"))
-        {
-            return this.name.toLowerCase();
-        } else
-        {
-            return this.namespace;
-        }
-    }
+    private PluginPermissionContainer permissions = new PluginPermissionContainer();
 }

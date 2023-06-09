@@ -23,58 +23,59 @@
  *
  */
 
-package net.bdavies.babblebot.plugins;
+package net.bdavies.babblebot.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.plugins.IPluginModel;
-import net.bdavies.babblebot.api.plugins.PluginPermissionContainer;
-import net.bdavies.babblebot.api.plugins.PluginType;
+import net.bdavies.babblebot.api.util.FunctionEx;
+
+import java.util.UUID;
 
 /**
- * Entity for a Plugin will serialise for a distributed System
+ * Generic Response for a Rest Request
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.11
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@Entity
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@SuperBuilder
 @Jacksonized
-public class PluginModel implements IPluginModel
+public class ResponseBag
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private final String uniqueId;
+    private final long exchangeTime;
+    private final int status;
+    private final String message;
+    @JsonUnwrapped
+    private final Response body;
 
-    private String name;
-    private PluginType pluginType;
-    private String classPath;
-    @Builder.Default
-    private String namespace = "$name";
-    private PluginPermissionContainer pluginPermissions;
-
-    @Lob
-    @JsonIgnore
-    private byte[] fileData;
-
-    public String getNamespace()
+    public static ResponseBag from(FunctionEx<String, Response> func)
     {
-        if (namespace.equals("$name"))
+        String uniqueId = UUID.randomUUID().toString();
+        long start = System.currentTimeMillis();
+        Response resp;
+        try
         {
-            return this.name.toLowerCase();
-        } else
-        {
-            return this.namespace;
+            resp = func.apply(uniqueId);
         }
+        catch (Exception e)
+        {
+            resp = Response.from("Something went wrong, please check the logs Request-ID: [" + uniqueId + "]",
+                    500);
+            log.info("Something went wrong with request [{}]", uniqueId, e);
+        }
+        long end = System.currentTimeMillis();
+
+        return ResponseBag.builder()
+                .exchangeTime(end - start)
+                .message(resp.getMessage())
+                .uniqueId(uniqueId)
+                .body(resp)
+                .status(resp.getStatus())
+                .build();
     }
 }
