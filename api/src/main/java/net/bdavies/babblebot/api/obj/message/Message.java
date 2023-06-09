@@ -37,7 +37,7 @@ import java.io.Serializable;
  * Message Object for the Command Context
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.10
+ * @since 3.0.0-rc.11
  */
 @Slf4j
 @Data

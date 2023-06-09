@@ -1,3 +1,10 @@
+# [3.0.0-rc.11](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.10...v3.0.0-rc.11) (2023-06-09)
+
+
+### Features
+
+* Connect system ([dd4d7e5](https://github.com/bendavies99/BabbleBot-Server/commit/dd4d7e579cba692609c9fe295fbff85628c5418e))
+
 # [3.0.0-rc.10](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.9...v3.0.0-rc.10) (2023-06-07)
 
 
