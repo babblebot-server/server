@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Configuration;
  * Configuration Properties for Babblebot Connect
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.12
+ * @since 3.0.0-rc.13
  */
 @Slf4j
 @ConfigurationProperties(prefix = "connect")

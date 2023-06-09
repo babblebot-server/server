@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * Footer Object for a Embed Message
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.12
+ * @since 3.0.0-rc.13
  */
 @Slf4j
 @Data

@@ -36,7 +36,7 @@ import java.util.UUID;
  * An Event that will trigger when the {@link net.bdavies.babblebot.api.plugins.IPluginContainer} gets a new plugin
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.13
  */
 @Slf4j
 @RequiredArgsConstructor

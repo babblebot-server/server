@@ -42,7 +42,7 @@ import java.util.function.Consumer;
  * Event Dispatcher Implementation for Babblebot
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.13
  */
 @Slf4j
 @Component

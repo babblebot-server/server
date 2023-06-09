@@ -1,3 +1,10 @@
+# [3.0.0-rc.13](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.12...v3.0.0-rc.13) (2023-06-09)
+
+
+### Features
+
+* add event dispatcher system to babblebot ([dfe3791](https://github.com/bendavies99/BabbleBot-Server/commit/dfe3791a6de13f32e7e77a7fc3252bd3bde32950))
+
 # [3.0.0-rc.12](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.11...v3.0.0-rc.12) (2023-06-09)
 
 
