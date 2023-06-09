@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.11
+ * @since 3.0.0-rc.12
  */
 @Slf4j
 @Data

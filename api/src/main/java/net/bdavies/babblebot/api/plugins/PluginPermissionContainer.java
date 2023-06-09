@@ -35,7 +35,7 @@ import java.util.Collection;
  * Plugin Permission Container
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.12
  */
 @Slf4j
 public class PluginPermissionContainer extends ArrayList<EPluginPermission>

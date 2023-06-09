@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
  * Controller for Handling Plugins
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.12
  */
 @Slf4j
 @RestController

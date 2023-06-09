@@ -1,3 +1,10 @@
+# [3.0.0-rc.12](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.11...v3.0.0-rc.12) (2023-06-09)
+
+
+### Features
+
+* Add rest resource for plugins ([839cf3d](https://github.com/bendavies99/BabbleBot-Server/commit/839cf3d071613b8425be927fee555ae0e25b0cd5))
+
 # [3.0.0-rc.11](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.10...v3.0.0-rc.11) (2023-06-09)
 
 
