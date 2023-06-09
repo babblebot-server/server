@@ -46,6 +46,11 @@ public interface IConnectQueue<T extends Serializable>
         return "babblebot-connect-message-queue-" + this.getClass().getSimpleName();
     }
 
+    default boolean isMulticast()
+    {
+        return false;
+    }
+
     /**
      * Send an object to a worker that will complete the task
      *

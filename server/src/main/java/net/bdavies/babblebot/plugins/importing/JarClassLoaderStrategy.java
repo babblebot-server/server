@@ -31,9 +31,9 @@ import net.bdavies.babblebot.BabblebotApplication;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.connect.ConnectQueue;
 import net.bdavies.babblebot.api.plugins.IPlugin;
+import net.bdavies.babblebot.api.plugins.IPluginModel;
 import net.bdavies.babblebot.api.plugins.Plugin;
 import net.bdavies.babblebot.api.plugins.PluginConfig;
-import net.bdavies.babblebot.plugins.PluginModel;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -70,7 +70,7 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
     }
 
     @Override
-    public Flux<Object> importPlugin(PluginModel config)
+    public Flux<Object> importPlugin(IPluginModel config)
     {
         try
         {

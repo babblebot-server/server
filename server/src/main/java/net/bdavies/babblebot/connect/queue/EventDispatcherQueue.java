@@ -23,29 +23,50 @@
  *
  */
 
-package net.bdavies.babblebot.plugins.importing;
+package net.bdavies.babblebot.connect.queue;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.api.plugins.IPluginModel;
-import net.bdavies.babblebot.plugins.PluginModel;
-import net.bdavies.babblebot.api.plugins.PluginType;
-import reactor.core.publisher.Flux;
+import net.bdavies.babblebot.api.connect.ConnectQueue;
+import net.bdavies.babblebot.api.connect.IConnectQueue;
+import net.bdavies.babblebot.api.events.IEvent;
+import net.bdavies.babblebot.connect.ConnectClient;
+import net.bdavies.babblebot.connect.ConnectServer;
+
+import java.io.Serializable;
+import java.util.function.Consumer;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * Event Dispatcher Queue
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-public final class ImportPluginFactory {
+@ConnectQueue
+@RequiredArgsConstructor
+public class EventDispatcherQueue implements IConnectQueue<IEvent>
+{
+    private final IApplication application;
 
-    private ImportPluginFactory() {}
-
-    public static Flux<Object> importPlugin(IPluginModel config, IApplication application) {
-        if (config.getPluginType() == PluginType.JAVA) {
-            return application.get(JarClassLoaderStrategy.class).importPlugin(config);
-        }
-        return Flux.empty();
+    @Override
+    public void send(IEvent obj)
+    {
+        application.get(ConnectServer.class)
+                .sendMessage(this, obj);
     }
 
+    @Override
+    public void setMessageHandler(Consumer<IEvent> obj)
+    {
+        Consumer<Serializable> s = ser -> obj.accept((IEvent) ser);
+        application.get(ConnectClient.class).registerMessageHandler(this, s);
+    }
+
+    @Override
+    public boolean isMulticast()
+    {
+        return true;
+    }
 }

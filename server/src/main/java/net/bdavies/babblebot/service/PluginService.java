@@ -32,6 +32,9 @@ import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.dto.Response;
 import net.bdavies.babblebot.api.dto.ResponseBag;
+import net.bdavies.babblebot.api.events.IEventDispatcher;
+import net.bdavies.babblebot.api.events.PluginAddedEvent;
+import net.bdavies.babblebot.api.events.PluginRemovedEvent;
 import net.bdavies.babblebot.api.plugins.IPluginContainer;
 import net.bdavies.babblebot.dto.AllPluginsResponse;
 import net.bdavies.babblebot.dto.CreatePluginRequest;
@@ -56,6 +59,7 @@ public class PluginService
     private final PluginModelRepository pluginModelRepository;
     private final IPluginContainer pluginContainer;
     private final IApplication application;
+    private final IEventDispatcher eventDispatcher;
 
     @SneakyThrows
     public ResponseBag createPlugin(CreatePluginRequest request)
@@ -83,6 +87,8 @@ public class PluginService
 
             ImportPluginFactory.importPlugin(model, application)
                     .subscribe(pObj -> pluginContainer.addPlugin(pObj, model));
+
+            eventDispatcher.dispatch(new PluginAddedEvent(model));
 
             return Response.from("Plugin added to the system", HttpStatus.CREATED.value());
         });
@@ -155,9 +161,12 @@ public class PluginService
             pluginModelRepository.save(model);
 
             pluginContainer.removePlugin(name);
+            eventDispatcher.dispatch(new PluginRemovedEvent(name));
 
             ImportPluginFactory.importPlugin(model, application)
                     .subscribe(pObj -> pluginContainer.addPlugin(pObj, model));
+
+            eventDispatcher.dispatch(new PluginAddedEvent(model));
 
             return Response.from("Plugin " + name + " updated");
         });
@@ -174,6 +183,7 @@ public class PluginService
             {
                 pluginModelRepository.delete(opt.get());
                 pluginContainer.removePlugin(name);
+                eventDispatcher.dispatch(new PluginRemovedEvent(name));
                 return GetPluginResponse.from(Response.from(name + " plugin delete"),
                         opt.get());
             }

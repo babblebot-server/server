@@ -23,29 +23,26 @@
  *
  */
 
-package net.bdavies.babblebot.plugins.importing;
+package net.bdavies.babblebot.api.events;
 
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.api.plugins.IPluginModel;
-import net.bdavies.babblebot.plugins.PluginModel;
-import net.bdavies.babblebot.api.plugins.PluginType;
-import reactor.core.publisher.Flux;
+
+import java.util.UUID;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * An Event that will trigger when the {@link net.bdavies.babblebot.api.plugins.IPluginContainer} removes a
+ * plugin
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-public final class ImportPluginFactory {
-
-    private ImportPluginFactory() {}
-
-    public static Flux<Object> importPlugin(IPluginModel config, IApplication application) {
-        if (config.getPluginType() == PluginType.JAVA) {
-            return application.get(JarClassLoaderStrategy.class).importPlugin(config);
-        }
-        return Flux.empty();
-    }
-
+@RequiredArgsConstructor
+@Data
+public class PluginRemovedEvent implements IEvent
+{
+    private final String uniqueId = UUID.randomUUID().toString();
+    private final String name;
 }

@@ -36,12 +36,15 @@ import net.bdavies.babblebot.api.command.ICommandDispatcher;
 import net.bdavies.babblebot.api.config.EPluginPermission;
 import net.bdavies.babblebot.api.config.IDiscordConfig;
 import net.bdavies.babblebot.api.connect.ConnectQueue;
+import net.bdavies.babblebot.api.events.PluginAddedEvent;
+import net.bdavies.babblebot.api.events.PluginRemovedEvent;
 import net.bdavies.babblebot.api.plugins.IPluginContainer;
 import net.bdavies.babblebot.api.variables.IVariableContainer;
 import net.bdavies.babblebot.connect.ConnectConfigurationProperties;
 import net.bdavies.babblebot.core.CorePlugin;
 import net.bdavies.babblebot.discord.DiscordFacade;
 import net.bdavies.babblebot.discord.services.Discord4JBotMessageService;
+import net.bdavies.babblebot.events.EventDispatcher;
 import net.bdavies.babblebot.plugins.PluginModel;
 import net.bdavies.babblebot.plugins.PluginModelRepository;
 import net.bdavies.babblebot.plugins.importing.ImportPluginFactory;
@@ -135,6 +138,20 @@ public final class BabblebotApplication implements IApplication
             get(PluginModelRepository.class).findAll().forEach(pluginModel ->
                     ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
                             .subscribe(pObj -> pluginContainer.addPlugin(pObj, pluginModel)));
+
+            EventDispatcher dispatcher = get(EventDispatcher.class);
+
+            dispatcher.onPriority(PluginAddedEvent.class, (pae -> {
+                if (!pluginContainer.doesPluginExist(pae.getPluginModel().getName()))
+                {
+                    ImportPluginFactory.importPlugin(pae.getPluginModel(), get(IApplication.class))
+                            .subscribe(pObj -> pluginContainer.addPlugin(pObj, pae.getPluginModel()));
+                }
+            }));
+
+            dispatcher.onPriority(PluginRemovedEvent.class, (pre -> {
+                pluginContainer.removePlugin(pre.getName());
+            }));
         }
         get(Discord4JBotMessageService.class).registerConnectHandler();
     }

@@ -25,10 +25,7 @@
 
 package net.bdavies.babblebot.connect.rabbitmq;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.connect.IConnectQueue;
@@ -92,8 +89,17 @@ public class RabbitMQConnectClient implements ConnectClient
         //noinspection resource
         final Connection connection = connectionFactory.newConnection();
         Channel channel = connection.createChannel();
-        channel.queueDeclare(connectQueue.getQueueName(), true, false, false, null);
-        channel.basicQos(1);
+        String queueName = "";
+        if (connectQueue.isMulticast())
+        {
+            channel.exchangeDeclare(connectQueue.getQueueName(), BuiltinExchangeType.FANOUT);
+            queueName = channel.queueDeclare().getQueue();
+            channel.queueBind(queueName, connectQueue.getQueueName(), "");
+        } else
+        {
+            channel.queueDeclare(connectQueue.getQueueName(), true, false, false, null);
+            channel.basicQos(1);
+        }
 
         DeliverCallback cb = (tag, del) -> {
 
@@ -120,6 +126,7 @@ public class RabbitMQConnectClient implements ConnectClient
             }
         };
 
-        channel.basicConsume(connectQueue.getQueueName(), false, cb, tag -> {});
+        channel.basicConsume(connectQueue.isMulticast() ? queueName : connectQueue.getQueueName(), false, cb,
+                tag -> {});
     }
 }

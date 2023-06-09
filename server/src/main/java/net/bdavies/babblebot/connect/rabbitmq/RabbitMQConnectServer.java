@@ -25,10 +25,7 @@
 
 package net.bdavies.babblebot.connect.rabbitmq;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
+import com.rabbitmq.client.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.connect.IConnectQueue;
@@ -68,10 +65,22 @@ public class RabbitMQConnectServer implements ConnectServer
         {
             try (Channel channel = connection.createChannel())
             {
-                channel.queueDeclare(connectQueue.getQueueName(), true, false, false, null);
+                if (connectQueue.isMulticast())
+                {
+                    channel.exchangeDeclare(connectQueue.getQueueName(), BuiltinExchangeType.FANOUT);
+                } else
+                {
+                    channel.queueDeclare(connectQueue.getQueueName(), true, false, false, null);
+                }
                 byte[] msg = SerializationUtils.serialize(serializable);
-                channel.basicPublish("", connectQueue.getQueueName(),
-                        MessageProperties.MINIMAL_PERSISTENT_BASIC, msg);
+                if (connectQueue.isMulticast())
+                {
+                    channel.basicPublish(connectQueue.getQueueName(), "", null, msg);
+                } else
+                {
+                    channel.basicPublish("", connectQueue.getQueueName(),
+                            MessageProperties.MINIMAL_PERSISTENT_BASIC, msg);
+                }
             }
         }
     }

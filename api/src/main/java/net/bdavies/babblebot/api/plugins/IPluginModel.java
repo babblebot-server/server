@@ -25,17 +25,25 @@
 
 package net.bdavies.babblebot.api.plugins;
 
+import java.io.Serializable;
+
 /**
  * Plugin model Interface
  *
  * @author me@bdavies.net (Ben Davies)
  * @since 3.0.0-rc.12
  */
-public interface IPluginModel
+public interface IPluginModel extends Serializable
 {
     String getName();
 
     String getNamespace();
 
     PluginPermissionContainer getPluginPermissions();
+
+    PluginType getPluginType();
+
+    String getClassPath();
+
+    byte[] getFileData();
 }

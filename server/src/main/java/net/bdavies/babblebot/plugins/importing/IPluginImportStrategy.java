@@ -25,7 +25,7 @@
 
 package net.bdavies.babblebot.plugins.importing;
 
-import net.bdavies.babblebot.plugins.PluginModel;
+import net.bdavies.babblebot.api.plugins.IPluginModel;
 import reactor.core.publisher.Flux;
 
 /**
@@ -35,6 +35,6 @@ import reactor.core.publisher.Flux;
 public interface IPluginImportStrategy
 {
 
-    Flux<Object> importPlugin(PluginModel config);
+    Flux<Object> importPlugin(IPluginModel config);
 
 }
