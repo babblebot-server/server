@@ -74,7 +74,7 @@ public class DiscordObjectFactory
                 .blockOptional();
     }
 
-    private Mono<TextChannel> channelFromBabbleBot(DiscordGuild guild, DiscordChannel channel)
+    public Mono<TextChannel> channelFromBabbleBot(DiscordGuild guild, DiscordChannel channel)
     {
         return discordFacade.getClient()
                 .getGuildById(Snowflake.of(guild.getId().toLong()))

@@ -35,15 +35,15 @@ import net.bdavies.babblebot.api.IDiscordFacade;
 import net.bdavies.babblebot.api.command.ICommandDispatcher;
 import net.bdavies.babblebot.api.config.EPluginPermission;
 import net.bdavies.babblebot.api.config.IDiscordConfig;
+import net.bdavies.babblebot.api.connect.ConnectQueue;
 import net.bdavies.babblebot.api.plugins.IPluginContainer;
 import net.bdavies.babblebot.api.variables.IVariableContainer;
-import net.bdavies.babblebot.discord.DiscordFacade;
-import net.bdavies.babblebot.plugins.PluginModel;
-import net.bdavies.babblebot.plugins.PluginModelRepository;
-import net.bdavies.babblebot.plugins.PluginType;
-import net.bdavies.babblebot.plugins.importing.ImportPluginFactory;
+import net.bdavies.babblebot.connect.ConnectConfigurationProperties;
 import net.bdavies.babblebot.core.CorePlugin;
-import org.apache.commons.io.FileUtils;
+import net.bdavies.babblebot.discord.DiscordFacade;
+import net.bdavies.babblebot.discord.services.Discord4JBotMessageService;
+import net.bdavies.babblebot.plugins.PluginModelRepository;
+import net.bdavies.babblebot.plugins.importing.ImportPluginFactory;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
@@ -74,7 +74,10 @@ import java.util.concurrent.Executors;
 @Slf4j
 @Component
 @Getter
-@ComponentScan({"net.bdavies.babblebot", "net.bdavies.babblebot.api"})
+@ComponentScan(
+        includeFilters = {@ComponentScan.Filter(ConnectQueue.class)},
+        basePackages = {"net.bdavies.babblebot", "net.bdavies.babblebot.api"}
+)
 public final class BabblebotApplication implements IApplication
 {
     private final ICommandDispatcher commandDispatcher;
@@ -88,11 +91,13 @@ public final class BabblebotApplication implements IApplication
     /**
      * Create a {@link BabblebotApplication} for BabbleBot
      */
-    public BabblebotApplication(GenericApplicationContext applicationContext)
+    public BabblebotApplication(GenericApplicationContext applicationContext,
+                                ConnectConfigurationProperties connectConfigurationProperties)
     {
         SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
         this.applicationContext = applicationContext;
-        log.info("Started Application");
+        log.info("Started Application in {} mode",
+                connectConfigurationProperties.isLeader() ? "leader" : "worker");
         log.info("Args: " + Arrays.toString(args));
 
         try
@@ -117,31 +122,25 @@ public final class BabblebotApplication implements IApplication
             log.error("Discord token not setup: please visit /v1/config/setup-token");
             return;
         }
-        pluginContainer.addPlugin("core", get(CorePlugin.class), EPluginPermission.all(), "");
+        ConnectConfigurationProperties connectConfig = get(ConnectConfigurationProperties.class);
+        if (!connectConfig.isUseConnect() || connectConfig.isWorker())
+        {
+            pluginContainer.addPlugin("core", get(CorePlugin.class), EPluginPermission.all(), "");
 
-        //TODO: Remove
-        PluginModel model = PluginModel.builder()
-                .name("test")
-                .pluginType(PluginType.JAVA)
-                .pluginPermissions(EPluginPermission.all())
-                .fileData(FileUtils.readFileToByteArray(new File("plugins/test/test-plugin-1.0.0.jar")))
-                .namespace("$name")
-                .build();
-        get(PluginModelRepository.class).save(model);
-
-        get(PluginModelRepository.class).findAll().forEach(pluginModel ->
-                ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
-                        .subscribe(pObj -> pluginContainer.addPlugin(pObj,
-                                pluginModel.getPluginPermissions(), pluginModel.getNamespace())));
+            get(PluginModelRepository.class).findAll().forEach(pluginModel ->
+                    ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
+                            .subscribe(pObj -> pluginContainer.addPlugin(pObj,
+                                    pluginModel.getPluginPermissions(), pluginModel.getNamespace())));
+        }
+        get(Discord4JBotMessageService.class).registerConnectHandler();
     }
 
 
     /**
-     * This will make a Application and ensure that only one application can be made.
+     * This will make an Application and ensure that only one application can be made.
      *
      * @param args The Arguments passed in by the cli.
      * @return {@link IApplication}
-     * @throws RuntimeException if the application tried to made twice
      */
     public static IApplication make(Class<?> mainClass, String[] args)
     {
@@ -149,8 +148,7 @@ public final class BabblebotApplication implements IApplication
     }
 
     /**
-     * This will make a Application and ensure that only one application can be made.
-     * 2.0.0
+     * This will make an Application and ensure that only one application can be made.
      *
      * @param args  The Arguments passed in by the cli.
      * @param clazz Bootstrap your own application useful for developing plugins.

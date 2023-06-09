@@ -23,28 +23,20 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message;
+package net.bdavies.babblebot.connect.rabbitmq;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
-
 /**
- * Message Object for the Command Context
- *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.10
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 @Data
-@SuperBuilder(toBuilder = true)
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Message implements Serializable
+public class RabbitMQConfig
 {
-    private final String content;
+    private boolean enabled;
+    private String host = "localhost";
+    private int port = 5672;
 }

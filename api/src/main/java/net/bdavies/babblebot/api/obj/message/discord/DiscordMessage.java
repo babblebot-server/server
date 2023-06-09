@@ -33,6 +33,8 @@ import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.obj.message.Message;
 
+import java.io.Serializable;
+
 /**
  * Discord Message Object for the Command Context
  *
@@ -45,10 +47,11 @@ import net.bdavies.babblebot.api.obj.message.Message;
 @SuperBuilder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DiscordMessage extends Message
+public class DiscordMessage extends Message implements Serializable
 {
     private final DiscordId id;
     private final DiscordGuild guild;
     private final DiscordChannel channel;
     private final DiscordUser author;
+    private final String token;
 }

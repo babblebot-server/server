@@ -31,6 +31,8 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
+
 /**
  * Guild Object POJO
  *
@@ -42,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuperBuilder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DiscordGuild
+public class DiscordGuild implements Serializable
 {
     private final DiscordId id;
     private final String name;

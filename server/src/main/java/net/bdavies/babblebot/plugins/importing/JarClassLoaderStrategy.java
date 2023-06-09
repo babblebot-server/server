@@ -29,6 +29,7 @@ import jakarta.persistence.Entity;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.BabblebotApplication;
 import net.bdavies.babblebot.api.IApplication;
+import net.bdavies.babblebot.api.connect.ConnectQueue;
 import net.bdavies.babblebot.api.plugins.IPlugin;
 import net.bdavies.babblebot.api.plugins.Plugin;
 import net.bdavies.babblebot.api.plugins.PluginConfig;
@@ -165,7 +166,8 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                 Repository.class,
                 Controller.class,
                 RestController.class,
-                Entity.class
+                Entity.class,
+                ConnectQueue.class
         );
 
         return Arrays.stream(c.getAnnotations())

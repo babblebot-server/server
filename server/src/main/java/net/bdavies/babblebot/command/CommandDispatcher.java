@@ -290,7 +290,8 @@ public class CommandDispatcher implements ICommandDispatcher
             AtomicBoolean hasSentMessage = new AtomicBoolean(false);
             AtomicBoolean hasFoundOne = new AtomicBoolean(false);
 
-            getCommandsFromNamespace(namespace).filter(e -> checkType(e.getType(), commandContext.getType()))
+            getCommandsFromNamespace(namespace).filter(
+                            e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
                             .anyMatch(alias -> alias.equalsIgnoreCase(commandName)))
                     .doOnError(e -> log.error("Error in the command dispatcher.", e)).doOnComplete(() -> {
@@ -299,7 +300,8 @@ public class CommandDispatcher implements ICommandDispatcher
                             StringBuilder sb = new StringBuilder(
                                     "```markdown\n# Command Not Found\n\nDid You mean?\n");
                             getCommandsLike(commandName, commandContext.getType()).subscribe(c -> {
-                                sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append("? - ")
+                                sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append(
+                                                "? - ")
                                         .append(c.getDescription()).append("\n");
                                 hasSentMessage.set(true);
                             }, null, () -> {
@@ -357,7 +359,6 @@ public class CommandDispatcher implements ICommandDispatcher
         {
             log.error("Command could not be parsed: " + message);
         }
-
     }
 
     private Flux<ICommand> getCommandsLike(String commandName, String type)

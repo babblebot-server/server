@@ -23,28 +23,42 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message;
+package net.bdavies.babblebot.connect;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.Serializable;
+import net.bdavies.babblebot.connect.rabbitmq.RabbitMQConfig;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * Message Object for the Command Context
+ * Configuration Properties for Babblebot Connect
  *
  * @author me@bdavies.net (Ben Davies)
  * @since 3.0.0-rc.10
  */
 @Slf4j
+@ConfigurationProperties(prefix = "connect")
+@Configuration
 @Data
-@SuperBuilder(toBuilder = true)
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Message implements Serializable
+public class ConnectConfigurationProperties
 {
-    private final String content;
+    private boolean useConnect = false;
+    private boolean leader = true;
+    private boolean worker = false;
+    private RabbitMQConfig rabbitmq;
+
+    @PostConstruct
+    void init()
+    {
+        if (worker)
+        {
+            setLeader(false);
+        }
+        if (leader)
+        {
+            setWorker(false);
+        }
+    }
 }

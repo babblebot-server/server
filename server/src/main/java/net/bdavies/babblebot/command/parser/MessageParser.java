@@ -27,11 +27,14 @@ package net.bdavies.babblebot.command.parser;
 
 import net.bdavies.babblebot.api.command.ICommandContext;
 
+import java.io.Serializable;
+
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface MessageParser {
+public interface MessageParser extends Serializable
+{
     /**
      * This will parse the user's input.
      *

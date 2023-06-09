@@ -23,28 +23,40 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
-import lombok.extern.slf4j.Slf4j;
+package net.bdavies.babblebot.api.connect;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 /**
- * Message Object for the Command Context
+ * Connect Queue Interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.10
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-@Data
-@SuperBuilder(toBuilder = true)
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Message implements Serializable
+public interface IConnectQueue<T extends Serializable>
 {
-    private final String content;
+    /**
+     * Get Connect queue name that will be used with the messaging service
+     *
+     * @return String
+     */
+    default String getQueueName()
+    {
+        return "babblebot-connect-message-queue-" + this.getClass().getSimpleName();
+    }
+
+    /**
+     * Send an object to a worker that will complete the task
+     *
+     * @param obj the object
+     */
+    void send(T obj);
+
+    /**
+     * Set the message handler for a worker so the worker can listen to messages on the queue
+     *
+     * @param obj the consumer for all the messages on the queue
+     */
+    void setMessageHandler(Consumer<T> obj);
 }

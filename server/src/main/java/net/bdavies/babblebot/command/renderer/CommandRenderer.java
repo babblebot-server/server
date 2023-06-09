@@ -27,6 +27,8 @@ package net.bdavies.babblebot.command.renderer;
 
 import net.bdavies.babblebot.api.command.IResponse;
 
+import java.io.Serializable;
+
 /**
  * A Command Renderer will determine how a response
  * from a command will then rendered to the output for discord it will render it on the discord channel
@@ -34,7 +36,7 @@ import net.bdavies.babblebot.api.command.IResponse;
  * @author me@bdavies.net (Ben Davies)
  * @since 3.0.0-rc.10
  */
-public interface CommandRenderer
+public interface CommandRenderer extends Serializable
 {
     void render(IResponse response);
 

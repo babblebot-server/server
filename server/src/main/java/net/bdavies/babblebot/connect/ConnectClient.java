@@ -23,28 +23,20 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message;
+package net.bdavies.babblebot.connect;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
-import lombok.extern.slf4j.Slf4j;
+import net.bdavies.babblebot.api.connect.IConnectQueue;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 /**
- * Message Object for the Command Context
+ * Connect Client that will handle receiving messages
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.10
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-@Data
-@SuperBuilder(toBuilder = true)
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Message implements Serializable
+public interface ConnectClient
 {
-    private final String content;
+    void registerMessageHandler(IConnectQueue<?> connectQueue, Consumer<Serializable> consumer);
 }

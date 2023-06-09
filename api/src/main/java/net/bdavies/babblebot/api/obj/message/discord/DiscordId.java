@@ -32,6 +32,8 @@ import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
+
 /**
  * An Object for the DiscordId
  *
@@ -42,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Builder
 @Jacksonized
-public class DiscordId
+public class DiscordId implements Serializable
 {
     @Getter(AccessLevel.PRIVATE)
     private final long id;

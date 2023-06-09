@@ -23,28 +23,45 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message;
+package net.bdavies.babblebot.connect.queue;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.babblebot.api.IApplication;
+import net.bdavies.babblebot.api.connect.ConnectQueue;
+import net.bdavies.babblebot.api.connect.IConnectQueue;
+import net.bdavies.babblebot.connect.ConnectClient;
+import net.bdavies.babblebot.connect.ConnectServer;
+import net.bdavies.babblebot.connect.DiscordConnectMessage;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 /**
- * Message Object for the Command Context
+ * Discord Connect Queue
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.10
+ * @since __RELEASE_VERSION__
  */
+@ConnectQueue
 @Slf4j
-@Data
-@SuperBuilder(toBuilder = true)
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Message implements Serializable
+@RequiredArgsConstructor
+public class DiscordConnectQueue implements IConnectQueue<DiscordConnectMessage>
 {
-    private final String content;
+    private final IApplication application;
+
+    @Override
+    public void send(DiscordConnectMessage obj)
+    {
+        ConnectServer connectServer = application.get(ConnectServer.class);
+        connectServer.sendMessage(this, obj);
+    }
+
+    @Override
+    public void setMessageHandler(Consumer<DiscordConnectMessage> obj)
+    {
+        ConnectClient connectClient = application.get(ConnectClient.class);
+        Consumer<Serializable> consumer = s -> obj.accept((DiscordConnectMessage) s);
+        connectClient.registerMessageHandler(this, consumer);
+    }
 }

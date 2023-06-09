@@ -23,28 +23,16 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
-import lombok.extern.slf4j.Slf4j;
+package net.bdavies.babblebot.discord;
 
 import java.io.Serializable;
 
 /**
- * Message Object for the Command Context
- *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.10
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-@Data
-@SuperBuilder(toBuilder = true)
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Message implements Serializable
+public enum DiscordMessageType implements Serializable
 {
-    private final String content;
+    COMMAND,
+    INTERACTION
 }

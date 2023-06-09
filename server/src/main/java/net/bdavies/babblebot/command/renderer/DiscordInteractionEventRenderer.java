@@ -25,15 +25,22 @@
 
 package net.bdavies.babblebot.command.renderer;
 
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.GatewayDiscordClient;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
+import discord4j.discordjson.json.InteractionResponseData;
+import discord4j.discordjson.possible.Possible;
+import discord4j.rest.util.InteractionResponseType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.IResponse;
+import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * Renderer for an Interaction event from Discord
@@ -45,7 +52,9 @@ import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
 @RequiredArgsConstructor
 public class DiscordInteractionEventRenderer implements CommandRenderer
 {
-    private final ChatInputInteractionEvent event;
+    private final GatewayDiscordClient client;
+    private final DiscordMessage message;
+    private final TextChannel channel;
     private final IApplication application;
 
     @Override
@@ -53,16 +62,31 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
     {
         if (response.isStringResponse())
         {
-            event.reply(response.getStringResponse()).subscribe();
+            reply(InteractionApplicationCommandCallbackSpec.create()
+                    .withContent(response.getStringResponse())).subscribe();
         } else
         {
             EmbedMessage em = response.getEmbedCreateSpecResponse().get();
-            EmbedMessageFactory.addDefaults(em, application, event.getInteraction().getGuild());
+            EmbedMessageFactory.addDefaults(em, application, channel.getGuild());
             EmbedCreateSpec spec = EmbedMessageFactory.fromBabblebot(em);
-            event.reply(InteractionApplicationCommandCallbackSpec.builder()
+            reply(InteractionApplicationCommandCallbackSpec.builder()
                     .addEmbed(spec)
                     .build()).subscribe();
         }
+    }
+
+    private Mono<Void> reply(InteractionApplicationCommandCallbackSpec spec)
+    {
+        val data = spec.asRequest();
+        InteractionResponseType type = InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE;
+        InteractionResponseData responseData = InteractionResponseData.builder()
+                .type(type.getValue())
+                .data(Possible.of(data.getJsonPayload()))
+                .build();
+
+        return client.getRestClient().getInteractionService()
+                .createInteractionResponse(message.getId().toLong(), message.getToken(),
+                        data.withRequest(responseData));
     }
 
     @Override

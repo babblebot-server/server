@@ -34,6 +34,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.config.IDiscordConfig;
+import net.bdavies.babblebot.connect.ConnectConfigurationProperties;
 import net.bdavies.babblebot.discord.services.Discord4JBotMessageService;
 import org.springframework.stereotype.Service;
 
@@ -50,13 +51,16 @@ public class Discord4JService
 
     private final IApplication application;
     private final IDiscordConfig config;
+    private final ConnectConfigurationProperties connectConfigurationProperties;
     @Getter
     private GatewayDiscordClient client;
 
-    public Discord4JService(IApplication application, IDiscordConfig config)
+    public Discord4JService(IApplication application, IDiscordConfig config,
+                            ConnectConfigurationProperties connectConfigurationProperties)
     {
         this.application = application;
         this.config = config;
+        this.connectConfigurationProperties = connectConfigurationProperties;
         setupClient();
     }
 
