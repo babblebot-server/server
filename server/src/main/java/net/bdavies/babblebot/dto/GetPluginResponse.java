@@ -36,7 +36,7 @@ import net.bdavies.babblebot.plugins.PluginModel;
  * Response for all the plugins
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.13
+ * @since 3.0.0-rc.14
  */
 @Slf4j
 @Data

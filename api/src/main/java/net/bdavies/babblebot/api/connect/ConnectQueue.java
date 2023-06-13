@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * Connect Queue Metadata
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.13
+ * @since 3.0.0-rc.14
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

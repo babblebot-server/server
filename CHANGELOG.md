@@ -1,3 +1,10 @@
+# [3.0.0-rc.14](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.13...v3.0.0-rc.14) (2023-06-13)
+
+
+### Features
+
+* fully support slash commands ([a0c49b7](https://github.com/bendavies99/BabbleBot-Server/commit/a0c49b76f5270ef4cc6d6ac1ebb31c71567293f3))
+
 # [3.0.0-rc.13](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.12...v3.0.0-rc.13) (2023-06-09)
 
 

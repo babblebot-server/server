@@ -37,7 +37,7 @@ import java.util.Optional;
  * Repository for Announcement Channels
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.13
+ * @since 3.0.0-rc.14
  */
 @Repository
 public interface AnnouncementChannelRepository extends JpaRepository<AnnouncementChannel, Long>

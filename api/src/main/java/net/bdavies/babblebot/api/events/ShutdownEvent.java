@@ -34,7 +34,7 @@ import java.util.UUID;
  * Event will fire on Babblebot shutdown
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.14
  */
 @Slf4j
 @Data
