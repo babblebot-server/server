@@ -64,4 +64,10 @@ public class DiscordConnectQueue implements IConnectQueue<DiscordConnectMessage>
         Consumer<Serializable> consumer = s -> obj.accept((DiscordConnectMessage) s);
         connectClient.registerMessageHandler(this, consumer);
     }
+
+    @Override
+    public boolean isWorkerOnly()
+    {
+        return true;
+    }
 }

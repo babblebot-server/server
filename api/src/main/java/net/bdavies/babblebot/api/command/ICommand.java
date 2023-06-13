@@ -31,7 +31,8 @@ import net.bdavies.babblebot.api.IApplication;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-public interface ICommand {
+public interface ICommand
+{
     /**
      * The aliases of the command.
      *
@@ -67,6 +68,13 @@ public interface ICommand {
      * @return String
      */
     String getType();
+
+    /**
+     * Get all the command parameters
+     *
+     * @return the command parameters
+     */
+    CommandParam[] getCommandParams();
 
     /**
      * This is the execution point for the command.

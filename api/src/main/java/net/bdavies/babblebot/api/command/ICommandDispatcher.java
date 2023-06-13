@@ -59,7 +59,7 @@ public interface ICommandDispatcher
     /**
      * This is where you can a command to the command dispatcher.
      */
-    void removeNamespace(String namespace);
+    void removeNamespace(String namespace, IApplication application);
 
 
     /**
@@ -67,7 +67,7 @@ public interface ICommandDispatcher
      *
      * @param command - The command you wish to remove.
      */
-    void removeCommand(String namespace, ICommand command);
+    void removeCommand(String namespace, ICommand command, IApplication application);
 
     /**
      * This will try and return a command based on a name and type of command.

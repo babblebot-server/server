@@ -82,7 +82,7 @@ public class RabbitMQConnectClient implements ConnectClient
     @SneakyThrows
     private <T extends Serializable> void registerQueue(IConnectQueue<T> connectQueue)
     {
-        if (connectConfig.isLeader())
+        if (connectQueue.isWorkerOnly() && connectConfig.isLeader())
         {
             return;
         }
@@ -110,6 +110,7 @@ public class RabbitMQConnectClient implements ConnectClient
             }
             catch (SerializationException e)
             {
+                log.error("Failed to deserialize message", e);
                 channel.basicReject(del.getEnvelope().getDeliveryTag(), false);
                 return;
             }

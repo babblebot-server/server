@@ -25,24 +25,22 @@
 
 package net.bdavies.babblebot;
 
-import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.api.IDiscordFacade;
 import net.bdavies.babblebot.api.command.ICommandDispatcher;
 import net.bdavies.babblebot.api.config.EPluginPermission;
 import net.bdavies.babblebot.api.config.IDiscordConfig;
 import net.bdavies.babblebot.api.connect.ConnectQueue;
 import net.bdavies.babblebot.api.events.PluginAddedEvent;
 import net.bdavies.babblebot.api.events.PluginRemovedEvent;
+import net.bdavies.babblebot.api.events.ShutdownEvent;
 import net.bdavies.babblebot.api.plugins.IPluginContainer;
 import net.bdavies.babblebot.api.variables.IVariableContainer;
 import net.bdavies.babblebot.connect.ConnectConfigurationProperties;
 import net.bdavies.babblebot.core.CorePlugin;
-import net.bdavies.babblebot.discord.DiscordFacade;
 import net.bdavies.babblebot.discord.services.Discord4JBotMessageService;
 import net.bdavies.babblebot.events.EventDispatcher;
 import net.bdavies.babblebot.plugins.PluginModel;
@@ -51,16 +49,15 @@ import net.bdavies.babblebot.plugins.importing.ImportPluginFactory;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 /**
@@ -89,6 +86,7 @@ public final class BabblebotApplication implements IApplication
     private final IPluginContainer pluginContainer;
     private final ApplicationContext applicationContext;
     private static Class<?> mainClass;
+    private static ConfigurableApplicationContext mainContext;
     private static String[] args;
     private String serverVersion;
 
@@ -135,25 +133,54 @@ public final class BabblebotApplication implements IApplication
                     .namespace("")
                     .build());
 
-            get(PluginModelRepository.class).findAll().forEach(pluginModel ->
-                    ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
-                            .subscribe(pObj -> pluginContainer.addPlugin(pObj, pluginModel)));
-
+            val plugins = get(PluginModelRepository.class).findAll();
             EventDispatcher dispatcher = get(EventDispatcher.class);
 
-            dispatcher.onPriority(PluginAddedEvent.class, (pae -> {
-                if (!pluginContainer.doesPluginExist(pae.getPluginModel().getName()))
-                {
-                    ImportPluginFactory.importPlugin(pae.getPluginModel(), get(IApplication.class))
-                            .subscribe(pObj -> pluginContainer.addPlugin(pObj, pae.getPluginModel()));
-                }
-            }));
+            plugins.forEach(pluginModel -> {
+                ImportPluginFactory.importPlugin(pluginModel, get(IApplication.class))
+                        .subscribe(pObj -> pluginContainer.addPlugin(pObj, pluginModel));
+                dispatcher.dispatchInternal(new PluginAddedEvent(pluginModel), false);
+            });
 
-            dispatcher.onPriority(PluginRemovedEvent.class, (pre -> {
-                pluginContainer.removePlugin(pre.getName());
-            }));
+            registerPluginEventListeners();
         }
+
+        registerEventListeners();
         get(Discord4JBotMessageService.class).registerConnectHandler();
+    }
+
+    private void registerEventListeners()
+    {
+        EventDispatcher dispatcher = get(EventDispatcher.class);
+        dispatcher.onPriority(ShutdownEvent.class, e -> {
+            if (e.isRestart())
+            {
+                restartInternal();
+            } else
+            {
+                shutdownInternal();
+            }
+        });
+    }
+
+    private void registerPluginEventListeners()
+    {
+        EventDispatcher dispatcher = get(EventDispatcher.class);
+        dispatcher.onPriority(PluginAddedEvent.class, (pae -> {
+            if (!pluginContainer.doesPluginExist(pae.getPluginModel().getName()))
+            {
+                ImportPluginFactory.importPlugin(pae.getPluginModel(), get(IApplication.class))
+                        .subscribe(pObj -> pluginContainer.addPlugin(pObj, pae.getPluginModel()));
+            }
+        }));
+
+        dispatcher.onPriority(PluginRemovedEvent.class, (pre -> {
+            if (pluginContainer.doesPluginExist(pre.getName()))
+            {
+                pluginContainer.removePlugin(pre.getName());
+            }
+        }));
+
     }
 
 
@@ -184,6 +211,7 @@ public final class BabblebotApplication implements IApplication
         val context = SpringApplication.run(mainClass, args);
         IApplication app = context.getBean(IApplication.class);
         context.getBean(BabblebotApplication.class).initPlugins();
+        mainContext = context;
         return app;
     }
 
@@ -204,22 +232,15 @@ public final class BabblebotApplication implements IApplication
         return serverVersion;
     }
 
-    public void shutdown(int timeout)
+    public void shutdown()
+    {
+        get(EventDispatcher.class).dispatch(new ShutdownEvent(false));
+    }
+
+    public void shutdownInternal()
     {
         Executors.newSingleThreadExecutor().submit(() -> {
-            Timer timer = new Timer();
-
-            getPluginContainer().shutDownPlugins();
-            IDiscordFacade facade = get(IDiscordFacade.class);
-            facade.logoutBot().block();
-            timer.schedule(new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-                    System.exit(0);
-                }
-            }, timeout);
+            mainContext.close();
         });
     }
 
@@ -230,42 +251,18 @@ public final class BabblebotApplication implements IApplication
 
     public void restart()
     {
+        get(EventDispatcher.class).dispatch(new ShutdownEvent(true));
+    }
+
+    public void restartInternal()
+    {
         Executors.newSingleThreadExecutor().submit(() -> {
-            getPluginContainer().shutDownPlugins();
-            DiscordFacade facade = get(DiscordFacade.class);
-            facade.getClient().getEventDispatcher().on(DisconnectEvent.class)
-                    .subscribe(d -> log.info("Bot has been logged out!!!"));
-            facade.logoutBot().block();
+            mainContext.close();
             try
             {
-                List<String> command = new ArrayList<>();
-
-                if (new File("Babblebot").exists())
-                {
-                    command.add("./Babblebot");
-                } else
-                {
-                    String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator +
-                            "java";
-                    command.add(cmd);
-                    command.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
-                    command.add("-cp");
-                    command.add(ManagementFactory.getRuntimeMXBean().getClassPath());
-                    command.add(mainClass.getName());
-                    command.addAll(Arrays.asList(args));
-                }
-                command.add("-restart");
-
-
-                ProcessBuilder pb = new ProcessBuilder();
-                log.info("Built command: {} ", command);
-                pb.command(command);
-                pb.inheritIO();
-                Process p = pb.start();
-                p.waitFor();
-                System.exit(p.exitValue());
+                make(mainClass, args);
             }
-            catch (IOException | InterruptedException e) /* NOSONAR */
+            catch (Exception e) /* NOSONAR */
             {
                 log.error("An error occurred when trying to restart Babblebot", e);
             }

@@ -90,7 +90,7 @@ public class EventDispatcher implements IEventDispatcher
     {
         if (!consumer.getClass().getPackageName().startsWith("net.bdavies.babblebot"))
         {
-            log.error("You cannot set a priority event outside in plugins");
+            log.error("You cannot set a priority event outside main babblebot");
             return;
         }
         priorityPublishers.putIfAbsent(clazz, new LinkedList<>());
@@ -105,20 +105,29 @@ public class EventDispatcher implements IEventDispatcher
         dispatchInternal(obj, true);
     }
 
+
     public <T extends IEvent> void dispatchInternal(T obj, boolean send)
+    {
+        dispatchInternal(obj, send, false);
+    }
+
+    public <T extends IEvent> void dispatchInternal(T obj, boolean send, boolean connectOnly)
     {
         if (sentPackages.stream().noneMatch(p -> p.equals(obj.getUniqueId())))
         {
             log.info("Dispatching event: {}", obj);
             publishers.putIfAbsent(obj.getClass(), Sinks.many().multicast().onBackpressureBuffer());
             priorityPublishers.putIfAbsent(obj.getClass(), new LinkedList<>());
-            priorityPublishers.get(obj.getClass()).forEach(c -> c.accept(obj));
-            publishers.get(obj.getClass()).emitNext(obj, Sinks.EmitFailureHandler.FAIL_FAST);
             if (send && connectConfig.isUseConnect())
             {
                 sentPackages.add(obj.getUniqueId());
                 EventDispatcherQueue queue = application.get(EventDispatcherQueue.class);
                 queue.send(obj);
+            }
+            if (!connectOnly)
+            {
+                priorityPublishers.get(obj.getClass()).forEach(c -> c.accept(obj));
+                publishers.get(obj.getClass()).emitNext(obj, Sinks.EmitFailureHandler.FAIL_FAST);
             }
         } else
         {

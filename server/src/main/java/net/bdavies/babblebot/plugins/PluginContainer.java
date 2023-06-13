@@ -26,9 +26,9 @@
 package net.bdavies.babblebot.plugins;
 
 import de.skuzzle.semantic.Version;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.api.config.EPluginPermission;
 import net.bdavies.babblebot.api.plugins.*;
 import net.bdavies.babblebot.command.CommandDispatcher;
 import org.springframework.context.ApplicationContext;
@@ -136,17 +136,7 @@ public class PluginContainer implements IPluginContainer
     {
         if (model.getNamespace().equals(""))
         {
-            if (model.getPluginPermissions().hasPermission(EPluginPermission.EMPTY_NAMESPACE))
-            {
-                return model.getNamespace();
-            } else
-            {
-                log.warn(
-                        "Plugin {} tried to use an empty namespace and doesn't have the EMPTY_NAMESPACE " +
-                                "permission",
-                        model.getName());
-                return model.getName().toLowerCase() + "-";
-            }
+            return model.getNamespace();
         }
         return model.getNamespace() + "-";
     }
@@ -208,7 +198,8 @@ public class PluginContainer implements IPluginContainer
                 ((IPluginEvents) o).onShutdown();
             }
             CommandDispatcher commandDispatcher = applicationContext.getBean(CommandDispatcher.class);
-            commandDispatcher.removeNamespace(pluginNamespaces.get(name));
+            IApplication application = applicationContext.getBean(IApplication.class);
+            commandDispatcher.removeNamespace(pluginNamespaces.get(name), application);
             pluginPermissionsMap.remove(o);
             settings.remove(name);
             plugins.remove(name);
@@ -241,6 +232,11 @@ public class PluginContainer implements IPluginContainer
         return getPluginPermissions(plugins.get(name));
     }
 
+    @PreDestroy
+    void shutdown()
+    {
+        shutDownPlugins();
+    }
 
     @Override
     public void shutDownPlugins()

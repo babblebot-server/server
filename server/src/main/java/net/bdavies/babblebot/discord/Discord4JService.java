@@ -27,9 +27,11 @@ package net.bdavies.babblebot.discord;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
+import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
@@ -51,7 +53,6 @@ public class Discord4JService
 
     private final IApplication application;
     private final IDiscordConfig config;
-    private final ConnectConfigurationProperties connectConfigurationProperties;
     @Getter
     private GatewayDiscordClient client;
 
@@ -60,7 +61,6 @@ public class Discord4JService
     {
         this.application = application;
         this.config = config;
-        this.connectConfigurationProperties = connectConfigurationProperties;
         setupClient();
     }
 
@@ -87,6 +87,13 @@ public class Discord4JService
         {
             e.printStackTrace();
         }
+    }
+
+    @PreDestroy
+    void onShutdown()
+    {
+        this.client.on(DisconnectEvent.class).subscribe(s -> log.info("Bot has been logged out!!"));
+        this.client.logout().block();
     }
 
     public void startMessageService()

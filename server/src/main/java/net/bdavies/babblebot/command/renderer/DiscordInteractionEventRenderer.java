@@ -39,6 +39,8 @@ import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.IResponse;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.bdavies.babblebot.command.ResponseFactory;
+import net.bdavies.babblebot.command.errors.UsageException;
 import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
 import reactor.core.publisher.Mono;
 
@@ -92,6 +94,11 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
     @Override
     public boolean onError(Exception e)
     {
+        if (e instanceof UsageException)
+        {
+            render(ResponseFactory.createStringResponse(e.getLocalizedMessage()));
+            return true;
+        }
         return false;
     }
 }

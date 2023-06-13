@@ -122,9 +122,17 @@ public class Discord4JBotMessageService
                         .orElseThrow();
                 long author = e.getInteraction().getUser().getId().asLong();
                 long msgId = e.getInteraction().getId().asLong();
-                String msg = e.getCommandName();
+                StringBuilder msg = new StringBuilder(e.getCommandName());
+                e.getOptions().forEach(o -> {
+                    msg.append(" -").append(o.getName());
+                    if (o.getValue().isPresent())
+                    {
+                        msg.append("=").append(o.getValue().get().getRaw());
+                    }
+                });
 
-                val discordMessage = buildMessage(g, ch, author, msgId, msg, e.getInteraction().getToken());
+                val discordMessage = buildMessage(g, ch, author, msgId, msg.toString(),
+                        e.getInteraction().getToken());
                 val dmp = new DiscordMessageParser(discordMessage);
 
                 if (!connectConfig.isUseConnect() || connectConfig.isWorker())
@@ -133,7 +141,7 @@ public class Discord4JBotMessageService
                             application.get(GatewayDiscordClient.class), discordMessage,
                             e.getInteraction().getChannel().cast(TextChannel.class).blockOptional()
                                     .orElseThrow(), application);
-                    cd.execute(dmp, msg, application, renderer);
+                    cd.execute(dmp, msg.toString(), application, renderer);
                 } else
                 {
                     DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);

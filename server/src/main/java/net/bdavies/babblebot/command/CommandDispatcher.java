@@ -25,7 +25,7 @@
 
 package net.bdavies.babblebot.command;
 
-import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.rest.service.ApplicationService;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.ICommand;
@@ -42,6 +42,7 @@ import net.bdavies.babblebot.command.parser.MessageParser;
 import net.bdavies.babblebot.command.renderer.CommandRenderer;
 import net.bdavies.babblebot.command.response.BaseResponse;
 import net.bdavies.babblebot.discord.DiscordFacade;
+import net.bdavies.babblebot.discord.obj.factories.DiscordObjectFactory;
 import net.bdavies.babblebot.variables.VariableParser;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -100,15 +101,7 @@ public class CommandDispatcher implements ICommandDispatcher
         } else
         {
             namespaceCommands.add(command);
-            //Todo: Move to renderer
-            DiscordFacade facade = application.get(DiscordFacade.class);
-            long applicationId = facade.getClient().getRestClient().getApplicationId().block();
-            facade.getClient().getGuilds().subscribe(g -> {
-                facade.getClient().getRestClient().getApplicationService()
-                        .createGuildApplicationCommand(applicationId, g.getId().asLong(),
-                                ApplicationCommandRequest.builder().name(command.getAliases()[0])
-                                        .description(command.getDescription()).build()).subscribe();
-            });
+            registerDiscordSlashCommands(namespace, List.of(command), application);
         }
     }
 
@@ -124,28 +117,68 @@ public class CommandDispatcher implements ICommandDispatcher
         {
             commands.put(namespace, commandsToAdd);
         }
+        registerDiscordSlashCommands(namespace, commandsToAdd, application);
+    }
 
-        //TODO: Make this better
+    public void registerDiscordSlashCommands(String namespace, List<ICommand> commands,
+                                             IApplication application)
+    {
         DiscordFacade facade = application.get(DiscordFacade.class);
-        long applicationId = facade.getClient().getRestClient().getApplicationId().block();
-        facade.getClient().getGuilds().subscribe(g -> {
-            commandsToAdd.forEach(c -> facade.getClient().getRestClient().getApplicationService()
-                    .createGuildApplicationCommand(applicationId, g.getId().asLong(),
-                            ApplicationCommandRequest.builder()
-                                    .name(namespace + c.getAliases()[0].toLowerCase())
-                                    .description(c.getDescription().equals("") ? c.getAliases()[0]
-                                            : c.getDescription()).build()).subscribe());
+        DiscordObjectFactory factory = application.get(DiscordObjectFactory.class);
+        long applicationId = facade.getClient().getRestClient().getApplicationId()
+                .blockOptional().orElseThrow();
+
+        ApplicationService service = facade.getClient().getRestClient().getApplicationService();
+
+        facade.getClient().getGuilds().subscribe(guild -> {
+            commands.forEach(command -> {
+                service.createGuildApplicationCommand(
+                                applicationId,
+                                guild.getId().asLong(),
+                                factory.createSlashCommand(namespace, command)
+                        )
+                        .subscribe();
+            });
+        });
+    }
+
+    public void removeDiscordSlashCommands(String namespace, List<ICommand> commands,
+                                           IApplication application)
+    {
+        DiscordFacade facade = application.get(DiscordFacade.class);
+        DiscordObjectFactory factory = application.get(DiscordObjectFactory.class);
+        long applicationId = facade.getClient().getRestClient().getApplicationId()
+                .blockOptional().orElseThrow();
+
+        ApplicationService service = facade.getClient().getRestClient().getApplicationService();
+
+        facade.getClient().getGuilds().subscribe(guild -> {
+            service.getGuildApplicationCommands(applicationId, guild.getId().asLong())
+                    .subscribe(applicationCommand -> {
+                        commands.forEach(command -> {
+                            if (applicationCommand.name()
+                                    .equalsIgnoreCase(namespace + command.getAliases()[0]))
+                            {
+                                service.deleteGuildApplicationCommand(applicationId,
+                                                guild.getId().asLong(),
+                                                applicationCommand.id().asLong())
+                                        .subscribe();
+                            }
+                        });
+                    });
         });
     }
 
     @Override
-    public void removeNamespace(String namespace)
+    public void removeNamespace(String namespace, IApplication application)
     {
         if (!commands.containsKey(namespace))
         {
             log.info("Namespace: " + namespace + " has not been created so you cannot remove it.");
         } else
         {
+            List<ICommand> commandsRemoved = commands.get(namespace);
+            removeDiscordSlashCommands(namespace, commandsRemoved, application);
             commands.remove(namespace);
         }
     }
@@ -184,7 +217,7 @@ public class CommandDispatcher implements ICommandDispatcher
      *
      * @param command - The command you wish to remove.
      */
-    public void removeCommand(String namespace, ICommand command)
+    public void removeCommand(String namespace, ICommand command, IApplication application)
     {
         if (!commands.containsKey(namespace))
         {
@@ -198,6 +231,7 @@ public class CommandDispatcher implements ICommandDispatcher
         } else
         {
             namespaceCommands.remove(command);
+            removeDiscordSlashCommands(namespace, List.of(command), application);
         }
 
     }

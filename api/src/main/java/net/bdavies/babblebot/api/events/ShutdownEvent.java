@@ -23,55 +23,23 @@
  *
  */
 
-package net.bdavies.babblebot.api.connect;
+package net.bdavies.babblebot.api.events;
 
-import java.io.Serializable;
-import java.util.function.Consumer;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
 
 /**
- * Connect Queue Interface
+ * Event will fire on Babblebot shutdown
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.13
+ * @since __RELEASE_VERSION__
  */
-public interface IConnectQueue<T extends Serializable>
+@Slf4j
+@Data
+public class ShutdownEvent implements IEvent
 {
-    /**
-     * Get Connect queue name that will be used with the messaging service
-     *
-     * @return String
-     */
-    default String getQueueName()
-    {
-        return "babblebot-connect-message-queue-" + this.getClass().getSimpleName();
-    }
-
-    default boolean isMulticast()
-    {
-        return false;
-    }
-
-    /**
-     * Determines whether the queue will be listened to by a leader or not
-     *
-     * @return boolean
-     */
-    default boolean isWorkerOnly()
-    {
-        return false;
-    }
-
-    /**
-     * Send an object to a worker that will complete the task
-     *
-     * @param obj the object
-     */
-    void send(T obj);
-
-    /**
-     * Set the message handler for a worker so the worker can listen to messages on the queue
-     *
-     * @param obj the consumer for all the messages on the queue
-     */
-    void setMessageHandler(Consumer<T> obj);
+    private final String uniqueId = UUID.randomUUID().toString();
+    private final boolean isRestart;
 }

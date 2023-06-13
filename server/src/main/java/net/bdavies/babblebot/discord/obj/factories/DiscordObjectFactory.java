@@ -26,10 +26,15 @@
 package net.bdavies.babblebot.discord.obj.factories;
 
 import discord4j.common.util.Snowflake;
+import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.discordjson.json.ApplicationCommandOptionData;
+import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.extern.slf4j.Slf4j;
+import net.bdavies.babblebot.api.command.CommandParam;
+import net.bdavies.babblebot.api.command.ICommand;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordChannel;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordGuild;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordId;
@@ -39,7 +44,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Factory for creating Discord object from Babblebot to Internal API
@@ -111,5 +118,30 @@ public class DiscordObjectFactory
                         .build())
                 .cast(DiscordUser.class)
                 .blockOptional();
+    }
+
+    public ApplicationCommandRequest createSlashCommand(String namespace, ICommand command)
+    {
+        String descr = command.getDescription()
+                .equals("") ? command.getAliases()[0] : command.getDescription();
+
+        return ApplicationCommandRequest.builder()
+                .name(namespace + command.getAliases()[0])
+                .description(descr)
+                .addAllOptions(
+                        Arrays.stream(command.getCommandParams()).map(this::commandParamToOption).collect(
+                                Collectors.toList()))
+                .build();
+    }
+
+    private ApplicationCommandOptionData commandParamToOption(CommandParam commandParam)
+    {
+        return ApplicationCommandOptionData.builder()
+                .name(commandParam.value())
+                .required(!commandParam.optional())
+                .description(commandParam.value())
+                .type(commandParam.canBeEmpty() ? ApplicationCommandOption.Type.BOOLEAN.getValue()
+                        : ApplicationCommandOption.Type.STRING.getValue())
+                .build();
     }
 }

@@ -39,7 +39,7 @@ import java.util.Map;
 @Slf4j
 public abstract class CommandContext implements ICommandContext {
     /**
-     * This is the Map for all the command's paramaters.
+     * This is the Map for all the command's parameters.
      */
     private final Map<String, String> parameters;
 

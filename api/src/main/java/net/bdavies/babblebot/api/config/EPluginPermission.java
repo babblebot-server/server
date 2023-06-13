@@ -35,8 +35,7 @@ import java.util.Arrays;
  */
 public enum EPluginPermission
 {
-    REGISTER_GLOBAL_MIDDLEWARE,
-    EMPTY_NAMESPACE;
+    REGISTER_GLOBAL_MIDDLEWARE;
 
     public static PluginPermissionContainer all()
     {

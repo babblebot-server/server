@@ -28,9 +28,9 @@ package net.bdavies.babblebot.plugins;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.DiscordCommandContext;
 import net.bdavies.babblebot.api.IApplication;
+import net.bdavies.babblebot.api.IDiscordCommandUtil;
 import net.bdavies.babblebot.api.command.*;
 import net.bdavies.babblebot.api.config.IConfig;
-import net.bdavies.babblebot.api.IDiscordCommandUtil;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 import net.bdavies.babblebot.api.plugins.IPluginSettings;
 import net.bdavies.babblebot.discord.DiscordCommandUtil;
@@ -115,6 +115,12 @@ public final class PluginCommandParser
                         }
 
                         @Override
+                        public CommandParam[] getCommandParams()
+                        {
+                            return method.getAnnotationsByType(CommandParam.class);
+                        }
+
+                        @Override
                         public void exec(IApplication application, ICommandContext commandContext)
                         {
                             PluginCommandDefinition cd = new PluginCommandExecutionBuilder(method.getName(),
@@ -156,7 +162,6 @@ public final class PluginCommandParser
 
     private Object[] setupArgs(Method method, ICommandContext commandContext)
     {
-        //TODO: Move this into a discord handler
         List<Object> objs = new LinkedList<>();
         Arrays.stream(method.getParameterTypes()).forEach(t -> {
             if (t.equals(ICommandContext.class))
@@ -177,7 +182,14 @@ public final class PluginCommandParser
                 }
             } else
             {
-                log.error("Cannot handle parameter type: {}", t);
+                try
+                {
+                    objs.add(application.get(t));
+                }
+                catch (Exception e)
+                {
+                    log.error("Unable to parse method {} reason {}", method.getName(), e.getMessage());
+                }
             }
         });
         return objs.toArray(new Object[0]);

@@ -78,9 +78,9 @@ public interface IApplication
     String getServerVersion();
 
     /**
-     * @param timeout - This will attempt to shutdown babblebot
+     * Will shut down the application
      */
-    void shutdown(int timeout);
+    void shutdown();
 
     /**
      * This will return true if babblebot has a argument basic at the moment only supports empty arguments
