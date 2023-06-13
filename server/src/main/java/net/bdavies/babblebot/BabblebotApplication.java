@@ -75,19 +75,18 @@ import java.util.concurrent.Executors;
 @Slf4j
 @Component
 @Getter
-@ComponentScan(
-        includeFilters = {@ComponentScan.Filter(ConnectQueue.class)},
-        basePackages = {"net.bdavies.babblebot", "net.bdavies.babblebot.api"}
-)
+@ComponentScan(includeFilters = {@ComponentScan.Filter(ConnectQueue.class)},
+        basePackages = {"net.bdavies.babblebot", "net.bdavies.babblebot.api"})
 public final class BabblebotApplication implements IApplication
 {
+    private static Class<?> mainClass;
+    private static ConfigurableApplicationContext mainContext;
+    private static String[] args;
+
     private final ICommandDispatcher commandDispatcher;
     private final IVariableContainer variableContainer;
     private final IPluginContainer pluginContainer;
     private final ApplicationContext applicationContext;
-    private static Class<?> mainClass;
-    private static ConfigurableApplicationContext mainContext;
-    private static String[] args;
     private String serverVersion;
 
     /**
@@ -119,7 +118,7 @@ public final class BabblebotApplication implements IApplication
     @SneakyThrows
     public void initPlugins()
     {
-        if (get(IDiscordConfig.class).getToken().equals(""))
+        if ("".equals(get(IDiscordConfig.class).getToken()))
         {
             log.error("Discord token not setup: please visit /v1/config/setup-token");
             return;
@@ -127,11 +126,9 @@ public final class BabblebotApplication implements IApplication
         ConnectConfigurationProperties connectConfig = get(ConnectConfigurationProperties.class);
         if (!connectConfig.isUseConnect() || connectConfig.isWorker())
         {
-            pluginContainer.addPlugin(get(CorePlugin.class), PluginModel.builder()
-                    .name("core")
-                    .pluginPermissions(EPluginPermission.all())
-                    .namespace("")
-                    .build());
+            pluginContainer.addPlugin(get(CorePlugin.class),
+                    PluginModel.builder().name("core").pluginPermissions(EPluginPermission.all())
+                            .namespace("").build());
 
             val plugins = get(PluginModelRepository.class).findAll();
             EventDispatcher dispatcher = get(EventDispatcher.class);
@@ -174,15 +171,14 @@ public final class BabblebotApplication implements IApplication
             }
         }));
 
-        dispatcher.onPriority(PluginRemovedEvent.class, (pre -> {
+        dispatcher.onPriority(PluginRemovedEvent.class, pre -> {
             if (pluginContainer.doesPluginExist(pre.getName()))
             {
                 pluginContainer.removePlugin(pre.getName());
             }
-        }));
+        });
 
     }
-
 
     /**
      * This will make an Application and ensure that only one application can be made.
@@ -190,21 +186,8 @@ public final class BabblebotApplication implements IApplication
      * @param args The Arguments passed in by the cli.
      * @return {@link IApplication}
      */
-    public static IApplication make(Class<?> mainClass, String[] args)
-    {
-        return make(mainClass, BabblebotApplication.class, args);
-    }
-
-    /**
-     * This will make an Application and ensure that only one application can be made.
-     *
-     * @param args  The Arguments passed in by the cli.
-     * @param clazz Bootstrap your own application useful for developing plugins.
-     * @return {@link IApplication}
-     */
-    public static <T extends BabblebotApplication> IApplication make(Class<?> mainClass,
-                                                                     Class<T> clazz,
-                                                                     String[] args)
+    public static IApplication make(Class<?> mainClass,
+                                    String[] args)
     {
         BabblebotApplication.mainClass = mainClass;
         BabblebotApplication.args = Arrays.copyOf(args, args.length);
@@ -239,9 +222,7 @@ public final class BabblebotApplication implements IApplication
 
     public void shutdownInternal()
     {
-        Executors.newSingleThreadExecutor().submit(() -> {
-            mainContext.close();
-        });
+        Executors.newSingleThreadExecutor().submit(() -> mainContext.close());
     }
 
     public boolean hasArgument(String argument)
@@ -258,14 +239,7 @@ public final class BabblebotApplication implements IApplication
     {
         Executors.newSingleThreadExecutor().submit(() -> {
             mainContext.close();
-            try
-            {
-                make(mainClass, args);
-            }
-            catch (Exception e) /* NOSONAR */
-            {
-                log.error("An error occurred when trying to restart Babblebot", e);
-            }
+            make(mainClass, args);
         });
     }
 }
