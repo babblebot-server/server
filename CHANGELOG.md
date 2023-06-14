@@ -1,3 +1,5 @@
+# [3.0.0-rc.15](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.14...v3.0.0-rc.15) (2023-06-14)
+
 # [3.0.0-rc.14](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.13...v3.0.0-rc.14) (2023-06-13)
 
 

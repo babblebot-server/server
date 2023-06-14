@@ -37,7 +37,7 @@ import java.io.Serializable;
  * Author Object POJO
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.14
+ * @since 3.0.0-rc.15
  */
 @Slf4j
 @Data

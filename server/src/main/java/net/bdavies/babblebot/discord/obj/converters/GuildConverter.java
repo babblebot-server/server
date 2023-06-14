@@ -37,7 +37,7 @@ import net.bdavies.babblebot.discord.obj.factories.DiscordObjectFactory;
  * DB Converter for Text Channel
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.14
+ * @since 3.0.0-rc.15
  */
 @Slf4j
 @Converter(autoApply = true)
