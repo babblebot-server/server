@@ -106,7 +106,6 @@ public class PluginContainer implements IPluginContainer
                     maxServerVersion);
             if (settings != null)
             {
-                PluginConfigParser.parsePlugin(application, settings, obj);
                 if (obj instanceof IPluginEvents)
                 {
                     try

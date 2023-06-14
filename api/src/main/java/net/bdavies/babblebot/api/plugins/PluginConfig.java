@@ -40,12 +40,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PluginConfig
 {
-    Class<? extends ICustomPluginConfig> value() default ICustomPluginConfig.class;
-
-    @Target({ElementType.TYPE})
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Setup
-    {
-        boolean autoGenerate() default true;
-    }
 }

@@ -62,6 +62,8 @@ public class PluginModel implements IPluginModel
     @Builder.Default
     private String namespace = "$name";
     private PluginPermissionContainer pluginPermissions;
+    @Builder.Default
+    private String config = "{}";
 
     @Lob
     @JsonIgnore

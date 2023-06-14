@@ -25,125 +25,35 @@
 
 package net.bdavies.babblebot.plugins;
 
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.api.plugins.ICustomPluginConfig;
-import net.bdavies.babblebot.api.plugins.IPlugin;
-import net.bdavies.babblebot.api.plugins.PluginConfig;
+import lombok.val;
+import net.bdavies.babblebot.api.plugins.IPluginModel;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.function.Supplier;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class PluginConfigParser
 {
+    private final GenericApplicationContext applicationContext;
 
-    public static void parsePlugin(IApplication application, IPlugin settings, Object plugin)
+    @SneakyThrows
+    public <T> void setupPluginConfig(Class<T> pluginConfigClass, IPluginModel pluginModel)
     {
-        Field[] fields = plugin.getClass().getDeclaredFields();
-        Arrays.stream(fields).forEach(field -> {
-            if (field.isAnnotationPresent(PluginConfig.class))
-            {
-                PluginConfig pluginConfig = field.getAnnotationsByType(PluginConfig.class)[0];
-                Class<?> clazz;
-                if (pluginConfig.value() != ICustomPluginConfig.class)
-                {
-                    clazz = pluginConfig.value();
-                } else
-                {
-                    clazz = field.getType();
-                }
-
-                log.info("Parsing Config class: " + clazz.getSimpleName());
-
-                String fileName = "";
-                boolean autoGenerate = true;
-
-                if (clazz.isAnnotationPresent(PluginConfig.Setup.class))
-                {
-                    //Then handle a setup class
-                    PluginConfig.Setup setup = clazz.getAnnotationsByType(PluginConfig.Setup.class)[0];
-                    fileName = settings.getName();
-                    autoGenerate = setup.autoGenerate();
-                } else
-                {
-                    //Handle a interface
-                    try
-                    {
-                        ICustomPluginConfig customPluginConfig = (ICustomPluginConfig) application.get(clazz);
-                        autoGenerate = customPluginConfig.autoGenerateConfig();
-                        fileName = customPluginConfig.fileName();
-                    }
-                    catch (ClassCastException exception)
-                    {
-                        log.error(
-                                "Your config field does meet the type requirements it must either use " +
-                                        "PluginConfig.Setup or implement ICustomPluginConfig...",
-                                exception);
-                        return;
-                    }
-
-                }
-
-                //noinspection ResultOfMethodCallIgnored
-                new File("config").mkdirs();
-                File file = new File("config/" + fileName + ".config.json");
-                if (!file.exists())
-                {
-                    try
-                    {
-                        if (file.createNewFile())
-                        {
-                            if (autoGenerate)
-                            {
-                                FileWriter writer = new FileWriter(file);
-                                writer.write(
-                                        new ObjectMapper().setDefaultPrettyPrinter(new DefaultPrettyPrinter())
-                                                .writeValueAsString(application.get(clazz)));
-                                writer.flush();
-                                writer.close();
-                            }
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                }
-
-                try
-                {
-                    FileReader reader = new FileReader(file);
-
-                    BufferedReader bufferedReader = new BufferedReader(reader);
-
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-
-                    while ((line = bufferedReader.readLine()) != null)
-                    {
-                        stringBuilder.append(line).append("\n");
-                    }
-
-
-                    field.setAccessible(true);
-
-                    field.set(plugin, new ObjectMapper().readValue(stringBuilder.toString(), clazz));
-                }
-                catch (IOException | IllegalAccessException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
+        val mapper = new ObjectMapper();
+        T configObj = mapper.readValue(pluginModel.getConfig(), pluginConfigClass);
+        Supplier<T> supplierObj = () -> configObj;
+        applicationContext.registerBean(pluginModel.getName() + "$$config",
+                pluginConfigClass, supplierObj);
     }
-
 }

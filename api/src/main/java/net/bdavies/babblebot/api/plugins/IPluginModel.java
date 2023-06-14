@@ -45,5 +45,7 @@ public interface IPluginModel extends Serializable
 
     String getClassPath();
 
+    String getConfig();
+
     byte[] getFileData();
 }

@@ -34,6 +34,7 @@ import net.bdavies.babblebot.api.plugins.IPlugin;
 import net.bdavies.babblebot.api.plugins.IPluginModel;
 import net.bdavies.babblebot.api.plugins.Plugin;
 import net.bdavies.babblebot.api.plugins.PluginConfig;
+import net.bdavies.babblebot.plugins.PluginConfigParser;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -66,7 +67,7 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
     public JarClassLoaderStrategy(IApplication application)
     {
         this.application = application;
-        this.jcl = new JarClassLoader(this.getClass().getClassLoader());
+        this.jcl = new JarClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
     @Override
@@ -139,7 +140,14 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                             .getBeanNamesForType(c)).forEach(
                                             applicationContext::removeBeanDefinition);
                                 }
-                                applicationContext.registerBean(c);
+                                if (c.isAnnotationPresent(PluginConfig.class))
+                                {
+                                    application.get(PluginConfigParser.class)
+                                            .setupPluginConfig(c, config);
+                                } else
+                                {
+                                    applicationContext.registerBean(c);
+                                }
                             })
                             .filter(c -> c.isAnnotationPresent(Plugin.class) ||
                                     Arrays.stream(c.getInterfaces()).anyMatch(i -> i == IPlugin.class))
@@ -156,7 +164,7 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
         }
         catch (ClassNotFoundException e)
         {
-            log.info("Plugin cannot be found please check your classpath.");
+            log.info("Plugin cannot be found please check your classpath.", e);
         }
 
         return Flux.empty();
@@ -182,15 +190,12 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
 
     private boolean contains(String s, String s1, List<String> contains)
     {
-        AtomicBoolean b = new AtomicBoolean(false);
+        var b = new AtomicBoolean(false);
 
         contains.forEach(c -> {
-            if (!b.get())
+            if (!b.get() && (s.contains(c) || s1.contains(c)))
             {
-                if (s.contains(c) || s1.contains(c))
-                {
-                    b.set(true);
-                }
+                b.set(true);
             }
         });
 
