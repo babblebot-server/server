@@ -31,11 +31,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Group Annotation for the {@link CommandParam}
+ *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CommandParams {
+public @interface CommandParams
+{
+    /**
+     * All the {@link CommandParam} params
+     *
+     * @return {@link CommandParam}[]
+     */
     CommandParam[] value();
 }

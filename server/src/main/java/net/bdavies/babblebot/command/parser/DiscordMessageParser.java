@@ -32,6 +32,7 @@ import net.bdavies.babblebot.api.command.ICommandContext;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,7 +56,8 @@ public class DiscordMessageParser implements MessageParser
     @Override
     public ICommandContext parseString(String message)
     {
-        return new DiscordCommandContext(parseCommandName(message).toLowerCase(), parseParams(message),
+        return new DiscordCommandContext(parseCommandName(message).toLowerCase(Locale.ROOT),
+                parseParams(message),
                 parseValue(message), "Discord", this.message);
     }
 

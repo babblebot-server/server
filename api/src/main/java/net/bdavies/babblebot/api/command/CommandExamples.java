@@ -31,11 +31,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Group annotation for {@link CommandExample}
+ *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CommandExamples {
+public @interface CommandExamples
+{
+    /**
+     * The command examples array
+     *
+     * @return {@link CommandExample}[]
+     */
     CommandExample[] value();
 }

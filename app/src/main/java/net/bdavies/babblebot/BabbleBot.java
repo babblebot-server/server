@@ -25,6 +25,7 @@
 
 package net.bdavies.babblebot;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
@@ -37,18 +38,9 @@ import org.springframework.context.annotation.Import;
  */
 @SpringBootApplication
 @Import(BabblebotApplication.class)
+@Slf4j
 public class BabbleBot
 {
-
-    /**
-     * Constructs a {@code BabbleBot}
-     * <p>
-     * This constructor is <strong>not</strong> used as this is the entry point for the server.
-     */
-    public BabbleBot()
-    {
-    }
-
     /**
      * BabbleBot Server Entry point
      *

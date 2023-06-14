@@ -26,6 +26,7 @@
 package net.bdavies.babblebot.config;
 
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.bdavies.babblebot.api.config.IConfig;
@@ -39,9 +40,9 @@ import net.bdavies.babblebot.api.config.IConfig;
  */
 
 @Slf4j
+@UtilityClass
 public class ConfigFactory
 {
-
     /**
      * This factory method will create a config from the db
      *

@@ -28,7 +28,7 @@ package net.bdavies.babblebot;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
-import net.bdavies.babblebot.command.CommandContext;
+import net.bdavies.babblebot.command.AbstractCommandContext;
 
 import java.util.Map;
 
@@ -39,7 +39,7 @@ import java.util.Map;
  * @since 3.0.0-rc.14
  */
 @Slf4j
-public class DiscordCommandContext extends CommandContext
+public class DiscordCommandContext extends AbstractCommandContext
 {
     @Getter
     private final DiscordMessage message;

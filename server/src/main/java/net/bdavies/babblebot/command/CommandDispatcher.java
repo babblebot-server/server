@@ -25,8 +25,8 @@
 
 package net.bdavies.babblebot.command;
 
-import discord4j.rest.service.ApplicationService;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.ICommand;
 import net.bdavies.babblebot.api.command.ICommandContext;
@@ -61,9 +61,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class CommandDispatcher implements ICommandDispatcher
 {
+    public static final String NAMESPACE_STR = "Namespace: ";
     /**
      * This is the list of command that can be executed by the dispatcher.
-     * Key: Namespace - e.g. "" which wont require a command prefix
+     * Key: Namespace - e.g. "" which won't require a command prefix
      * e.g. "bb" which would require a bb prefix;
      */
     private final Map<String, List<ICommand>> commands;
@@ -90,7 +91,7 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         if (!commands.containsKey(namespace))
         {
-            log.info("Namespace: " + namespace + " has not been created yet, creating now...");
+            log.info(NAMESPACE_STR + namespace + " has not been created yet, creating now...");
             commands.put(namespace, new ArrayList<>());
         }
         List<ICommand> namespaceCommands = commands.get(namespace);
@@ -110,7 +111,7 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         if (commands.containsKey(namespace))
         {
-            log.info("Namespace: " + namespace + " has already been created.");
+            log.info(NAMESPACE_STR + namespace + " has already been created.");
             log.warn("Plugin with this namespace already exists please consider changing it.");
             commands.get(namespace).addAll(commandsToAdd);
         } else
@@ -125,48 +126,35 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         DiscordFacade facade = application.get(DiscordFacade.class);
         DiscordObjectFactory factory = application.get(DiscordObjectFactory.class);
-        long applicationId = facade.getClient().getRestClient().getApplicationId()
-                .blockOptional().orElseThrow();
+        long applicationId = facade.getClient().getRestClient().getApplicationId().blockOptional()
+                .orElseThrow();
 
-        ApplicationService service = facade.getClient().getRestClient().getApplicationService();
+        var service = facade.getClient().getRestClient().getApplicationService();
 
-        facade.getClient().getGuilds().subscribe(guild -> {
-            commands.forEach(command -> {
-                service.createGuildApplicationCommand(
-                                applicationId,
-                                guild.getId().asLong(),
-                                factory.createSlashCommand(namespace, command)
-                        )
-                        .subscribe();
-            });
-        });
+        facade.getClient().getGuilds().subscribe(guild -> commands.forEach(command ->
+                service.createGuildApplicationCommand(applicationId, guild.getId().asLong(),
+                        factory.createSlashCommand(namespace, command)).subscribe()));
     }
 
     public void removeDiscordSlashCommands(String namespace, List<ICommand> commands,
                                            IApplication application)
     {
         DiscordFacade facade = application.get(DiscordFacade.class);
-        DiscordObjectFactory factory = application.get(DiscordObjectFactory.class);
-        long applicationId = facade.getClient().getRestClient().getApplicationId()
-                .blockOptional().orElseThrow();
+        long applicationId = facade.getClient().getRestClient().getApplicationId().blockOptional()
+                .orElseThrow();
 
-        ApplicationService service = facade.getClient().getRestClient().getApplicationService();
+        var service = facade.getClient().getRestClient().getApplicationService();
 
-        facade.getClient().getGuilds().subscribe(guild -> {
-            service.getGuildApplicationCommands(applicationId, guild.getId().asLong())
-                    .subscribe(applicationCommand -> {
-                        commands.forEach(command -> {
+        facade.getClient().getGuilds().subscribe(guild ->
+                service.getGuildApplicationCommands(applicationId, guild.getId().asLong())
+                        .subscribe(applicationCommand -> commands.forEach(command -> {
                             if (applicationCommand.name()
                                     .equalsIgnoreCase(namespace + command.getAliases()[0]))
                             {
-                                service.deleteGuildApplicationCommand(applicationId,
-                                                guild.getId().asLong(),
-                                                applicationCommand.id().asLong())
-                                        .subscribe();
+                                service.deleteGuildApplicationCommand(applicationId, guild.getId().asLong(),
+                                        applicationCommand.id().asLong()).subscribe();
                             }
-                        });
-                    });
-        });
+                        })));
     }
 
     @Override
@@ -174,7 +162,7 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         if (!commands.containsKey(namespace))
         {
-            log.info("Namespace: " + namespace + " has not been created so you cannot remove it.");
+            log.info(NAMESPACE_STR + namespace + " has not been created so you cannot remove it.");
         } else
         {
             List<ICommand> commandsRemoved = commands.get(namespace);
@@ -191,19 +179,16 @@ public class CommandDispatcher implements ICommandDispatcher
 
     private boolean checkAliases(List<ICommand> namespaceCommands, ICommand command)
     {
-        AtomicBoolean okay = new AtomicBoolean(true);
+        val okay = new AtomicBoolean(true);
         List<String> commandAliases = Arrays.asList(command.getAliases());
         namespaceCommands.forEach(c -> {
             if (okay.get())
             {
                 List<String> namespaceCommandAliases = Arrays.asList(c.getAliases());
                 namespaceCommandAliases.forEach(a -> {
-                    if (okay.get())
+                    if (okay.get() && (commandAliases.contains(a)))
                     {
-                        if (commandAliases.contains(a))
-                        {
-                            okay.set(false);
-                        }
+                        okay.set(false);
                     }
                 });
             }
@@ -221,7 +206,7 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         if (!commands.containsKey(namespace))
         {
-            log.error("Namespace: " + namespace + " has not been created yet, cannot remove command");
+            log.error(NAMESPACE_STR + namespace + " has not been created yet, cannot remove command");
             return;
         }
         List<ICommand> namespaceCommands = commands.get(namespace);
@@ -240,7 +225,7 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         if (!commands.containsKey(namespace))
         {
-            log.error("Namespace: " + namespace + " has not been created yet, cannot get namepsace");
+            log.error(NAMESPACE_STR + namespace + " has not been created yet, cannot get namepsace");
             return Flux.empty();
         }
         return Flux.create(sink -> {
@@ -288,7 +273,7 @@ public class CommandDispatcher implements ICommandDispatcher
         if (commandContext != null)
         {
             log.info("Handling command: " + commandContext.getCommandName());
-            AtomicBoolean canRun = new AtomicBoolean(true);
+            var canRun = new AtomicBoolean(true);
 
             this.middlewareList.get(null).forEach(m -> {
                 if (canRun.get())
@@ -321,21 +306,19 @@ public class CommandDispatcher implements ICommandDispatcher
             }
 
             String commandName = commandContext.getCommandName().replace(namespace, "");
-            AtomicBoolean hasSentMessage = new AtomicBoolean(false);
-            AtomicBoolean hasFoundOne = new AtomicBoolean(false);
+            var hasSentMessage = new AtomicBoolean(false);
+            var hasFoundOne = new AtomicBoolean(false);
 
-            getCommandsFromNamespace(namespace).filter(
-                            e -> checkType(e.getType(), commandContext.getType()))
+            getCommandsFromNamespace(namespace).filter(e -> checkType(e.getType(), commandContext.getType()))
                     .filter(e -> Arrays.stream(e.getAliases())
                             .anyMatch(alias -> alias.equalsIgnoreCase(commandName)))
                     .doOnError(e -> log.error("Error in the command dispatcher.", e)).doOnComplete(() -> {
                         if (!hasFoundOne.get())
                         {
-                            StringBuilder sb = new StringBuilder(
+                            var sb = new StringBuilder(
                                     "```markdown\n# Command Not Found\n\nDid You mean?\n");
                             getCommandsLike(commandName, commandContext.getType()).subscribe(c -> {
-                                sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append(
-                                                "? - ")
+                                sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append("? - ")
                                         .append(c.getDescription()).append("\n");
                                 hasSentMessage.set(true);
                             }, null, () -> {
@@ -358,29 +341,23 @@ public class CommandDispatcher implements ICommandDispatcher
                         }
 
                         c.exec(application, commandContext);
-                        return commandContext.getCommandResponse().getResponses()
-                                .asFlux()
+                        return commandContext.getCommandResponse().getResponses().asFlux()
                                 .log(Loggers.getLogger("CommandResponses"));
-                    })
-                    .cast(BaseResponse.class)
-                    .map(br -> {
+                    }).cast(BaseResponse.class).map(br -> {
                         if (br.isStringResponse())
                         {
-                            return br.toBuilder()
-                                    .stringResponse(new VariableParser(br.getStringResponse(),
-                                            application).toString())
-                                    .build();
+                            return br.toBuilder().stringResponse(
+                                    new VariableParser(br.getStringResponse(), application).toString()).build();
                         }
                         return br;
-                    })
-                    .subscribe(r -> {
+                    }).subscribe(r -> {
                         renderer.render(r);
                         hasSentMessage.set(true);
                     }, e -> {
-                        boolean handled = false;
-                        if (e instanceof Exception)
+                        var handled = false;
+                        if (e instanceof Exception ex)
                         {
-                            handled = renderer.onError((Exception) e);
+                            handled = renderer.onError(ex);
                         }
 
                         if (!handled)
@@ -398,8 +375,7 @@ public class CommandDispatcher implements ICommandDispatcher
     private Flux<ICommand> getCommandsLike(String commandName, String type)
     {
         return Flux.create(sink -> getCommands(type).doOnComplete(sink::complete)
-                .filter(c -> Arrays.stream(c.getAliases())
-                        .anyMatch(a -> a.contains(commandName)))
+                .filter(c -> Arrays.stream(c.getAliases()).anyMatch(a -> a.contains(commandName)))
                 .doOnNext(sink::next).subscribe());
     }
 
@@ -407,7 +383,7 @@ public class CommandDispatcher implements ICommandDispatcher
     {
         AtomicReference<String> namespace = new AtomicReference<>("");
         this.commands.forEach((key, value) -> {
-            if (!checkAliases(value, c) && namespace.get().equals(""))
+            if (!checkAliases(value, c) && "".equals(namespace.get()))
             {
                 namespace.set(key);
             }
@@ -456,11 +432,7 @@ public class CommandDispatcher implements ICommandDispatcher
     @Override
     public void registerPluginMiddleware(IPluginSettings plugin, ICommandMiddleware middleware)
     {
-        if (!middlewareList.containsKey(plugin))
-        {
-            middlewareList.put(plugin, new ArrayList<>());
-        }
-
+        middlewareList.putIfAbsent(plugin, new ArrayList<>());
         middlewareList.get(plugin).add(middleware);
     }
 
@@ -469,12 +441,9 @@ public class CommandDispatcher implements ICommandDispatcher
 
         return Flux.create(sink -> {
             middlewareList.forEach((key, value) -> {
-                if (key != null)
+                if (key != null && (key.getNamespace().equals(namespace)))
                 {
-                    if (key.getNamespace().equals(namespace))
-                    {
-                        value.forEach(sink::next);
-                    }
+                    value.forEach(sink::next);
                 }
             });
             sink.complete();
@@ -491,22 +460,23 @@ public class CommandDispatcher implements ICommandDispatcher
      */
     private boolean checkType(String commandType, String contextType)
     {
-        if (commandType.equals("All"))
+        if ("All".equals(commandType))
         {
             return true;
-        } else if (commandType.toLowerCase().equals(contextType.toLowerCase()))
+        } else if (commandType.equalsIgnoreCase(contextType))
         {
             return true;
         } else if (commandType.contains("|"))
         {
-            String[] types = commandType.split("|");
-            boolean foundType = false;
+            String[] types = commandType.split("\\|");
+            var foundType = false;
 
             for (String type : types)
             {
-                if (type.toLowerCase().equals(contextType.toLowerCase()))
+                if (type.equalsIgnoreCase(contextType))
                 {
                     foundType = true;
+                    break;
                 }
             }
 
@@ -536,13 +506,8 @@ public class CommandDispatcher implements ICommandDispatcher
      */
     public Flux<ICommand> getCommands(String type)
     {
-
         AtomicReference<Flux<ICommand>> commandFlux = new AtomicReference<>(Flux.empty());
-
-        commands.keySet().forEach(k -> {
-            commandFlux.set(commandFlux.get().concatWith(getCommands(k, type)));
-        });
-
+        commands.keySet().forEach(k -> commandFlux.set(commandFlux.get().concatWith(getCommands(k, type))));
         return commandFlux.get();
     }
 }

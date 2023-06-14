@@ -27,12 +27,13 @@ package net.bdavies.babblebot.command;
 
 import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
-import reactor.core.publisher.*;
 import net.bdavies.babblebot.api.command.ICommandResponse;
 import net.bdavies.babblebot.api.command.IResponse;
-import net.bdavies.babblebot.command.response.ResponseHandler;
+import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.babblebot.command.response.ResponseHandlerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -43,11 +44,13 @@ import java.util.function.Consumer;
  * @since 1.2.7
  */
 @Slf4j
-public class CommandResponse implements ICommandResponse {
+public class CommandResponse implements ICommandResponse
+{
 
     private final Sinks.Many<IResponse> processor;
 
-    public CommandResponse() {
+    public CommandResponse()
+    {
         log.info("Constructor");
         processor = Sinks.many().multicast().onBackpressureBuffer();
     }
@@ -71,47 +74,58 @@ public class CommandResponse implements ICommandResponse {
     }
 
     @Override
-    public boolean sendString(String string) {
+    public boolean sendString(String string)
+    {
         return send(string.getClass(), string);
     }
 
     @Override
-    public boolean sendString(Mono<String> string) {
+    public boolean sendString(Mono<String> string)
+    {
         return send(createMonoType(String.class), string);
     }
 
     @Override
-    public boolean sendString(Flux<String> string) {
+    public boolean sendString(Flux<String> string)
+    {
         return send(createFluxType(String.class), string);
     }
 
 
-    private ParameterizedType createFluxType(Type typeOfFlux) {
+    private ParameterizedType createFluxType(Type typeOfFlux)
+    {
         return createType(Flux.class, typeOfFlux);
     }
 
-    private ParameterizedType createMonoType(Type typeOfMono) {
+    private ParameterizedType createMonoType(Type typeOfMono)
+    {
         return createType(Mono.class, typeOfMono);
     }
 
-    private ParameterizedType createEmbedType() {
+    private ParameterizedType createEmbedType()
+    {
         return createType(Consumer.class, EmbedCreateSpec.class);
     }
 
-    private ParameterizedType createType(Type raw, Type arg) {
-        return new ParameterizedType() {
+    private ParameterizedType createType(Type raw, Type arg)
+    {
+        return new ParameterizedType()
+        {
             @Override
-            public Type[] getActualTypeArguments() {
+            public Type[] getActualTypeArguments()
+            {
                 return new Type[]{arg};
             }
 
             @Override
-            public Type getRawType() {
+            public Type getRawType()
+            {
                 return raw;
             }
 
             @Override
-            public Type getOwnerType() {
+            public Type getOwnerType()
+            {
                 return null;
             }
         };
@@ -119,11 +133,13 @@ public class CommandResponse implements ICommandResponse {
 
 
     @Override
-    public boolean send(Type type, Object obj) {
+    public boolean send(Type type, Object obj)
+    {
 
-        ResponseHandler responseHandler = ResponseHandlerFactory.getHandler(type, processor);
+        var responseHandler = ResponseHandlerFactory.getHandler(type, processor);
 
-        if (responseHandler != null) {
+        if (responseHandler != null)
+        {
             responseHandler.handle(obj);
             return true;
         }
@@ -134,7 +150,8 @@ public class CommandResponse implements ICommandResponse {
     }
 
     @Override
-    public Sinks.Many<IResponse> getResponses() {
+    public Sinks.Many<IResponse> getResponses()
+    {
         return processor;
     }
 

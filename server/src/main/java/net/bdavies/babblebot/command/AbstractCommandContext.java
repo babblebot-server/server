@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.command.ICommandContext;
 import net.bdavies.babblebot.api.command.ICommandResponse;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,7 +38,8 @@ import java.util.Map;
  * @since 1.0.0
  */
 @Slf4j
-public abstract class CommandContext implements ICommandContext {
+public abstract class AbstractCommandContext implements ICommandContext
+{
     /**
      * This is the Map for all the command's parameters.
      */
@@ -75,9 +77,11 @@ public abstract class CommandContext implements ICommandContext {
      * @param value       - The value of the command (if any).
      * @param type        - The type of the command.
      */
-    public CommandContext(String commandName, Map<String, String> parameters, String value, String type) {
+    protected AbstractCommandContext(String commandName, Map<String, String> parameters, String value,
+                                     String type)
+    {
         this.commandName = commandName;
-        this.parameters = parameters;
+        this.parameters = new HashMap<>(parameters);
         this.value = value;
         this.type = type;
         commandResponse = new CommandResponse();
@@ -89,10 +93,13 @@ public abstract class CommandContext implements ICommandContext {
      * @param name - The name of the paramater
      * @return String
      */
-    public String getParameter(String name) {
-        if (!parameters.containsKey(name)) {
+    public String getParameter(String name)
+    {
+        if (!parameters.containsKey(name))
+        {
             log.error("Parameter not found.");
-        } else {
+        } else
+        {
             return parameters.get(name);
         }
         return "";
@@ -105,13 +112,15 @@ public abstract class CommandContext implements ICommandContext {
      * @param name - This is the name of the paramater.
      * @return boolean
      */
-    public boolean hasParameter(String name) {
+    public boolean hasParameter(String name)
+    {
         return parameters.containsKey(name);
     }
 
     @Override
-    public boolean hasNonEmptyParameter(String name) {
-        return hasParameter(name) && !getParameter(name).equals("");
+    public boolean hasNonEmptyParameter(String name)
+    {
+        return hasParameter(name) && !"".equals(getParameter(name));
     }
 
 
@@ -120,7 +129,8 @@ public abstract class CommandContext implements ICommandContext {
      *
      * @return String
      */
-    public String getCommandName() {
+    public String getCommandName()
+    {
         return commandName;
     }
 
@@ -129,7 +139,8 @@ public abstract class CommandContext implements ICommandContext {
      *
      * @return String
      */
-    public String getValue() {
+    public String getValue()
+    {
         return value;
     }
 
@@ -138,12 +149,14 @@ public abstract class CommandContext implements ICommandContext {
      *
      * @return String
      */
-    public String getType() {
+    public String getType()
+    {
         return type;
     }
 
     @Override
-    public ICommandResponse getCommandResponse() {
+    public ICommandResponse getCommandResponse()
+    {
         return commandResponse;
     }
 }

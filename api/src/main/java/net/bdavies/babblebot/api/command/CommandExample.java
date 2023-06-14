@@ -28,12 +28,20 @@ package net.bdavies.babblebot.api.command;
 import java.lang.annotation.*;
 
 /**
+ * This annotation will add an example for the help command
+ *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(CommandExamples.class)
-public @interface CommandExample {
+public @interface CommandExample
+{
+    /**
+     * The example to be displayed; supports markdown
+     *
+     * @return string
+     */
     String value();
 }

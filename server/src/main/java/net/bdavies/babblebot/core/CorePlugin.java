@@ -113,10 +113,10 @@ public class CorePlugin implements IPluginEvents
         log.info("All Ignores: {}", ignoreRepo.findAll());
         log.info("All Announcement Channels: {}", announcementChannelRepo.findAll());
         commandDispatcher.registerGlobalMiddleware(context -> {
-            if (context instanceof DiscordCommandContext)
+            if (context instanceof DiscordCommandContext dctx)
             {
                 return ignoreRepo
-                        .findByChannel(((DiscordCommandContext) context).getMessage().getChannel())
+                        .findByChannel((dctx).getMessage().getChannel())
                         .isEmpty() || "listen".equals(context.getCommandName());
             }
 
@@ -160,7 +160,7 @@ public class CorePlugin implements IPluginEvents
                     .sendString("Channel is already ignored, so cancelling command.");
         } else
         {
-            Ignore newIgnore = new Ignore();
+            var newIgnore = new Ignore();
             newIgnore.setChannel(message.getChannel());
             newIgnore.setIgnoredBy(message.getAuthor());
             newIgnore.setGuild(message.getGuild());
@@ -192,7 +192,7 @@ public class CorePlugin implements IPluginEvents
             }
         } else
         {
-            AnnouncementChannel channel = new AnnouncementChannel();
+            var channel = new AnnouncementChannel();
             channel.setGuild(g);
             val c = message.getChannel();
             channel.setChannel(c);
@@ -263,7 +263,7 @@ public class CorePlugin implements IPluginEvents
             return Mono.just(() -> {
                 EmbedMessage spec = EmbedMessage.builder().build();
                 spec.setTimestamp(Instant.now());
-                AtomicBoolean hasFoundCommand = new AtomicBoolean(false);
+                var hasFoundCommand = new AtomicBoolean(false);
                 String namespace = commandDispatcher.getNamespaceFromCommandName(command);
                 String alias = command.replace(namespace, "");
                 log.info(command);
@@ -299,8 +299,8 @@ public class CorePlugin implements IPluginEvents
                                     "```", false);
 
                             spec.addField("Usage", "```\n" + cmd.getUsage() + "\n```", false);
-                            StringBuilder examples = new StringBuilder("```md\n");
-                            AtomicInteger index = new AtomicInteger(1);
+                            var examples = new StringBuilder("```md\n");
+                            var index = new AtomicInteger(1);
                             Arrays.stream(cmd.getExamples()).forEach(e -> examples.append("[")
                                     .append(index.getAndIncrement())
                                     .append("]: ")

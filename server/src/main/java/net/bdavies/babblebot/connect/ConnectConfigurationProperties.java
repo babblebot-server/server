@@ -44,9 +44,9 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class ConnectConfigurationProperties
 {
-    private boolean useConnect = false;
+    private boolean useConnect;
     private boolean leader = true;
-    private boolean worker = false;
+    private boolean worker;
     private RabbitMQConfig rabbitmq;
 
     @PostConstruct

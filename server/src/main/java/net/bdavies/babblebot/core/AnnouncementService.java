@@ -69,7 +69,7 @@ public class AnnouncementService implements IAnnouncementService
                 .subscribe(g -> g.getChannelById(Snowflake.of(ac.getChannel().getId().toLong()))
                         .cast(TextChannel.class)
                         .subscribe(ch -> {
-                            DiscordCommandRenderer renderer = new DiscordCommandRenderer(ch, application);
+                            var renderer = new DiscordCommandRenderer(ch, application);
                             val em = EmbedMessage.builder()
                                     .title(title)
                                     .description("```\n" + message + "```")

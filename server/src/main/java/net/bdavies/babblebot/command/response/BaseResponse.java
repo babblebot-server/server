@@ -62,6 +62,6 @@ public class BaseResponse implements IResponse
     @Override
     public boolean isStringResponse()
     {
-        return stringResponse != null && !stringResponse.equals("");
+        return stringResponse != null && !"".equals(stringResponse);
     }
 }

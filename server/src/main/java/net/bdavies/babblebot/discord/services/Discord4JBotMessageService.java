@@ -52,8 +52,6 @@ import net.bdavies.babblebot.discord.obj.factories.DiscordObjectFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
@@ -78,20 +76,19 @@ public class Discord4JBotMessageService
     {
         if (connectConfig.isLeader())
         {
-            AtomicBoolean hasSentMessage = new AtomicBoolean(false);
             service.getClient().getEventDispatcher().on(MessageCreateEvent.class).subscribe(
                     e -> Mono.justOrEmpty(e.getMessage().getContent())
                             .filter(m -> m.startsWith(config.getCommandPrefix())).filterWhen(
                                     m -> e.getMessage().getAuthorAsMember().map(User::isBot)
                                             .map(isBot -> !isBot)).subscribe(m -> {
                                 CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
-                                long g = e.getMessage().getGuild().map(gld -> gld.getId().asLong())
+                                var g = e.getMessage().getGuild().map(gld -> gld.getId().asLong())
                                         .blockOptional().orElseThrow();
-                                long ch = e.getMessage().getChannel().map(chl -> chl.getId().asLong())
+                                var ch = e.getMessage().getChannel().map(chl -> chl.getId().asLong())
                                         .blockOptional().orElseThrow();
-                                long author = e.getMessage().getAuthor().orElseThrow().getId().asLong();
-                                long msgId = e.getMessage().getId().asLong();
-                                String msg = m.replace(config.getCommandPrefix(), "");
+                                var author = e.getMessage().getAuthor().orElseThrow().getId().asLong();
+                                var msgId = e.getMessage().getId().asLong();
+                                var msg = m.replace(config.getCommandPrefix(), "");
 
                                 val discordMessage = buildMessage(g, ch, author, msgId, msg, "");
                                 val dmp = new DiscordMessageParser(discordMessage);
@@ -116,13 +113,13 @@ public class Discord4JBotMessageService
 
             service.getClient().getEventDispatcher().on(ChatInputInteractionEvent.class).subscribe(e -> {
                 CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
-                long g = e.getInteraction().getGuild().map(gld -> gld.getId().asLong()).blockOptional()
+                var g = e.getInteraction().getGuild().map(gld -> gld.getId().asLong()).blockOptional()
                         .orElseThrow();
-                long ch = e.getInteraction().getChannel().map(chl -> chl.getId().asLong()).blockOptional()
+                var ch = e.getInteraction().getChannel().map(chl -> chl.getId().asLong()).blockOptional()
                         .orElseThrow();
-                long author = e.getInteraction().getUser().getId().asLong();
-                long msgId = e.getInteraction().getId().asLong();
-                StringBuilder msg = new StringBuilder(e.getCommandName());
+                var author = e.getInteraction().getUser().getId().asLong();
+                var msgId = e.getInteraction().getId().asLong();
+                var msg = new StringBuilder(e.getCommandName());
                 e.getOptions().forEach(o -> {
                     msg.append(" -").append(o.getName());
                     if (o.getValue().isPresent())
