@@ -40,7 +40,7 @@ import java.util.List;
  * Embedded Message Dto as a Response
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.15
+ * @since 3.0.0-rc.16
  */
 @Slf4j
 @Data

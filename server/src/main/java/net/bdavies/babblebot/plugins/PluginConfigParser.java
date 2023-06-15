@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.15
+ * @since 3.0.0-rc.16
  */
 @Slf4j
 @Service

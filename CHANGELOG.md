@@ -1,3 +1,10 @@
+# [3.0.0-rc.16](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.15...v3.0.0-rc.16) (2023-06-15)
+
+
+### Bug Fixes
+
+* Add bb server as output for plugins ([5aeac1d](https://github.com/bendavies99/BabbleBot-Server/commit/5aeac1d14e55a2f504ce712bfb4c4b9ddb50f315))
+
 # [3.0.0-rc.15](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.14...v3.0.0-rc.15) (2023-06-14)
 
 # [3.0.0-rc.14](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.13...v3.0.0-rc.14) (2023-06-13)
