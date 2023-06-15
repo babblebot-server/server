@@ -38,7 +38,7 @@ import java.io.Serializable;
  * An Object for the DiscordId
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.16
+ * @since 3.0.0-rc.17
  */
 @Slf4j
 @Data

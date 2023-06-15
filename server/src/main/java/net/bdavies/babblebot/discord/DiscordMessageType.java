@@ -29,7 +29,7 @@ import java.io.Serializable;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.16
+ * @since 3.0.0-rc.17
  */
 public enum DiscordMessageType implements Serializable
 {

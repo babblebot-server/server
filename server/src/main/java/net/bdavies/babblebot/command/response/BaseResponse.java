@@ -37,7 +37,7 @@ import java.util.function.Supplier;
  * Base Response Class
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.16
+ * @since 3.0.0-rc.17
  */
 @Slf4j
 @Data

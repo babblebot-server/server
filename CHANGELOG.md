@@ -1,3 +1,10 @@
+# [3.0.0-rc.17](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.16...v3.0.0-rc.17) (2023-06-15)
+
+
+### Bug Fixes
+
+* make sure bb server doesn't add plain ([b9f11b4](https://github.com/bendavies99/BabbleBot-Server/commit/b9f11b45af03c1c4d9798ff57b1bddf51b79fb14))
+
 # [3.0.0-rc.16](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.15...v3.0.0-rc.16) (2023-06-15)
 
 
