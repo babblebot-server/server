@@ -91,7 +91,7 @@ subprojects {
     if (!isJitpack && isRelease) apply plugin: 'signing'
 
     project.afterEvaluate {
-        if (project.name != "server" && project.name != "app") {
+        if (project.name != "app") {
             task javadocJar(type: Jar) {
                 dependsOn project.tasks.javadoc
                 from project.tasks.javadoc.destinationDir
