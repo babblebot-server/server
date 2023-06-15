@@ -17,6 +17,7 @@ configurations {
 
 jar {
     dependsOn createProperties
+    archiveClassifier = ''
 }
 
 repositories {
