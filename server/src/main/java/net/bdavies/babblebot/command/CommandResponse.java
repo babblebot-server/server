@@ -25,7 +25,6 @@
 
 package net.bdavies.babblebot.command;
 
-import discord4j.core.spec.EmbedCreateSpec;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.command.ICommandResponse;
 import net.bdavies.babblebot.api.command.IResponse;
@@ -104,7 +103,7 @@ public class CommandResponse implements ICommandResponse
 
     private ParameterizedType createEmbedType()
     {
-        return createType(Consumer.class, EmbedCreateSpec.class);
+        return createType(Consumer.class, EmbedMessage.class);
     }
 
     private ParameterizedType createType(Type raw, Type arg)
