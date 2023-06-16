@@ -1,3 +1,10 @@
+# [3.0.0-rc.18](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.17...v3.0.0-rc.18) (2023-06-16)
+
+
+### Bug Fixes
+
+* issue with with sending embedded messages ([472ff4b](https://github.com/bendavies99/BabbleBot-Server/commit/472ff4bbffebf9ba564ebf2440e38bec3ebfe9d9))
+
 # [3.0.0-rc.17](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.16...v3.0.0-rc.17) (2023-06-15)
 
 

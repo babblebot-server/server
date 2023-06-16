@@ -29,7 +29,7 @@ package net.bdavies.babblebot.api.util;
  * A Function that is Exceptional
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.17
+ * @since 3.0.0-rc.18
  */
 @FunctionalInterface
 public interface FunctionEx<I, R>

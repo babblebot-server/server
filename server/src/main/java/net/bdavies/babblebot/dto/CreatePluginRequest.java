@@ -37,7 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
  * Create plugin request DTO
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.17
+ * @since 3.0.0-rc.18
  */
 @Slf4j
 @Data
