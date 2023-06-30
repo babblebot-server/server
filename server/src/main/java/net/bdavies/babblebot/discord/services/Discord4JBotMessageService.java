@@ -120,34 +120,36 @@ public class Discord4JBotMessageService
                 var author = e.getInteraction().getUser().getId().asLong();
                 var msgId = e.getInteraction().getId().asLong();
                 var msg = new StringBuilder(e.getCommandName());
-                e.getOptions().forEach(o -> {
-                    msg.append(" -").append(o.getName());
-                    if (o.getValue().isPresent())
+                e.deferReply().then(Mono.create(a -> {
+                    e.getOptions().forEach(o -> {
+                        msg.append(" -").append(o.getName());
+                        if (o.getValue().isPresent())
+                        {
+                            msg.append("=").append(o.getValue().get().getRaw());
+                        }
+                    });
+
+                    val discordMessage = buildMessage(g, ch, author, msgId, msg.toString(),
+                            e.getInteraction().getToken());
+                    val dmp = new DiscordMessageParser(discordMessage);
+
+                    if (!connectConfig.isUseConnect() || connectConfig.isWorker())
                     {
-                        msg.append("=").append(o.getValue().get().getRaw());
+                        val renderer = new DiscordInteractionEventRenderer(
+                                application.get(GatewayDiscordClient.class), discordMessage,
+                                e.getInteraction().getChannel().cast(TextChannel.class).blockOptional()
+                                        .orElseThrow(), application);
+                        cd.execute(dmp, msg.toString(), application, renderer);
+                    } else
+                    {
+                        DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);
+                        log.info("Sending message: {} to worker", discordMessage);
+                        connectQueue.send(DiscordConnectMessage.builder()
+                                .type(DiscordMessageType.INTERACTION)
+                                .message(discordMessage)
+                                .build());
                     }
-                });
-
-                val discordMessage = buildMessage(g, ch, author, msgId, msg.toString(),
-                        e.getInteraction().getToken());
-                val dmp = new DiscordMessageParser(discordMessage);
-
-                if (!connectConfig.isUseConnect() || connectConfig.isWorker())
-                {
-                    val renderer = new DiscordInteractionEventRenderer(
-                            application.get(GatewayDiscordClient.class), discordMessage,
-                            e.getInteraction().getChannel().cast(TextChannel.class).blockOptional()
-                                    .orElseThrow(), application);
-                    cd.execute(dmp, msg.toString(), application, renderer);
-                } else
-                {
-                    DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);
-                    log.info("Sending message: {} to worker", discordMessage);
-                    connectQueue.send(DiscordConnectMessage.builder()
-                            .type(DiscordMessageType.INTERACTION)
-                            .message(discordMessage)
-                            .build());
-                }
+                })).subscribe();
             });
         }
     }

@@ -56,4 +56,11 @@ public class PluginConfigParser
         applicationContext.registerBean(pluginModel.getName() + "$$config",
                 pluginConfigClass, supplierObj);
     }
+
+    @SneakyThrows
+    public String pluginConfigToString(Object pluginConfig)
+    {
+        val mapper = new ObjectMapper();
+        return mapper.writeValueAsString(pluginConfig);
+    }
 }

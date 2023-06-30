@@ -28,10 +28,9 @@ package net.bdavies.babblebot.command.renderer;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
-import discord4j.discordjson.json.InteractionResponseData;
-import discord4j.discordjson.possible.Possible;
-import discord4j.rest.util.InteractionResponseType;
+import discord4j.core.spec.InteractionFollowupCreateSpec;
+import discord4j.discordjson.json.FollowupMessageRequest;
+import discord4j.rest.util.MultipartRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -64,31 +63,30 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
     {
         if (response.isStringResponse())
         {
-            reply(InteractionApplicationCommandCallbackSpec.create()
+            reply(InteractionFollowupCreateSpec.create()
                     .withContent(response.getStringResponse())).subscribe();
         } else
         {
             EmbedMessage em = response.getEmbedCreateSpecResponse().get();
             EmbedMessageFactory.addDefaults(em, application, channel.getGuild());
             EmbedCreateSpec spec = EmbedMessageFactory.fromBabblebot(em);
-            reply(InteractionApplicationCommandCallbackSpec.builder()
+            reply(InteractionFollowupCreateSpec.builder()
                     .addEmbed(spec)
                     .build()).subscribe();
         }
     }
 
-    private Mono<Void> reply(InteractionApplicationCommandCallbackSpec spec)
+    private Mono<Void> reply(InteractionFollowupCreateSpec spec)
     {
         val data = spec.asRequest();
-        InteractionResponseType type = InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE;
-        InteractionResponseData responseData = InteractionResponseData.builder()
-                .type(type.getValue())
-                .data(Possible.of(data.getJsonPayload()))
+        FollowupMessageRequest newBody = FollowupMessageRequest.builder()
+                .from(data.getJsonPayload())
                 .build();
-
-        return client.getRestClient().getInteractionService()
-                .createInteractionResponse(message.getId().toLong(), message.getToken(),
-                        data.withRequest(responseData));
+        val appInfo = client.getApplicationInfo().blockOptional().orElseThrow();
+        return client.getRestClient().getWebhookService()
+                .executeWebhook(appInfo.getId().asLong(), message.getToken(), true,
+                        MultipartRequest.ofRequest(newBody))
+                .flatMap(m -> Mono.empty());
     }
 
     @Override

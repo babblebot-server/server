@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PluginConfig
 {
