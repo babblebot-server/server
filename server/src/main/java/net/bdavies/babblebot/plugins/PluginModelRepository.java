@@ -34,7 +34,7 @@ import java.util.Optional;
  * Plugin Model Repository {@link PluginModel}
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.21
+ * @since 3.0.0-rc.22
  */
 @Repository
 public interface PluginModelRepository extends JpaRepository<PluginModel, Long>

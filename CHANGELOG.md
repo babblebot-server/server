@@ -1,3 +1,10 @@
+# [3.0.0-rc.22](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.21...v3.0.0-rc.22) (2023-06-30)
+
+
+### Bug Fixes
+
+* loading plugins ([94715a7](https://github.com/bendavies99/BabbleBot-Server/commit/94715a7c9dd5afbab4f6768d10308e2c1e60e93f))
+
 # [3.0.0-rc.21](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.20...v3.0.0-rc.21) (2023-06-30)
 
 

@@ -47,7 +47,7 @@ import reactor.core.publisher.Mono;
  * Renderer for an Interaction event from Discord
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.21
+ * @since 3.0.0-rc.22
  */
 @Slf4j
 @RequiredArgsConstructor
