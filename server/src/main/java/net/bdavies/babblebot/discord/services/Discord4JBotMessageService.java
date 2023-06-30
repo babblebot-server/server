@@ -125,7 +125,7 @@ public class Discord4JBotMessageService
                         msg.append(" -").append(o.getName());
                         if (o.getValue().isPresent())
                         {
-                            msg.append("=").append(o.getValue().get().getRaw());
+                            msg.append("=").append("\"").append(o.getValue().get().getRaw()).append("\"");
                         }
                     });
 
