@@ -149,8 +149,7 @@ public class DiscordMessageParser implements MessageParser
      */
     private Matcher getParameterMatcher(String message)
     {
-        String parameterRegex = " -([a-zA-Z0-9]+)=(([a-zA-Z0-9:/?=&_.\\-]+)|(\"([a-zA-Z0-9:/?=&_.\\-]+)\"))";
-
+        String parameterRegex = "-([a-zA-Z0-9]+)=(([a-zA-Z0-9:\\/?=&_.\\- ]+)|(\"([a-zA-Z0-9:\\/?=&_.\\- ]+)\"))";
         Pattern pattern = Pattern.compile(parameterRegex);
 
         return pattern.matcher(message);
