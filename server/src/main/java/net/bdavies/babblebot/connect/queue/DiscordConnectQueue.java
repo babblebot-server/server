@@ -41,7 +41,7 @@ import java.util.function.Consumer;
  * Discord Connect Queue
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.20
+ * @since 3.0.0-rc.21
  */
 @ConnectQueue
 @Slf4j

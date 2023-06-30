@@ -34,7 +34,7 @@ import java.util.function.Consumer;
  * Connect Client that will handle receiving messages
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.20
+ * @since 3.0.0-rc.21
  */
 public interface ConnectClient
 {

@@ -37,7 +37,7 @@ import java.io.Serializable;
  * A Dto for a received message on the queue
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.20
+ * @since 3.0.0-rc.21
  */
 @Slf4j
 @Data

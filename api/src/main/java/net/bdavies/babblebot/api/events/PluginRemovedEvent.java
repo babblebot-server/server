@@ -36,7 +36,7 @@ import java.util.UUID;
  * plugin
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.20
+ * @since 3.0.0-rc.21
  */
 @Slf4j
 @RequiredArgsConstructor

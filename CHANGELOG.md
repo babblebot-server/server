@@ -1,3 +1,11 @@
+# [3.0.0-rc.21](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.20...v3.0.0-rc.21) (2023-06-30)
+
+
+### Bug Fixes
+
+* command parsing for slash commands ([2069981](https://github.com/bendavies99/BabbleBot-Server/commit/20699810daa043236c66e4c7bde0aca4b129cb4c))
+* loading entities from plugins ([45b1bac](https://github.com/bendavies99/BabbleBot-Server/commit/45b1bacf0333ae30c019b8e09a888f3372209bf1))
+
 # [3.0.0-rc.20](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.19...v3.0.0-rc.20) (2023-06-30)
 
 
