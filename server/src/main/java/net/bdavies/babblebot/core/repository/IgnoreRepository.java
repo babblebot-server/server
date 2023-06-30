@@ -36,7 +36,7 @@ import java.util.Optional;
  * Repository for the Ignore Entity
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.19
+ * @since 3.0.0-rc.20
  */
 @Repository
 public interface IgnoreRepository extends JpaRepository<Ignore, Long>

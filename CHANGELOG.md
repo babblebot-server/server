@@ -1,3 +1,10 @@
+# [3.0.0-rc.20](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.19...v3.0.0-rc.20) (2023-06-30)
+
+
+### Bug Fixes
+
+* command parameter parsing ([1db417c](https://github.com/bendavies99/BabbleBot-Server/commit/1db417c8c57e26cadc6f605d506ebbee212d1023))
+
 # [3.0.0-rc.19](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.18...v3.0.0-rc.19) (2023-06-30)
 
 

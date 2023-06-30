@@ -31,7 +31,7 @@ import java.io.Serializable;
  * Connect Queue Interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.19
+ * @since 3.0.0-rc.20
  */
 public interface IConnectQueueResponse<T extends Serializable, R extends Serializable> extends
         IConnectQueue<T>
