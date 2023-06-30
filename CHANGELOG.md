@@ -1,3 +1,10 @@
+# [3.0.0-rc.19](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.18...v3.0.0-rc.19) (2023-06-30)
+
+
+### Bug Fixes
+
+* use deferred replies ([3162f14](https://github.com/bendavies99/BabbleBot-Server/commit/3162f14f576cf67b3f6405a01b603ecbd04102b3))
+
 # [3.0.0-rc.18](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.17...v3.0.0-rc.18) (2023-06-16)
 
 

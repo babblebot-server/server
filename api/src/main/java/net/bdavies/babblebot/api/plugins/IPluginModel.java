@@ -31,7 +31,7 @@ import java.io.Serializable;
  * Plugin model Interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.18
+ * @since 3.0.0-rc.19
  */
 public interface IPluginModel extends Serializable
 {
