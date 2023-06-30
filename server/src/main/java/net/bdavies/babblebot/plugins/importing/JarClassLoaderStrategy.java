@@ -120,9 +120,12 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                             (GenericApplicationContext) bbApp.getApplicationContext();
                                     if (applicationContext.getBeanNamesForType(c).length > 0)
                                     {
-                                        Arrays.stream(applicationContext
-                                                .getBeanNamesForType(c)).forEach(
-                                                applicationContext::removeBeanDefinition);
+                                        if (repositoryClasses.stream().noneMatch(rc -> rc.equals(c)))
+                                        {
+                                            Arrays.stream(applicationContext
+                                                    .getBeanNamesForType(c)).forEach(
+                                                    applicationContext::removeBeanDefinition);
+                                        }
                                     }
                                     if (c.isAnnotationPresent(PluginConfig.class))
                                     {
@@ -168,7 +171,6 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                 new LocalContainerEntityManagerFactoryBean();
         entityManagerFactoryBean.setJpaVendorAdapter(application.get(JpaVendorAdapter.class));
         entityManagerFactoryBean.setDataSource(application.get(DataSource.class));
-        log.info("{}", jcl.getLoadedClasses());
         entityManagerFactoryBean.setResourceLoader(new DefaultResourceLoader(jcl));
         entityManagerFactoryBean.setPersistenceProviderClass(
                 HibernatePersistenceProvider.class);
@@ -255,8 +257,8 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                 return null;
                             } else
                             {
-                                log.error("Failed to load class: " + c +
-                                        ", please contact the plugin maintainer.", e);
+//                                log.error("Failed to load class: " + c +
+//                                        ", please contact the plugin maintainer.", e);
                             }
                             return null;
                         }

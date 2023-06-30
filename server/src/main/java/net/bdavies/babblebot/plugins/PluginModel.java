@@ -27,10 +27,7 @@ package net.bdavies.babblebot.plugins;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.plugins.IPluginModel;
@@ -67,6 +64,7 @@ public class PluginModel implements IPluginModel
 
     @Lob
     @JsonIgnore
+    @ToString.Exclude
     private byte[] fileData;
 
     public String getNamespace()
