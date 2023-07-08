@@ -25,16 +25,15 @@
 
 package net.bdavies.babblebot.command.renderer;
 
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.core.spec.MessageCreateSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.IResponse;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.bdavies.babblebot.api.discord.DiscordMessageSendSpec;
+import net.bdavies.babblebot.api.discord.IDiscordMessagingService;
+import net.bdavies.babblebot.command.ResponseFactory;
 import net.bdavies.babblebot.command.errors.UsageException;
-import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
 
 /**
  * Discord Command Renderer that will send the response to the channel
@@ -47,29 +46,29 @@ import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
 public class DiscordCommandRenderer implements CommandRenderer
 {
     private final TextChannel channel;
-    private final IApplication application;
+    private final Guild guild;
+    private final IDiscordMessagingService service;
 
     @Override
     public void render(IResponse response)
     {
+        long guildId = guild.getId().asLong();
+        long channelId = channel.getId().asLong();
         if (response.isStringResponse())
         {
-            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
-                    .content(response.getStringResponse())
-                    .tts(false)
-                    .build())).subscribe();
+            service.send(guildId, channelId,
+                            DiscordMessageSendSpec.fromString(response.getStringResponse()))
+                    .subscribe();
         } else if (response.isTTSResponse())
         {
-            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
-                    .content(response.getTTSMessage().getContent())
-                    .tts(true)
-                    .build())).subscribe();
+            service.send(guildId, channelId,
+                            DiscordMessageSendSpec.fromTts(response.getTTSMessage().getContent()))
+                    .subscribe();
         } else
         {
-            EmbedMessage em = response.getEmbedCreateSpecResponse().get();
-            EmbedMessageFactory.addDefaults(em, application, channel.getGuild());
-            EmbedCreateSpec spec = EmbedMessageFactory.fromBabblebot(em);
-            channel.typeUntil(channel.createMessage(spec)).subscribe();
+            service.send(guildId, channelId,
+                            DiscordMessageSendSpec.fromEmbed(response.getEmbedCreateSpecResponse().get()))
+                    .subscribe();
         }
     }
 
@@ -78,7 +77,7 @@ public class DiscordCommandRenderer implements CommandRenderer
     {
         if (e instanceof UsageException)
         {
-            channel.createMessage(e.getMessage()).subscribe();
+            render(ResponseFactory.createStringResponse(e.getLocalizedMessage()));
             return true;
         }
 

@@ -32,6 +32,7 @@ import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.IResponse;
 import net.bdavies.babblebot.api.core.IAnnouncementService;
+import net.bdavies.babblebot.api.discord.IDiscordMessagingService;
 import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.babblebot.command.ResponseFactory;
 import net.bdavies.babblebot.command.renderer.DiscordCommandRenderer;
@@ -69,7 +70,8 @@ public class AnnouncementService implements IAnnouncementService
                 .subscribe(g -> g.getChannelById(Snowflake.of(ac.getChannel().getId().toLong()))
                         .cast(TextChannel.class)
                         .subscribe(ch -> {
-                            var renderer = new DiscordCommandRenderer(ch, application);
+                            var renderer = new DiscordCommandRenderer(ch, g, application.get(
+                                    IDiscordMessagingService.class));
                             val em = EmbedMessage.builder()
                                     .title(title)
                                     .description("```\n" + message + "```")

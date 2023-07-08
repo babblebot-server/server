@@ -23,38 +23,55 @@
  *
  */
 
-package net.bdavies.babblebot.api.obj.message.discord;
+package net.bdavies.babblebot.api.discord;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.SuperBuilder;
+import lombok.Singular;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.obj.message.Message;
+import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 
-import java.io.Serializable;
+import java.util.List;
 
 /**
- * Discord Message Object for the Command Context
+ * Sending spec for a DiscordMessage
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
 @Data
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder
+@Builder(toBuilder = true)
 @Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class DiscordMessage extends Message implements Serializable
+@Slf4j
+public final class DiscordMessageSendSpec
 {
-    private final DiscordId id;
-    private final DiscordGuild guild;
-    private final DiscordChannel channel;
-    private final DiscordUser author;
-    private final String token;
+    @Singular("addEmbed")
+    private final List<EmbedMessage> embeds;
     @Builder.Default
-    private final boolean isPrivateMessage = false;
+    private final String content = "";
+    @Builder.Default
+    private final boolean tts = false;
+
+    public static DiscordMessageSendSpec fromString(String content)
+    {
+        return DiscordMessageSendSpec.builder()
+                .content(content)
+                .build();
+    }
+
+    public static DiscordMessageSendSpec fromEmbed(EmbedMessage embedMessage)
+    {
+        return DiscordMessageSendSpec.builder()
+                .addEmbed(embedMessage)
+                .build();
+    }
+
+    public static DiscordMessageSendSpec fromTts(String content)
+    {
+        return DiscordMessageSendSpec.builder()
+                .content(content)
+                .tts(true)
+                .build();
+    }
 }

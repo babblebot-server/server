@@ -28,13 +28,10 @@ package net.bdavies.babblebot.plugins;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.DiscordCommandContext;
 import net.bdavies.babblebot.api.IApplication;
-import net.bdavies.babblebot.api.IDiscordCommandUtil;
 import net.bdavies.babblebot.api.command.*;
 import net.bdavies.babblebot.api.config.IConfig;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 import net.bdavies.babblebot.api.plugins.IPluginSettings;
-import net.bdavies.babblebot.discord.DiscordCommandUtil;
-import net.bdavies.babblebot.discord.DiscordFacade;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -172,13 +169,6 @@ public final class PluginCommandParser
                 if (isDiscordCommandContext(commandContext))
                 {
                     objs.add(((DiscordCommandContext) commandContext).getMessage());
-                }
-            } else if (t.equals(IDiscordCommandUtil.class))
-            {
-                if (isDiscordCommandContext(commandContext))
-                {
-                    objs.add(new DiscordCommandUtil((DiscordCommandContext)
-                            commandContext, application.get(DiscordFacade.class)));
                 }
             } else
             {

@@ -28,6 +28,7 @@ package net.bdavies.babblebot.discord.services;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.ICommandDispatcher;
 import net.bdavies.babblebot.api.config.IDiscordConfig;
+import net.bdavies.babblebot.api.discord.IDiscordMessagingService;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordId;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
 import net.bdavies.babblebot.command.CommandDispatcher;
@@ -94,7 +96,9 @@ public class Discord4JBotMessageService
                                 val dmp = new DiscordMessageParser(discordMessage);
                                 val renderer = new DiscordCommandRenderer(
                                         e.getMessage().getChannel().cast(TextChannel.class).blockOptional()
-                                                .orElseThrow(), application);
+                                                .orElseThrow(),
+                                        e.getMessage().getGuild().blockOptional().orElseThrow(),
+                                        application.get(IDiscordMessagingService.class));
 
                                 if (!connectConfig.isUseConnect() || connectConfig.isWorker())
                                 {
@@ -137,8 +141,8 @@ public class Discord4JBotMessageService
                     {
                         val renderer = new DiscordInteractionEventRenderer(
                                 application.get(GatewayDiscordClient.class), discordMessage,
-                                e.getInteraction().getChannel().cast(TextChannel.class).blockOptional()
-                                        .orElseThrow(), application);
+                                application,
+                                application.get(IDiscordMessagingService.class));
                         cd.execute(dmp, msg.toString(), application, renderer);
                     } else
                     {
@@ -165,12 +169,16 @@ public class Discord4JBotMessageService
                 DiscordMessage message = cm.getMessage();
                 TextChannel channel = discordObjectFactory.channelFromBabbleBot(message.getGuild(),
                         message.getChannel()).blockOptional().orElseThrow();
-                CommandRenderer renderer = new DiscordCommandRenderer(channel, application);
+                Guild guild = discordObjectFactory.guildFromBabbleBot(message.getGuild()).blockOptional()
+                        .orElseThrow();
+                CommandRenderer renderer = new DiscordCommandRenderer(channel, guild,
+                        application.get(IDiscordMessagingService.class));
                 if (cm.getType() == DiscordMessageType.INTERACTION)
                 {
                     GatewayDiscordClient discordClient = application.get(GatewayDiscordClient.class);
-                    renderer = new DiscordInteractionEventRenderer(discordClient, cm.getMessage(), channel,
-                            application);
+                    renderer = new DiscordInteractionEventRenderer(discordClient, cm.getMessage(),
+                            application,
+                            application.get(IDiscordMessagingService.class));
                 }
                 cd.execute(messageParser, cm.getMessage().getContent(), application, renderer);
             });

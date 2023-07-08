@@ -28,17 +28,16 @@ package net.bdavies.babblebot.discord.obj.factories;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.bdavies.babblebot.api.command.CommandParam;
 import net.bdavies.babblebot.api.command.ICommand;
-import net.bdavies.babblebot.api.obj.message.discord.DiscordChannel;
-import net.bdavies.babblebot.api.obj.message.discord.DiscordGuild;
-import net.bdavies.babblebot.api.obj.message.discord.DiscordId;
-import net.bdavies.babblebot.api.obj.message.discord.DiscordUser;
+import net.bdavies.babblebot.api.obj.message.discord.*;
 import net.bdavies.babblebot.discord.DiscordFacade;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -65,9 +64,29 @@ public class DiscordObjectFactory
         this.discordFacade = discordFacade;
     }
 
-    private Mono<Guild> guildFromBabbleBot(DiscordGuild guild)
+    public Mono<Guild> guildFromBabbleBot(DiscordGuild guild)
     {
         return discordFacade.getClient().getGuildById(Snowflake.of(guild.getId().toLong()));
+    }
+
+    public Mono<Message> messageFromBabblebot(DiscordMessage message)
+    {
+        val messageSnowflake = Snowflake.of(message.getId().toLong());
+        if (message.isPrivateMessage())
+        {
+            val guildSnowflake = Snowflake.of(message.getGuild().getId().toLong());
+            val userSnowflake = Snowflake.of(message.getAuthor().getId().toLong());
+            return discordFacade.getClient()
+                    .getMemberById(guildSnowflake, userSnowflake)
+                    .flatMap(User::getPrivateChannel)
+                    .flatMap(pc -> pc.getMessageById(messageSnowflake));
+        }
+
+        val channelSnowflake = Snowflake.of(message.getChannel().getId().toLong());
+        return guildFromBabbleBot(message.getGuild())
+                .flatMap(g -> g.getChannelById(channelSnowflake))
+                .cast(TextChannel.class)
+                .flatMap(ch -> ch.getMessageById(messageSnowflake));
     }
 
     public Optional<DiscordGuild> guildFromId(DiscordId id)
@@ -103,7 +122,7 @@ public class DiscordObjectFactory
                 .blockOptional();
     }
 
-    private Mono<User> userFromBabblebot(DiscordUser user)
+    public Mono<User> userFromBabblebot(DiscordUser user)
     {
         return discordFacade.getClient()
                 .getUserById(Snowflake.of(user.getId().toLong()));

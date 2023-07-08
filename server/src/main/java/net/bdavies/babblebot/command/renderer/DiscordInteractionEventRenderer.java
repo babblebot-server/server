@@ -26,10 +26,7 @@
 package net.bdavies.babblebot.command.renderer;
 
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionFollowupCreateSpec;
-import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.FollowupMessageRequest;
 import discord4j.rest.util.MultipartRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.bdavies.babblebot.api.IApplication;
 import net.bdavies.babblebot.api.command.IResponse;
+import net.bdavies.babblebot.api.discord.DiscordMessageSendSpec;
+import net.bdavies.babblebot.api.discord.IDiscordMessagingService;
 import net.bdavies.babblebot.api.obj.message.discord.DiscordMessage;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.bdavies.babblebot.command.ResponseFactory;
 import net.bdavies.babblebot.command.errors.UsageException;
-import net.bdavies.babblebot.discord.obj.factories.EmbedMessageFactory;
 import reactor.core.publisher.Mono;
 
 /**
@@ -56,8 +53,8 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
 {
     private final GatewayDiscordClient client;
     private final DiscordMessage message;
-    private final TextChannel channel;
     private final IApplication application;
+    private final IDiscordMessagingService service;
     private boolean replied;
 
     @Override
@@ -69,30 +66,25 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
                     .content("--------------------")
                     .build()).subscribe();
 
-            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
-                            .content(response.getStringResponse())
-                            .tts(false)
-                            .build()))
+            service.send(message.getGuild(), message.getChannel(),
+                            DiscordMessageSendSpec.fromString(response.getStringResponse()))
                     .subscribe();
         } else if (response.isTTSResponse())
         {
             reply(InteractionFollowupCreateSpec.builder()
                     .content("--------------------")
                     .build()).subscribe();
-            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
-                            .content(response.getTTSMessage().getContent())
-                            .tts(true)
-                            .build()))
+            service.send(message.getGuild(), message.getChannel(),
+                            DiscordMessageSendSpec.fromTts(response.getTTSMessage().getContent()))
                     .subscribe();
         } else
         {
-            EmbedMessage em = response.getEmbedCreateSpecResponse().get();
-            EmbedMessageFactory.addDefaults(em, application, channel.getGuild());
-            EmbedCreateSpec spec = EmbedMessageFactory.fromBabblebot(em);
             reply(InteractionFollowupCreateSpec.builder()
                     .content("--------------------")
                     .build()).subscribe();
-            channel.typeUntil(channel.createMessage(spec)).subscribe();
+            service.send(message.getGuild(), message.getChannel(),
+                            DiscordMessageSendSpec.fromEmbed(response.getEmbedCreateSpecResponse().get()))
+                    .subscribe();
         }
     }
 
