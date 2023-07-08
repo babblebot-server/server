@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * Exception for when the Discord token has not been set
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since 3.0.0-rc.23
  */
 @Slf4j
 public class DiscordTokenNotPresentException extends RuntimeException

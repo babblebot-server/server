@@ -31,7 +31,7 @@ import java.io.Serializable;
  * Babblebot Event interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since 3.0.0-rc.23
  */
 public interface IEvent extends Serializable
 {

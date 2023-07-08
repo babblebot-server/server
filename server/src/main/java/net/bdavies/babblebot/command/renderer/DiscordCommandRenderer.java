@@ -39,7 +39,7 @@ import net.bdavies.babblebot.command.errors.UsageException;
  * Discord Command Renderer that will send the response to the channel
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since 3.0.0-rc.23
  */
 @Slf4j
 @RequiredArgsConstructor

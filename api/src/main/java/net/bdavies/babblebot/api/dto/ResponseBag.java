@@ -38,7 +38,7 @@ import java.util.UUID;
  * Generic Response for a Rest Request
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since 3.0.0-rc.23
  */
 @Slf4j
 @Data

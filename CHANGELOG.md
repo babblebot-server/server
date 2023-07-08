@@ -1,3 +1,11 @@
+# [3.0.0-rc.23](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.22...v3.0.0-rc.23) (2023-07-08)
+
+
+### Features
+
+* add new messaging api ([c1a54e8](https://github.com/bendavies99/BabbleBot-Server/commit/c1a54e8b6e270da2a4b206884e4e5160928a4f4d))
+* Add TTS support ([9bffe54](https://github.com/bendavies99/BabbleBot-Server/commit/9bffe5486c35b784f6e205e0ebdf90e24b373318))
+
 # [3.0.0-rc.22](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.21...v3.0.0-rc.22) (2023-06-30)
 
 

@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * Message object for sending tts messages
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.23
  */
 @Slf4j
 @Data

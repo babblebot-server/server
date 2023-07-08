@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
  * Service for sending messages through discord to a channel or a private message
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.23
  */
 @Slf4j
 @Service

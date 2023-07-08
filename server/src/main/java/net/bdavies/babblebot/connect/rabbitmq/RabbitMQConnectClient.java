@@ -45,7 +45,7 @@ import java.util.function.Consumer;
  * RabbitMQServer implementation of the server
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since 3.0.0-rc.23
  */
 @Slf4j
 @Service
