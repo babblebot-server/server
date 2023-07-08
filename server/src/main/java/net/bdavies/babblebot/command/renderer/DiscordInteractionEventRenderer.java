@@ -29,6 +29,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionFollowupCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.FollowupMessageRequest;
 import discord4j.rest.util.MultipartRequest;
 import lombok.RequiredArgsConstructor;
@@ -57,36 +58,61 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
     private final DiscordMessage message;
     private final TextChannel channel;
     private final IApplication application;
+    private boolean replied;
 
     @Override
     public void render(IResponse response)
     {
         if (response.isStringResponse())
         {
-            reply(InteractionFollowupCreateSpec.create()
-                    .withContent(response.getStringResponse())).subscribe();
+            reply(InteractionFollowupCreateSpec.builder()
+                    .content("--------------------")
+                    .build()).subscribe();
+
+            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
+                            .content(response.getStringResponse())
+                            .tts(false)
+                            .build()))
+                    .subscribe();
+        } else if (response.isTTSResponse())
+        {
+            reply(InteractionFollowupCreateSpec.builder()
+                    .content("--------------------")
+                    .build()).subscribe();
+            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
+                            .content(response.getTTSMessage().getContent())
+                            .tts(true)
+                            .build()))
+                    .subscribe();
         } else
         {
             EmbedMessage em = response.getEmbedCreateSpecResponse().get();
             EmbedMessageFactory.addDefaults(em, application, channel.getGuild());
             EmbedCreateSpec spec = EmbedMessageFactory.fromBabblebot(em);
             reply(InteractionFollowupCreateSpec.builder()
-                    .addEmbed(spec)
+                    .content("--------------------")
                     .build()).subscribe();
+            channel.typeUntil(channel.createMessage(spec)).subscribe();
         }
     }
 
     private Mono<Void> reply(InteractionFollowupCreateSpec spec)
     {
+        if (replied)
+        {
+            return Mono.empty();
+        }
         val data = spec.asRequest();
         FollowupMessageRequest newBody = FollowupMessageRequest.builder()
                 .from(data.getJsonPayload())
                 .build();
-        val appInfo = client.getApplicationInfo().blockOptional().orElseThrow();
-        return client.getRestClient().getWebhookService()
-                .executeWebhook(appInfo.getId().asLong(), message.getToken(), true,
-                        MultipartRequest.ofRequest(newBody))
-                .flatMap(m -> Mono.empty());
+        return client.getApplicationInfo()
+                .flatMap(appInfo -> client.getRestClient().getWebhookService()
+                        .executeWebhook(appInfo.getId().asLong(), message.getToken(), true,
+                                MultipartRequest.ofRequest(newBody))
+                        .onErrorComplete()
+                        .doOnNext(d -> replied = true)
+                        .flatMap(m -> Mono.empty()));
     }
 
     @Override

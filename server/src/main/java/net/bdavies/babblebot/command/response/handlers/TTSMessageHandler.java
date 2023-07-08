@@ -23,50 +23,31 @@
  *
  */
 
-package net.bdavies.babblebot.command;
+package net.bdavies.babblebot.command.response.handlers;
 
-import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.command.IResponse;
 import net.bdavies.babblebot.api.obj.message.discord.TTSMessage;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
-import net.bdavies.babblebot.command.response.BaseResponse;
+import net.bdavies.babblebot.command.ResponseFactory;
+import net.bdavies.babblebot.command.response.ResponseHandler;
+import reactor.core.publisher.Sinks;
 
-import java.util.function.Supplier;
+import java.lang.reflect.Type;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
-@Slf4j
-public class ResponseFactory
+public class TTSMessageHandler extends ResponseHandler
 {
 
-    public static IResponse createResponse(String s, Supplier<EmbedMessage> spec, TTSMessage ttsMessage)
+    public TTSMessageHandler(Type type, Sinks.Many<IResponse> processor)
     {
-        return BaseResponse.builder()
-                .stringResponse(s)
-                .ttsMessage(ttsMessage)
-                .embedMessageResponse(spec)
-                .build();
+        super(type, processor);
     }
 
-    public static IResponse createStringResponse(String s)
+    @Override
+    protected <T> IResponse getResponse(T o)
     {
-        return createResponse(s, null, null);
-    }
-
-    public static IResponse createTTSResponse(TTSMessage s)
-    {
-        return createResponse("", null, s);
-    }
-
-    public static IResponse createEmbedResponse(EmbedMessage s)
-    {
-        return createResponse("", () -> s, null);
-    }
-
-    public static IResponse createEmbedResponse(Supplier<EmbedMessage> s)
-    {
-        return createResponse("", s, null);
+        return ResponseFactory.createTTSResponse((TTSMessage) o);
     }
 }

@@ -25,6 +25,7 @@
 
 package net.bdavies.babblebot.api.command;
 
+import net.bdavies.babblebot.api.obj.message.discord.TTSMessage;
 import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
 
 import java.util.function.Supplier;
@@ -33,11 +34,16 @@ import java.util.function.Supplier;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.2.7
  */
-public interface IResponse {
+public interface IResponse
+{
 
     String getStringResponse();
+
+    TTSMessage getTTSMessage();
 
     Supplier<EmbedMessage> getEmbedCreateSpecResponse();
 
     boolean isStringResponse();
+
+    boolean isTTSResponse();
 }

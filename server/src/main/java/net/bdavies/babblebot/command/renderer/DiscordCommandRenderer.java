@@ -27,6 +27,7 @@ package net.bdavies.babblebot.command.renderer;
 
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bdavies.babblebot.api.IApplication;
@@ -53,7 +54,16 @@ public class DiscordCommandRenderer implements CommandRenderer
     {
         if (response.isStringResponse())
         {
-            channel.createMessage(response.getStringResponse()).subscribe();
+            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
+                    .content(response.getStringResponse())
+                    .tts(false)
+                    .build())).subscribe();
+        } else if (response.isTTSResponse())
+        {
+            channel.typeUntil(channel.createMessage(MessageCreateSpec.builder()
+                    .content(response.getTTSMessage().getContent())
+                    .tts(true)
+                    .build())).subscribe();
         } else
         {
             EmbedMessage em = response.getEmbedCreateSpecResponse().get();

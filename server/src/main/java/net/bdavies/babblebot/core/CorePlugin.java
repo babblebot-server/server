@@ -92,8 +92,8 @@ import java.util.function.Supplier;
  */
 @Slf4j
 @Plugin(author = "Ben Davies <me@bdavies.net>")
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class CorePlugin implements IPluginEvents
 {
     private final ICommandDispatcher commandDispatcher;

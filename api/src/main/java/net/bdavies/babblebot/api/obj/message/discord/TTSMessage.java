@@ -23,59 +23,20 @@
  *
  */
 
-package net.bdavies.babblebot.command.response;
+package net.bdavies.babblebot.api.obj.message.discord;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import net.bdavies.babblebot.api.command.IResponse;
-import net.bdavies.babblebot.api.obj.message.discord.TTSMessage;
-import net.bdavies.babblebot.api.obj.message.discord.embed.EmbedMessage;
-
-import java.util.function.Supplier;
 
 /**
- * Base Response Class
+ * Message object for sending tts messages
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.22
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 @Data
-@Builder(toBuilder = true)
-public class BaseResponse implements IResponse
+public class TTSMessage
 {
-    private final String stringResponse;
-    private final Supplier<EmbedMessage> embedMessageResponse;
-    private final TTSMessage ttsMessage;
-
-    @Override
-    public String getStringResponse()
-    {
-        return stringResponse;
-    }
-
-    @Override
-    public TTSMessage getTTSMessage()
-    {
-        return ttsMessage;
-    }
-
-    @Override
-    public Supplier<EmbedMessage> getEmbedCreateSpecResponse()
-    {
-        return embedMessageResponse;
-    }
-
-    @Override
-    public boolean isStringResponse()
-    {
-        return stringResponse != null && !"".equals(stringResponse);
-    }
-
-    @Override
-    public boolean isTTSResponse()
-    {
-        return ttsMessage != null;
-    }
+    private final String content;
 }
