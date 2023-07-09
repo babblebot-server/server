@@ -1,15 +1,13 @@
-<p align="center"><img src="https://socialify.git.ci/bendavies99/Babblebot-Server/image?description=1&font=Source%20Code%20Pro&language=1&owner=0&pattern=Floating%20Cogs&theme=Dark" alt="BabbleBot-Server" width="640" height="320" /></p>  
+<p align="center"><img src="https://socialify.git.ci/babblebot-server/server/image?description=1&font=Source%20Code%20Pro&language=1&owner=0&pattern=Floating%20Cogs&theme=Dark" alt="BabbleBot-Server" width="640" height="320" /></p>  
 
 <p align="center">  
- <a href="https://github.com/bendavies99/BabbleBot-Server/actions"><img src="https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build" alt="Build Status"></a>  
- <a href="https://www.codacy.com/gh/bendavies99/BabbleBot-Server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9" alt="Coverage Status"></a>  
- <a href="https://github.com/bendavies99/BabbleBot-Server/releases"><img src="https://img.shields.io/github/v/release/bendavies99/Babblebot-Server" alt="Version"></a>  
- <a href="https://github.com/bendavies99/BabbleBot-Server/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bendavies99/babblebot-server" alt="License"></a>  
+ <a href="https://github.com/babblebot-server/server/actions"><img src="https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build" alt="Build Status"></a>  
+ <a href="https://www.codacy.com/gh/babblebot-server/server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bendavies99/BabbleBot-Server&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9" alt="Coverage Status"></a>  
+ <a href="https://github.com/babblebot-server/server/releases"><img src="https://img.shields.io/github/v/release/bendavies99/Babblebot-Server" alt="Version"></a>  
+ <a href="https://github.com/babblebot-server/server/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bendavies99/babblebot-server" alt="License"></a>  
  <a href="https://discord.gg/uUdX9pw"><img src="https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord" alt="Chat"></a>  
  <br>  
- <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-api"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-api/javadoc.svg?label=API%20Javadoc" alt="API Javadoc"></a>  
- <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-db"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-db/javadoc.svg?label=DB%20Javadoc" alt="DB Javadoc"></a>  
- <a href="https://javadoc.io/doc/co.uk.bjdavies/babblebot-server-web"><img src="https://javadoc.io/badge2/co.uk.bjdavies/babblebot-server-web/javadoc.svg?label=Web%20Javadoc" alt="Web Javadoc"></a>  
+ <a href="https://javadoc.io/doc/net.babblebot/babblebot-server-api"><img src="https://javadoc.io/badge2/net.babblebot/babblebot-server-api/javadoc.svg?label=API%20Javadoc" alt="API Javadoc"></a>  
 </p>  
 
 ## Table of Contents
@@ -72,49 +70,49 @@ NOTE: The emoji "🚧" means that the current features are under heavy developme
 version: '2.8'
 
 volumes:
-  db-data:
-  plugins:
+    db-data:
+    plugins:
 
 networks:
-  bb:
+    bb:
 
 services:
-  db:
-    container_name: db
-    image: postgres:latest
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: 'password-goes-here'
-      POSTGRES_USER: 'dbadmin'
-      POSTGRES_DB: 'babblebot'
-    ports:
-      - "5432:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - bb
-  babblebot-server:
-    container_name: babblebot-server
-    image: bendavies99/babblebot-server:latest
-    restart: unless-stopped
-    environment:
-      spring.datasource.driver-class-name: 'org.postgresql.Driver'
-      spring.datasource.url: 'jdbc:postgresql://db/babblebot'
-      spring.datasource.username: 'dbadmin'
-      spring.datasource.password: 'password-goes-here'
-      spring.jpa.hibernate.ddl-auto: 'update'
-      DISCORD_TOKEN: 'token-goes-here'
-    volumes:
-        - plugins:/workspace/plugins
-    ports:
-      - "21132:8080"
-    networks:
-      - bb
+    db:
+        container_name: db
+        image: postgres:latest
+        restart: unless-stopped
+        environment:
+            POSTGRES_PASSWORD: 'password-goes-here'
+            POSTGRES_USER: 'dbadmin'
+            POSTGRES_DB: 'babblebot'
+        ports:
+            - "5432:5432"
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            - bb
+    babblebot-server:
+        container_name: babblebot-server
+        image: babblebot/server:latest
+        restart: unless-stopped
+        environment:
+            spring.datasource.driver-class-name: 'org.postgresql.Driver'
+            spring.datasource.url: 'jdbc:postgresql://db/babblebot'
+            spring.datasource.username: 'dbadmin'
+            spring.datasource.password: 'password-goes-here'
+            spring.jpa.hibernate.ddl-auto: 'update'
+            DISCORD_TOKEN: 'token-goes-here'
+        volumes:
+            - plugins:/workspace/plugins
+        ports:
+            - "21132:8080"
+        networks:
+            - bb
 ```
 
 ## Configuration
 
-Please look at this configuration guide [here](https://github.com/bendavies99/BabbleBot-Server/wiki/Configuration)
+Please look at this configuration guide [here](https://github.com/babblebot-server/server/wiki/Configuration)
 
 ## Updating
 
@@ -148,7 +146,7 @@ Plugins Offer:
 |------|-------------|------|-----------|
 
 If you wish to have your plugin displayed here please create a
-discussion [here](https://github.com/bendavies99/BabbleBot-Server/discussions)
+discussion [here](https://github.com/babblebot-server/server/discussions)
 
 ### Installing Plugins
 
@@ -177,7 +175,7 @@ Steps to install a plugin:
 ### Write your own plugin
 
 If you wish to write your own plugin please follow this
-guide [here](https://github.com/bendavies99/BabbleBot-Server/wiki/Creating-A-Plugin)
+guide [here](https://github.com/babblebot-server/server/wiki/Creating-A-Plugin)
 
 ## Commands
 
@@ -196,7 +194,7 @@ server will have:
 ## Contributing
 
 Firstly, Thank you for taking the time to contribute to Babblebot if you wish to contribute please read the contributing
-guide [here](https://github.com/bendavies99/babblebot-server/blob/master/CONTRIBUTING.md)
+guide [here](https://github.com/babblebot-server/server/blob/master/CONTRIBUTING.md)
 
 ## Authors
 
@@ -204,7 +202,7 @@ guide [here](https://github.com/bendavies99/babblebot-server/blob/master/CONTRIB
 
 Currently, there is only me working on Babblebot, but it's always open for new ideas and contributions!
 
-See also the list of [contributors](https://github.com/bendavies99/babblebot-server/contributors) who participated in
+See also the list of [contributors](https://github.com/babblebot-server/server/contributors) who participated in
 this project.
 
 ## License

@@ -55,5 +55,10 @@ jobs :
           echo "VERSION=$(grep -E 'version\s*=\s*([a-zA-Z0-9\-\.]+)' ./gradle.properties | cut -d ' ' -f3)" >> $GITHUB_ENV
       - name : Docker Push
         run : |
-          docker tag babblebot-server:${{ env.VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/babblebot-server:${{ env.VERSION }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/babblebot-server:${{ env.VERSION }}
+          docker tag babblebot-server:${{ env.VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/server:${{ env.VERSION }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/server:${{ env.VERSION }}
+      - name : Docker Push Latest
+        if : github.ref == 'refs/heads/dev'
+        run : |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/server:${{ env.VERSION }} ${{ secrets.DOCKERHUB_USERNAME }}/server:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/server:latest

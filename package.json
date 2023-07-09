@@ -1,12 +1,12 @@
 {
   "repository" : {
     "type" : "git",
-    "url" : "git+https://github.com/bendavies99/BabbleBot-Server.git"
+    "url" : "git+https://github.com/babblebot-server/server.git"
   },
   "bugs" : {
-    "url" : "https://github.com/bendavies99/BabbleBot-Server/issues"
+    "url" : "https://github.com/babblebot-server/server/issues"
   },
-  "homepage" : "https://github.com/bendavies99/BabbleBot-Server#readme",
+  "homepage" : "https://github.com/babblebot-server/server#readme",
   "devDependencies" : {
     "@semantic-release/changelog" : "^5.0.1",
     "@semantic-release/commit-analyzer" : "^8.0.1",

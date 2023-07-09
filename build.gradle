@@ -10,12 +10,12 @@ plugins {
 group 'net.bdavies'
 
 ext {
-    //Project Contants
+    //Project Constants
     project_name = "BabbleBot-Server"
-    artifact_group = 'net.bdavies'
+    artifact_group = 'net.babblebot'
     project_version = "$version".toString()
     project_description = "A fully modular bot for Discord using Discord4j as the back-end"
-    project_url = 'https://babblebot.bdavies.net'
+    project_url = 'https://babblebot.net'
     project_jdk = JavaVersion.VERSION_17
     jdk = JavaVersion.current().majorVersion
     jdk_javadoc = "https://docs.oracle.com/javase/$jdk/docs/api/".toString()
@@ -109,7 +109,7 @@ subprojects {
                 repositories {
                     maven {
                         name = "GitHubPackages"
-                        url = uri("https://maven.pkg.github.com/bendavies99/Babblebot-Server")
+                        url = uri("https://maven.pkg.github.com/babblebot-server/server")
                         credentials {
                             username = "bendavies99"
                             password = System.getenv("GH_TOKEN")
@@ -134,22 +134,22 @@ subprojects {
                         pom {
                             name = "babblebot-server-$project.name"
                             description = 'A fully modular bot for Discord using Discord4j as the back-end'
-                            url = 'https://github.com/bendavies99/BabbleBot-Server'
+                            url = 'https://github.com/babblebot-server/server'
                             issueManagement {
                                 system = 'GitHub'
-                                url = 'https://github.com/bendavies99/BabbleBot-Server/issues'
+                                url = 'https://github.com/babblebot-server/server/issues'
                             }
                             licenses {
                                 license {
                                     name = 'MIT'
-                                    url = 'https://github.com/bendavies99/BabbleBot-Server/LICENSE.md'
+                                    url = 'https://github.com/babblebot-server/server/LICENSE.md'
                                     distribution = 'repo'
                                 }
                             }
                             scm {
-                                url = 'https://github.com/bendavies99/BabbleBot-Server'
-                                connection = 'scm:git:git://github.com/bendavies99/BabbleBot-Server.git'
-                                developerConnection = 'scm:git:ssh://git@github.com:bendavies99/BabbleBot-Server.git'
+                                url = 'https://github.com/babblebot-server/server'
+                                connection = 'scm:git:git://github.com/babblebot-server/server.git'
+                                developerConnection = 'scm:git:ssh://git@github.com:babblebot-server/server.git'
                             }
                             developers {
                                 developer {
