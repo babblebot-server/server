@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
  * Plugin Service layer
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.23
+ * @since 3.0.0-rc.24
  */
 @Slf4j
 @Service

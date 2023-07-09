@@ -1,3 +1,10 @@
+# [3.0.0-rc.24](https://github.com/babblebot-server/server/compare/v3.0.0-rc.23...v3.0.0-rc.24) (2023-07-09)
+
+
+### Bug Fixes
+
+* release branch config ([bd19531](https://github.com/babblebot-server/server/commit/bd19531d240a2e73f272cd7c77460a063cf355f4))
+
 # [3.0.0-rc.23](https://github.com/bendavies99/BabbleBot-Server/compare/v3.0.0-rc.22...v3.0.0-rc.23) (2023-07-08)
 
 
