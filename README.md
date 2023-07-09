@@ -7,6 +7,7 @@
  <a href="https://github.com/babblebot-server/server/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bendavies99/babblebot-server" alt="License"></a>  
  <a href="https://discord.gg/uUdX9pw"><img src="https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord" alt="Chat"></a>  
  <br>  
+ <a href="https://jitpack.io/#net.babblebot/server"><img src="https://jitpack.io/v/net.babblebot/server.svg" alt="Jitpack badge"></a>  
  <a href="https://javadoc.io/doc/net.babblebot/babblebot-server-api"><img src="https://javadoc.io/badge2/net.babblebot/babblebot-server-api/javadoc.svg?label=API%20Javadoc" alt="API Javadoc"></a>  
 </p>  
 
