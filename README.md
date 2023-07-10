@@ -2,7 +2,7 @@
 
 <p align="center">  
  <a href="https://github.com/babblebot-server/server/actions"><img src="https://action-badges.now.sh/bendavies99/Babblebot-Server?action=build" alt="Build Status"></a>  
- <a href="https://www.codacy.com/gh/babblebot-server/server/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=babblebot-server/server&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/e3a344a5c508491096ca105b27e92ed9" alt="Coverage Status"></a>  
+ <a href="https://app.codacy.com/gh/babblebot-server/server/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/4a3e186e56b44261b6632944801b6987"/></a>
  <a href="https://github.com/babblebot-server/server/releases"><img src="https://img.shields.io/github/v/release/bendavies99/Babblebot-Server" alt="Version"></a>  
  <a href="https://github.com/babblebot-server/server/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bendavies99/babblebot-server" alt="License"></a>  
  <a href="https://discord.gg/uUdX9pw"><img src="https://img.shields.io/discord/409004433750360090?color=7289da&label=Babblebot&logo=discord" alt="Chat"></a>  
