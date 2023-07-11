@@ -1,3 +1,10 @@
+# [3.0.0-rc.25](https://github.com/babblebot-server/server/compare/v3.0.0-rc.24...v3.0.0-rc.25) (2023-07-11)
+
+
+### Bug Fixes
+
+* Base packages names ([9647f7f](https://github.com/babblebot-server/server/commit/9647f7f18383265265bf6842fd26f7cd9cc6ffc0))
+
 # [3.0.0-rc.24](https://github.com/babblebot-server/server/compare/v3.0.0-rc.23...v3.0.0-rc.24) (2023-07-09)
 
 

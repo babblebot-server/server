@@ -44,7 +44,7 @@ public interface ICommandResponse
      * Respond with a {@link EmbedMessage}
      *
      * @param embed the embed message to send
- * @since 3.0.0-rc.24
+ * @since 3.0.0-rc.25
      */
     boolean sendEmbed(EmbedMessage embed);
 
@@ -52,7 +52,7 @@ public interface ICommandResponse
      * Respond with a {@link EmbedMessage} using a {@link  Mono}
      *
      * @param embed the embed message to send
- * @since 3.0.0-rc.24
+ * @since 3.0.0-rc.25
      */
     boolean sendEmbed(Mono<EmbedMessage> embed);
 
@@ -60,7 +60,7 @@ public interface ICommandResponse
      * Respond with a {@link EmbedMessage} using a {@link  Flux}
      *
      * @param embed the embed message to send
- * @since 3.0.0-rc.24
+ * @since 3.0.0-rc.25
      */
     boolean sendEmbed(Flux<EmbedMessage> embed);
 

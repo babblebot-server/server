@@ -32,7 +32,7 @@ import reactor.core.publisher.Flux;
  * Babblebot Event Dispatcher
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.24
+ * @since 3.0.0-rc.25
  */
 @Component
 public interface IEventDispatcher
