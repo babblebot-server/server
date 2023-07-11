@@ -88,7 +88,7 @@ public class EventDispatcher implements IEventDispatcher
      */
     public <T extends IEvent> void onPriority(Class<T> clazz, Consumer<T> consumer)
     {
-        if (!consumer.getClass().getPackageName().startsWith("net.bdavies.babblebot"))
+        if (!consumer.getClass().getPackageName().startsWith("net.babblebot"))
         {
             log.error("You cannot set a priority event outside main babblebot");
             return;

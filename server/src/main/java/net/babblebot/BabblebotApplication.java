@@ -76,7 +76,7 @@ import java.util.concurrent.Executors;
 @Component
 @Getter
 @ComponentScan(includeFilters = {@ComponentScan.Filter(ConnectQueue.class)},
-        basePackages = {"net.bdavies.babblebot", "net.bdavies.babblebot.api"})
+        basePackages = {"net.babblebot", "net.babblebot.api"})
 public final class BabblebotApplication implements IApplication
 {
     private static Class<?> mainClass;

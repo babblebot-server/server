@@ -7,7 +7,7 @@ plugins {
     id 'idea'
 }
 
-group 'net.bdavies'
+group 'net.babblebot'
 
 ext {
     //Project Constants
