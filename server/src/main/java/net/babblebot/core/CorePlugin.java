@@ -31,13 +31,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.DiscordCommandContext;
+import net.babblebot.api.command.*;
 import net.babblebot.core.repository.AnnouncementChannelRepository;
 import net.babblebot.core.repository.IgnoreRepository;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.command.Command;
-import net.babblebot.api.command.CommandParam;
-import net.babblebot.api.command.ICommandContext;
-import net.babblebot.api.command.ICommandDispatcher;
 import net.babblebot.api.config.IDiscordConfig;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedAuthor;
@@ -246,7 +243,7 @@ public class CorePlugin implements IPluginEvents
     }
 
     @Command(description = "This will help you to discover all the commands and their features.",
-            type = "All",
+            type = CommandType.ALL,
             exampleValue = "ignore")
     @CommandParam(value = "cmd", canBeEmpty = false,
             exampleValue = "ignore")

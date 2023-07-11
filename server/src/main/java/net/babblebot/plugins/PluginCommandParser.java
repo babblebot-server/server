@@ -108,7 +108,7 @@ public final class PluginCommandParser
                         @Override
                         public String getType()
                         {
-                            return command.type();
+                            return command.type().name();
                         }
 
                         @Override

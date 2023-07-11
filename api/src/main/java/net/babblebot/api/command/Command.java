@@ -26,20 +26,25 @@
 package net.babblebot.api.command;
 
 
+import net.babblebot.api.plugins.Plugin;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This is used for plugins and will be used for a method
- * Return types valid for a function are:-
- * String,
- * Mono<String>
- * Mono<EmbedSpec>
- * Flux<String>
+ * A {@link Command} annotates a {@link Plugin} member function to declare
+ * to the {@link ICommandDispatcher} to register the function as command to be
+ * used when receiving messages from the Message Supplier
+ * <p>
+ * There is several other annotations that communicate to the {@link ICommandDispatcher} how
+ * the {@link Command} should look:-
+ * <p>
+ * {@link CommandExample}
+ * {@link CommandParam}
  *
- * @author ben.davies99@outlook.com (Ben Davies)
+ * @author me@bdavies.net (Ben Davies)
  * @since 1.0.0
  */
 @Target({ElementType.METHOD})
@@ -47,38 +52,47 @@ import java.lang.annotation.Target;
 public @interface Command
 {
     /**
-     * The aliases of the command.
+     * An array of aliases that the {@link Command} will use that can be used as
+     * shorthands so the user doesn't have to type out the full command
      *
-     * @return String[]
+     * @return {@link String}[]
      */
     String[] aliases() default {};
 
-
     /**
-     * The Description for the command.
+     * The description for the {@link Command} will be used in the
+     * help command provided by the CorePlugin
      *
-     * @return String
+     * @return {@link String}
      */
     String description() default "";
 
     /**
-     * This determines where the command requires a value or not
+     * A {@link Command} that requires a value must present
+     * a bit of text outside the parameter context so for example:-
+     * <p>
+     * !help test
+     * <p>
+     * "test" would be the value here, you can use this to ensure a command passes in the value
      *
      * @return boolean
      */
     boolean requiresValue() default false;
 
     /**
-     * This will be used for the examples generator.
+     * As explained in {@link #requiresValue()} the value is outside the parameter context and as part
+     * of the help command in the CorePlugin it will look at this for an example value for this
+     * {@link Command}
      *
-     * @return String
+     * @return {@link String}
      */
     String exampleValue() default "";
 
     /**
-     * The type of command (Terminal, Discord, All).
+     * A {@link CommandType} that will determine how this command is handled
+     * by the {@link ICommandDispatcher}
      *
-     * @return String
+     * @return {@link CommandType}
      */
-    String type() default "Discord";
+    CommandType type() default CommandType.DISCORD;
 }
