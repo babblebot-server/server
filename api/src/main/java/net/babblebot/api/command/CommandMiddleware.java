@@ -23,20 +23,23 @@
  *
  */
 
-package net.babblebot.api.obj.message.discord;
+package net.babblebot.api.command;
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Message object for sending tts messages
+ * Command Middleware
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-@Data
-public class TTSMessage
+
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface CommandMiddleware
 {
-    private final String content;
+    boolean global() default false;
 }
