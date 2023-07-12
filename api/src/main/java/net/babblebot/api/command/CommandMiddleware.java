@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * Command Middleware
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.26
  */
 
 @Target({ElementType.METHOD})

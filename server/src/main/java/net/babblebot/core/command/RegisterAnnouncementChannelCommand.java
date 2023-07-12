@@ -41,7 +41,7 @@ import java.util.Optional;
  * Listen Command for the Core Plugin
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.26
  */
 @Slf4j
 @RequiredArgsConstructor

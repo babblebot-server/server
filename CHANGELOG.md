@@ -1,3 +1,14 @@
+# [3.0.0-rc.26](https://github.com/babblebot-server/server/compare/v3.0.0-rc.25...v3.0.0-rc.26) (2023-07-12)
+
+
+### Features
+
+* add an icon url to the embed author ([d5ac2ab](https://github.com/babblebot-server/server/commit/d5ac2abe02f29dd655d9e5263be8de6b82458b83))
+* change the dispatcher to a registry ([7b47f99](https://github.com/babblebot-server/server/commit/7b47f999530a08c245231a102e5d18fc5fd3629b))
+* remove TTSMessage ([04335e1](https://github.com/babblebot-server/server/commit/04335e1e28d8cff7f249e67bc5104f3494ec0729))
+* rewrite core plugin to use modern code ([90a221c](https://github.com/babblebot-server/server/commit/90a221c0761c1fbec61d07fe92bb179da1c2b206))
+* use a annotation for plugin middleware ([df331ef](https://github.com/babblebot-server/server/commit/df331ef5869027d180a6a69168c6d00cec092e6a))
+
 # [3.0.0-rc.25](https://github.com/babblebot-server/server/compare/v3.0.0-rc.24...v3.0.0-rc.25) (2023-07-11)
 
 

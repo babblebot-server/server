@@ -37,7 +37,7 @@ import java.util.UUID;
  * An Event that will trigger when the {@link IPluginContainer} gets a new plugin
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since 3.0.0-rc.26
  */
 @Slf4j
 @RequiredArgsConstructor

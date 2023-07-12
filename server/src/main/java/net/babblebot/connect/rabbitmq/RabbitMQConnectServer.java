@@ -41,7 +41,7 @@ import java.io.Serializable;
  * RabbitMQServer implementation of the server
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since 3.0.0-rc.26
  */
 @Slf4j
 @Service

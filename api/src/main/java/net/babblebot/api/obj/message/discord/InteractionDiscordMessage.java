@@ -39,7 +39,7 @@ import java.io.Serializable;
  * Discord Message Object for the Command Context
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.24
+ * @since 3.0.0-rc.26
  */
 @Slf4j
 @Data

@@ -35,7 +35,7 @@ import java.util.Optional;
  * Service for sending messages through discord to a channel or a private message etc
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since 3.0.0-rc.26
  */
 @Service
 public interface IDiscordMessagingService

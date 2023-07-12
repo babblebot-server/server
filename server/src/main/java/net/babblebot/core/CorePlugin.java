@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.26
  */
 @Slf4j
 @Plugin(author = "Ben Davies <me@bdavies.net>")

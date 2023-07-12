@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * Connect Queue Interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since 3.0.0-rc.26
  */
 public interface IConnectQueue<T extends Serializable>
 {

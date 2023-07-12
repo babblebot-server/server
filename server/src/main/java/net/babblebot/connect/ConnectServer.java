@@ -34,7 +34,7 @@ import java.io.Serializable;
  * Connect Server that will handle sending messages
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since 3.0.0-rc.26
  */
 @Service
 public interface ConnectServer
