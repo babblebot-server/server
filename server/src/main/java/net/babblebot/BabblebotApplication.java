@@ -30,7 +30,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.command.ICommandDispatcher;
+import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.config.EPluginPermission;
 import net.babblebot.api.config.IDiscordConfig;
 import net.babblebot.api.connect.ConnectQueue;
@@ -83,7 +83,7 @@ public final class BabblebotApplication implements IApplication
     private static ConfigurableApplicationContext mainContext;
     private static String[] args;
 
-    private final ICommandDispatcher commandDispatcher;
+    private final ICommandRegistry commandRegistry;
     private final IVariableContainer variableContainer;
     private final IPluginContainer pluginContainer;
     private final ApplicationContext applicationContext;
@@ -110,7 +110,7 @@ public final class BabblebotApplication implements IApplication
             log.error("Could not find version file please run :createProperties", e);
         }
 
-        commandDispatcher = applicationContext.getBean(ICommandDispatcher.class);
+        commandRegistry = applicationContext.getBean(ICommandRegistry.class);
         variableContainer = applicationContext.getBean(IVariableContainer.class);
         pluginContainer = applicationContext.getBean(IPluginContainer.class);
     }

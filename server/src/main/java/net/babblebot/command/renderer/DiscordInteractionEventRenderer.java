@@ -26,17 +26,14 @@
 package net.babblebot.command.renderer;
 
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.spec.InteractionFollowupCreateSpec;
-import discord4j.discordjson.json.FollowupMessageRequest;
-import discord4j.rest.util.MultipartRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.command.IResponse;
 import net.babblebot.api.discord.DiscordMessageSendSpec;
 import net.babblebot.api.discord.IDiscordMessagingService;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.api.obj.message.discord.InteractionDiscordMessage;
 import net.babblebot.command.ResponseFactory;
 import net.babblebot.command.errors.UsageException;
 import reactor.core.publisher.Mono;
@@ -52,7 +49,7 @@ import reactor.core.publisher.Mono;
 public class DiscordInteractionEventRenderer implements CommandRenderer
 {
     private final GatewayDiscordClient client;
-    private final DiscordMessage message;
+    private final InteractionDiscordMessage message;
     private final IApplication application;
     private final IDiscordMessagingService service;
     private boolean replied;
@@ -62,49 +59,25 @@ public class DiscordInteractionEventRenderer implements CommandRenderer
     {
         if (response.isStringResponse())
         {
-            reply(InteractionFollowupCreateSpec.builder()
-                    .content("--------------------")
-                    .build()).subscribe();
-
-            service.send(message.getGuild(), message.getChannel(),
-                            DiscordMessageSendSpec.fromString(response.getStringResponse()))
-                    .subscribe();
-        } else if (response.isTTSResponse())
-        {
-            reply(InteractionFollowupCreateSpec.builder()
-                    .content("--------------------")
-                    .build()).subscribe();
-            service.send(message.getGuild(), message.getChannel(),
-                            DiscordMessageSendSpec.fromTts(response.getTTSMessage().getContent()))
+            reply(DiscordMessageSendSpec.fromString(response.getStringResponse()))
                     .subscribe();
         } else
         {
-            reply(InteractionFollowupCreateSpec.builder()
-                    .content("--------------------")
-                    .build()).subscribe();
-            service.send(message.getGuild(), message.getChannel(),
-                            DiscordMessageSendSpec.fromEmbed(response.getEmbedCreateSpecResponse().get()))
-                    .subscribe();
+            reply(DiscordMessageSendSpec.fromEmbed(response.getEmbedCreateSpecResponse().get())).subscribe();
         }
     }
 
-    private Mono<Void> reply(InteractionFollowupCreateSpec spec)
+    private Mono<DiscordMessage> reply(DiscordMessageSendSpec spec)
     {
         if (replied)
         {
-            return Mono.empty();
+            return service.send(message.getGuild(),
+                    message.getChannel(), spec);
         }
-        val data = spec.asRequest();
-        FollowupMessageRequest newBody = FollowupMessageRequest.builder()
-                .from(data.getJsonPayload())
-                .build();
-        return client.getApplicationInfo()
-                .flatMap(appInfo -> client.getRestClient().getWebhookService()
-                        .executeWebhook(appInfo.getId().asLong(), message.getToken(), true,
-                                MultipartRequest.ofRequest(newBody))
-                        .onErrorComplete()
-                        .doOnNext(d -> replied = true)
-                        .flatMap(m -> Mono.empty()));
+
+        return service.sendInteractionFollowup(message, spec)
+                .doFirst(() -> replied = true)
+                .map(r -> DiscordMessage.builder().build());
     }
 
     @Override

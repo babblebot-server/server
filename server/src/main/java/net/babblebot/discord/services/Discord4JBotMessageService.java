@@ -28,21 +28,21 @@ package net.babblebot.discord.services;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.TextChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.command.ICommandDispatcher;
+import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.config.IDiscordConfig;
 import net.babblebot.api.discord.IDiscordMessagingService;
 import net.babblebot.api.obj.message.discord.DiscordId;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
-import net.babblebot.command.CommandDispatcher;
+import net.babblebot.api.obj.message.discord.InteractionDiscordMessage;
+import net.babblebot.command.execution.CommandExecutionSpec;
+import net.babblebot.command.execution.CommandExecutor;
 import net.babblebot.command.parser.DiscordMessageParser;
-import net.babblebot.command.renderer.CommandRenderer;
 import net.babblebot.command.renderer.DiscordCommandRenderer;
 import net.babblebot.command.renderer.DiscordInteractionEventRenderer;
 import net.babblebot.connect.ConnectConfigurationProperties;
@@ -70,7 +70,8 @@ public class Discord4JBotMessageService
 
     private final IApplication application;
 
-    private final ICommandDispatcher commandDispatcher;
+    private final ICommandRegistry commandDispatcher;
+    private final CommandExecutor commandExecutor;
     private final DiscordObjectFactory discordObjectFactory;
     private final ConnectConfigurationProperties connectConfig;
 
@@ -83,7 +84,6 @@ public class Discord4JBotMessageService
                             .filter(m -> m.startsWith(config.getCommandPrefix())).filterWhen(
                                     m -> e.getMessage().getAuthorAsMember().map(User::isBot)
                                             .map(isBot -> !isBot)).subscribe(m -> {
-                                CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
                                 var g = e.getMessage().getGuild().map(gld -> gld.getId().asLong())
                                         .blockOptional().orElseThrow();
                                 var ch = e.getMessage().getChannel().map(chl -> chl.getId().asLong())
@@ -102,7 +102,11 @@ public class Discord4JBotMessageService
 
                                 if (!connectConfig.isUseConnect() || connectConfig.isWorker())
                                 {
-                                    cd.execute(dmp, msg, application, renderer);
+                                    commandExecutor.executeCommand(CommandExecutionSpec.builder()
+                                            .commandRenderer(renderer)
+                                            .messageParser(dmp)
+                                            .message(msg)
+                                            .build());
                                 } else
                                 {
                                     DiscordConnectQueue connectQueue = application.get(
@@ -116,7 +120,6 @@ public class Discord4JBotMessageService
                             }));
 
             service.getClient().getEventDispatcher().on(ChatInputInteractionEvent.class).subscribe(e -> {
-                CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
                 var g = e.getInteraction().getGuild().map(gld -> gld.getId().asLong()).blockOptional()
                         .orElseThrow();
                 var ch = e.getInteraction().getChannel().map(chl -> chl.getId().asLong()).blockOptional()
@@ -124,65 +127,69 @@ public class Discord4JBotMessageService
                 var author = e.getInteraction().getUser().getId().asLong();
                 var msgId = e.getInteraction().getId().asLong();
                 var msg = new StringBuilder(e.getCommandName());
-                e.deferReply().then(Mono.create(a -> {
-                    e.getOptions().forEach(o -> {
-                        msg.append(" -").append(o.getName());
-                        if (o.getValue().isPresent())
-                        {
-                            msg.append("=").append("\"").append(o.getValue().get().getRaw()).append("\"");
-                        }
-                    });
-
-                    val discordMessage = buildMessage(g, ch, author, msgId, msg.toString(),
-                            e.getInteraction().getToken());
-                    val dmp = new DiscordMessageParser(discordMessage);
-
-                    if (!connectConfig.isUseConnect() || connectConfig.isWorker())
+                e.getOptions().forEach(o -> {
+                    msg.append(" -").append(o.getName());
+                    if (o.getValue().isPresent())
                     {
-                        val renderer = new DiscordInteractionEventRenderer(
-                                application.get(GatewayDiscordClient.class), discordMessage,
-                                application,
-                                application.get(IDiscordMessagingService.class));
-                        cd.execute(dmp, msg.toString(), application, renderer);
-                    } else
-                    {
-                        DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);
-                        log.info("Sending message: {} to worker", discordMessage);
-                        connectQueue.send(DiscordConnectMessage.builder()
-                                .type(DiscordMessageType.INTERACTION)
-                                .message(discordMessage)
-                                .build());
+                        msg.append("=").append("\"").append(o.getValue().get().getRaw()).append("\"");
                     }
-                })).subscribe();
+                });
+
+                InteractionDiscordMessage discordMessage = (InteractionDiscordMessage)
+                        buildMessage(g, ch, author, msgId, msg.toString(),
+                                e.getInteraction().getToken());
+                val dmp = new DiscordMessageParser(discordMessage);
+
+                if (!connectConfig.isUseConnect() || connectConfig.isWorker())
+                {
+                    val renderer = new DiscordInteractionEventRenderer(
+                            application.get(GatewayDiscordClient.class), discordMessage,
+                            application,
+                            application.get(IDiscordMessagingService.class));
+                    commandExecutor.executeCommand(CommandExecutionSpec.builder()
+                            .onPreExecution((ctx, cmd) -> e.deferReply().subscribe())
+                            .commandRenderer(renderer)
+                            .messageParser(dmp)
+                            .message(msg.toString())
+                            .build());
+                } else
+                {
+                    DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);
+                    log.info("Sending message: {} to worker", discordMessage);
+                    connectQueue.send(DiscordConnectMessage.builder()
+                            .type(DiscordMessageType.INTERACTION)
+                            .message(discordMessage)
+                            .build());
+                }
             });
         }
     }
 
     public void registerConnectHandler()
     {
-        if (!connectConfig.isLeader())
-        {
-            DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);
-            connectQueue.setMessageHandler(cm -> {
-                CommandDispatcher cd = (CommandDispatcher) commandDispatcher;
-                DiscordMessageParser messageParser = new DiscordMessageParser(cm.getMessage());
-                DiscordMessage message = cm.getMessage();
-                TextChannel channel = discordObjectFactory.channelFromBabbleBot(message.getGuild(),
-                        message.getChannel()).blockOptional().orElseThrow();
-                Guild guild = discordObjectFactory.guildFromBabbleBot(message.getGuild()).blockOptional()
-                        .orElseThrow();
-                CommandRenderer renderer = new DiscordCommandRenderer(channel, guild,
-                        application.get(IDiscordMessagingService.class));
-                if (cm.getType() == DiscordMessageType.INTERACTION)
-                {
-                    GatewayDiscordClient discordClient = application.get(GatewayDiscordClient.class);
-                    renderer = new DiscordInteractionEventRenderer(discordClient, cm.getMessage(),
-                            application,
-                            application.get(IDiscordMessagingService.class));
-                }
-                cd.execute(messageParser, cm.getMessage().getContent(), application, renderer);
-            });
-        }
+//        if (!connectConfig.isLeader())
+//        {
+//            DiscordConnectQueue connectQueue = application.get(DiscordConnectQueue.class);
+//            connectQueue.setMessageHandler(cm -> {
+//                CommandRegistry cd = (CommandRegistry) commandDispatcher;
+//                DiscordMessageParser messageParser = new DiscordMessageParser(cm.getMessage());
+//                DiscordMessage message = cm.getMessage();
+//                TextChannel channel = discordObjectFactory.channelFromBabbleBot(message.getGuild(),
+//                        message.getChannel()).blockOptional().orElseThrow();
+//                Guild guild = discordObjectFactory.guildFromBabbleBot(message.getGuild()).blockOptional()
+//                        .orElseThrow();
+//                CommandRenderer renderer = new DiscordCommandRenderer(channel, guild,
+//                        application.get(IDiscordMessagingService.class));
+//                if (cm.getType() == DiscordMessageType.INTERACTION)
+//                {
+//                    GatewayDiscordClient discordClient = application.get(GatewayDiscordClient.class);
+//                    renderer = new DiscordInteractionEventRenderer(discordClient, cm.getMessage(),
+//                            application,
+//                            application.get(IDiscordMessagingService.class));
+//                }
+//                cd.execute(messageParser, cm.getMessage().getContent(), application, renderer);
+//            });
+//        }
     }
 
     private DiscordMessage buildMessage(long guildId, long channelId, long authorId, long messageId,
@@ -194,8 +201,16 @@ public class Discord4JBotMessageService
         val user = discordObjectFactory.userFromId(DiscordId.from(authorId)).orElseThrow();
 
 
+        if (!"".equals(token))
+        {
+            return InteractionDiscordMessage.builder()
+                    .guild(g).channel(ch).author(user)
+                    .content(message)
+                    .id(DiscordId.from(messageId))
+                    .token(token)
+                    .build();
+        }
         return DiscordMessage.builder().guild(g).channel(ch).author(user)
-                .token(token)
                 .content(message)
                 .id(DiscordId.from(messageId)).build();
     }

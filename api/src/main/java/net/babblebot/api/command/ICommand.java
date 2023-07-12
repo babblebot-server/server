@@ -77,6 +77,14 @@ public interface ICommand
     CommandParam[] getCommandParams();
 
     /**
+     * Send a TTS response for this {@link Command} it will only
+     * apply to String responses, it will not work with embed responses
+     *
+     * @return boolean
+     */
+    boolean isTts();
+
+    /**
      * This is the execution point for the command.
      *
      * @param application    - The application instance.

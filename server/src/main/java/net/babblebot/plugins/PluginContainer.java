@@ -30,7 +30,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.plugins.*;
-import net.babblebot.command.CommandDispatcher;
+import net.babblebot.command.CommandRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -121,8 +121,20 @@ public class PluginContainer implements IPluginContainer
                     }
                 }
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
-                application.getCommandDispatcher().addNamespace(settings.getNamespace(),
+                application.getCommandRegistry().addNamespace(settings.getNamespace(),
                         commandParser.parseCommands(), application);
+                PluginMiddlewareParser middlewareParser = new PluginMiddlewareParser(application, obj);
+                middlewareParser.parseMiddleware().forEach(mp -> {
+                    if (mp.getFirst())
+                    {
+                        application.getCommandRegistry()
+                                .registerGlobalMiddleware(mp.getSecond(), obj, application);
+                    } else
+                    {
+                        application.getCommandRegistry()
+                                .registerPluginMiddleware(settings, mp.getSecond());
+                    }
+                });
                 log.info("Added plugin: " + settings.getName() + " (by {}), using namespace: \"" +
                         settings.getNamespace() + "\"", settings.getAuthor());
                 this.settings.put(model.getName(), settings);
@@ -196,7 +208,7 @@ public class PluginContainer implements IPluginContainer
             {
                 ((IPluginEvents) o).onShutdown();
             }
-            CommandDispatcher commandDispatcher = applicationContext.getBean(CommandDispatcher.class);
+            CommandRegistry commandDispatcher = applicationContext.getBean(CommandRegistry.class);
             IApplication application = applicationContext.getBean(IApplication.class);
             commandDispatcher.removeNamespace(pluginNamespaces.get(name), application);
             pluginPermissionsMap.remove(o);

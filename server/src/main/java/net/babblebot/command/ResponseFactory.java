@@ -27,7 +27,6 @@ package net.babblebot.command;
 
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.command.IResponse;
-import net.babblebot.api.obj.message.discord.TTSMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.babblebot.command.response.BaseResponse;
 
@@ -41,32 +40,26 @@ import java.util.function.Supplier;
 public class ResponseFactory
 {
 
-    public static IResponse createResponse(String s, Supplier<EmbedMessage> spec, TTSMessage ttsMessage)
+    public static IResponse createResponse(String s, Supplier<EmbedMessage> spec)
     {
         return BaseResponse.builder()
                 .stringResponse(s)
-                .ttsMessage(ttsMessage)
                 .embedMessageResponse(spec)
                 .build();
     }
 
     public static IResponse createStringResponse(String s)
     {
-        return createResponse(s, null, null);
-    }
-
-    public static IResponse createTTSResponse(TTSMessage s)
-    {
-        return createResponse("", null, s);
+        return createResponse(s, null);
     }
 
     public static IResponse createEmbedResponse(EmbedMessage s)
     {
-        return createResponse("", () -> s, null);
+        return createResponse("", () -> s);
     }
 
     public static IResponse createEmbedResponse(Supplier<EmbedMessage> s)
     {
-        return createResponse("", s, null);
+        return createResponse("", s);
     }
 }

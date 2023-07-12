@@ -59,11 +59,6 @@ public class DiscordCommandRenderer implements CommandRenderer
             service.send(guildId, channelId,
                             DiscordMessageSendSpec.fromString(response.getStringResponse()))
                     .subscribe();
-        } else if (response.isTTSResponse())
-        {
-            service.send(guildId, channelId,
-                            DiscordMessageSendSpec.fromTts(response.getTTSMessage().getContent()))
-                    .subscribe();
         } else
         {
             service.send(guildId, channelId,

@@ -26,14 +26,12 @@
 package net.babblebot.api.obj.message.discord;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.obj.message.Message;
 
 import java.io.Serializable;
 
@@ -41,7 +39,7 @@ import java.io.Serializable;
  * Discord Message Object for the Command Context
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.25
+ * @since 3.0.0-rc.24
  */
 @Slf4j
 @Data
@@ -50,12 +48,8 @@ import java.io.Serializable;
 @SuperBuilder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DiscordMessage extends Message implements Serializable
+public class InteractionDiscordMessage extends DiscordMessage implements Serializable
 {
-    private final DiscordId id;
-    private final DiscordGuild guild;
-    private final DiscordChannel channel;
-    private final DiscordUser author;
-    @Builder.Default
-    private final boolean isPrivateMessage = false;
+    private final String token;
+    private final boolean deferred;
 }

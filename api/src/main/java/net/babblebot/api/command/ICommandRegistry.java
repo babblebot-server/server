@@ -29,16 +29,16 @@ import net.babblebot.api.IApplication;
 import net.babblebot.api.plugins.IPluginSettings;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
 @Component
-public interface ICommandDispatcher
+public interface ICommandRegistry
 {
 
     /**
@@ -76,7 +76,7 @@ public interface ICommandDispatcher
      * @param type  - The type of command.
      * @return Optional
      */
-    Mono<ICommand> getCommandByAlias(String namespace, String alias, String type);
+    Optional<ICommand> getCommandByAlias(String namespace, String alias, String type);
 
     /**
      * This will return the list of commands in the dispatcher.
@@ -84,7 +84,7 @@ public interface ICommandDispatcher
      * @param type - THe type of command.
      * @return List
      */
-    Flux<ICommand> getCommands(String namespace, String type);
+    List<ICommand> getCommands(String namespace, String type);
 
     /**
      * This will return the list of commands in the dispatcher from all namespaces.
@@ -92,7 +92,7 @@ public interface ICommandDispatcher
      * @param type - THe type of command.
      * @return List
      */
-    Flux<ICommand> getCommands(String type);
+    List<ICommand> getCommands(String type);
 
     /**
      * Get all the commands for a certain namespace
@@ -100,14 +100,14 @@ public interface ICommandDispatcher
      * @param namespace the namespace to lookup
      * @return {@link Flux} of {@link ICommand}s
      */
-    Flux<ICommand> getCommandsFromNamespace(String namespace);
+    List<ICommand> getCommandsFromNamespace(String namespace);
 
     /**
      * Get all the namespaces that are registered inside the command dispatcher
      *
      * @return {@link Flux} of {@link String}s
      */
-    Flux<String> getRegisteredNamespaces();
+    List<String> getRegisteredNamespaces();
 
     /**
      * Get the namespace from a command

@@ -27,11 +27,9 @@ package net.babblebot.command.response;
 
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.command.IResponse;
-import net.babblebot.api.obj.message.discord.TTSMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.babblebot.command.response.handlers.EmbedHandler;
 import net.babblebot.command.response.handlers.StringHandler;
-import net.babblebot.command.response.handlers.TTSMessageHandler;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -78,9 +76,7 @@ public class ResponseHandlerFactory
         if (base.equals(String.class))
         {
             return new StringHandler(raw, processor);
-        } else if(base.equals(TTSMessage.class)) {
-            return new TTSMessageHandler(raw, processor);
-        }else if (base instanceof ParameterizedType)
+        } else if (base instanceof ParameterizedType)
         {
             ParameterizedType pType = (ParameterizedType) base;
             Type type = pType.getActualTypeArguments()[0];

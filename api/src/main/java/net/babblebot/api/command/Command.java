@@ -35,10 +35,10 @@ import java.lang.annotation.Target;
 
 /**
  * A {@link Command} annotates a {@link Plugin} member function to declare
- * to the {@link ICommandDispatcher} to register the function as command to be
+ * to the {@link ICommandRegistry} to register the function as command to be
  * used when receiving messages from the Message Supplier
  * <p>
- * There is several other annotations that communicate to the {@link ICommandDispatcher} how
+ * There is several other annotations that communicate to the {@link ICommandRegistry} how
  * the {@link Command} should look:-
  * <p>
  * {@link CommandExample}
@@ -90,9 +90,17 @@ public @interface Command
 
     /**
      * A {@link CommandType} that will determine how this command is handled
-     * by the {@link ICommandDispatcher}
+     * by the {@link ICommandRegistry}
      *
      * @return {@link CommandType}
      */
     CommandType type() default CommandType.DISCORD;
+
+    /**
+     * Send a TTS response for this {@link Command} it will only
+     * apply to String responses, it will not work with embed responses
+     *
+     * @return boolean
+     */
+    boolean tts() default false;
 }

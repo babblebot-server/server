@@ -25,33 +25,28 @@
 
 package net.babblebot.command;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.command.ICommand;
 import net.babblebot.api.command.ICommandContext;
-import net.babblebot.api.command.ICommandDispatcher;
 import net.babblebot.api.command.ICommandMiddleware;
+import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.config.EPluginPermission;
 import net.babblebot.api.plugins.IPlugin;
 import net.babblebot.api.plugins.IPluginContainer;
 import net.babblebot.api.plugins.IPluginSettings;
 import net.babblebot.api.plugins.Plugin;
-import net.babblebot.command.response.BaseResponse;
 import net.babblebot.discord.DiscordFacade;
-import net.babblebot.command.errors.UsageException;
-import net.babblebot.command.parser.MessageParser;
-import net.babblebot.command.renderer.CommandRenderer;
 import net.babblebot.discord.obj.factories.DiscordObjectFactory;
-import net.babblebot.variables.VariableParser;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.Loggers;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -59,7 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Slf4j
 @Component
-public class CommandDispatcher implements ICommandDispatcher
+public class CommandRegistry implements ICommandRegistry
 {
     public static final String NAMESPACE_STR = "Namespace: ";
     /**
@@ -69,12 +64,13 @@ public class CommandDispatcher implements ICommandDispatcher
      */
     private final Map<String, List<ICommand>> commands;
 
+    @Getter
     private final Map<IPluginSettings, List<ICommandMiddleware>> middlewareList;
 
     /**
      * This will initialize the commands list to an ArrayList.
      */
-    public CommandDispatcher()
+    public CommandRegistry()
     {
         this.commands = new HashMap<>();
         this.middlewareList = new HashMap<>();
@@ -221,26 +217,20 @@ public class CommandDispatcher implements ICommandDispatcher
 
     }
 
-    public Flux<ICommand> getCommandsFromNamespace(String namespace)
+    public List<ICommand> getCommandsFromNamespace(String namespace)
     {
         if (!commands.containsKey(namespace))
         {
             log.error(NAMESPACE_STR + namespace + " has not been created yet, cannot get namepsace");
-            return Flux.empty();
+            return new LinkedList<>();
         }
-        return Flux.create(sink -> {
-            commands.get(namespace).forEach(sink::next);
-            sink.complete();
-        });
+        return commands.get(namespace);
     }
 
     @Override
-    public Flux<String> getRegisteredNamespaces()
+    public List<String> getRegisteredNamespaces()
     {
-        return Flux.create(sink -> {
-            commands.keySet().forEach(sink::next);
-            sink.complete();
-        });
+        return new ArrayList<>(commands.keySet());
     }
 
     /**
@@ -250,133 +240,21 @@ public class CommandDispatcher implements ICommandDispatcher
      * @param type  - The type of command.
      * @return Optional
      */
-    public Mono<ICommand> getCommandByAlias(String namespace, String alias, String type)
+    public Optional<ICommand> getCommandByAlias(String namespace, String alias, String type)
     {
-        return Mono.from(getCommandsFromNamespace(namespace).filter(
-                e -> Arrays.asList(e.getAliases()).contains(alias) && e.getType().equals(type)).take(1));
+        return getCommandsFromNamespace(namespace)
+                .stream()
+                .filter(e -> Arrays.asList(e.getAliases()).contains(alias) && checkType(e.getType(), type))
+                .findFirst();
     }
 
-
-    /**
-     * This will execute the command that user has entered is valid.
-     *
-     * @param parser      - The way the message is interpreted.
-     * @param message     - This is the user's input or any other type of input.
-     * @param application - The application instance
-     * @param renderer    - The command renderer that will process the command responses
-     */
-    public void execute(MessageParser parser, String message, IApplication application,
-                        CommandRenderer renderer)
+    public List<ICommand> getCommandsLike(String namespace, String commandName, String type)
     {
-        ICommandContext commandContext = parser.parseString(message);
-
-        if (commandContext != null)
-        {
-            log.info("Handling command: " + commandContext.getCommandName());
-            var canRun = new AtomicBoolean(true);
-
-            this.middlewareList.get(null).forEach(m -> {
-                if (canRun.get())
-                {
-                    canRun.set(m.onExecute(commandContext));
-                }
-            });
-
-            if (!canRun.get())
-            {
-                log.info("Cannot run command due to failing middleware");
-                return;
-            }
-
-
-            String namespace = getNamespaceFromCommandName(commandContext.getCommandName());
-
-            this.getMiddlewareForNamespace(namespace).doOnNext(middleware -> {
-                log.info("Running middleware for: " + namespace);
-                if (canRun.get())
-                {
-                    canRun.set(middleware.onExecute(commandContext));
-                }
-            }).subscribe();
-
-            if (!canRun.get())
-            {
-                log.info("Cannot run command due to failing plugin middleware");
-                return;
-            }
-
-            String commandName = commandContext.getCommandName().replace(namespace, "");
-            var hasSentMessage = new AtomicBoolean(false);
-            var hasFoundOne = new AtomicBoolean(false);
-
-            getCommandsFromNamespace(namespace).filter(e -> checkType(e.getType(), commandContext.getType()))
-                    .filter(e -> Arrays.stream(e.getAliases())
-                            .anyMatch(alias -> alias.equalsIgnoreCase(commandName)))
-                    .doOnError(e -> log.error("Error in the command dispatcher.", e)).doOnComplete(() -> {
-                        if (!hasFoundOne.get())
-                        {
-                            var sb = new StringBuilder(
-                                    "```markdown\n# Command Not Found\n\nDid You mean?\n");
-                            getCommandsLike(commandName, commandContext.getType()).subscribe(c -> {
-                                sb.append(getNamespaceForCommand(c)).append(c.getAliases()[0]).append("? - ")
-                                        .append(c.getDescription()).append("\n");
-                                hasSentMessage.set(true);
-                            }, null, () -> {
-                                if (!hasSentMessage.get())
-                                {
-                                    renderer.render(ResponseFactory.createStringResponse(
-                                            "Babblebot command couldn't be found."));
-                                } else
-                                {
-                                    sb.append("```");
-                                    renderer.render(ResponseFactory.createStringResponse(sb.toString()));
-                                }
-                            });
-                        }
-                    }).flatMap(c -> {
-                        hasFoundOne.set(true);
-                        if (!c.validateUsage(commandContext))
-                        {
-                            return Flux.error(new UsageException(c.getUsage()));
-                        }
-
-                        c.exec(application, commandContext);
-                        return commandContext.getCommandResponse().getResponses().asFlux()
-                                .log(Loggers.getLogger("CommandResponses"));
-                    }).cast(BaseResponse.class).map(br -> {
-                        if (br.isStringResponse())
-                        {
-                            return br.toBuilder().stringResponse(
-                                    new VariableParser(br.getStringResponse(), application).toString()).build();
-                        }
-                        return br;
-                    }).subscribe(r -> {
-                        renderer.render(r);
-                        hasSentMessage.set(true);
-                    }, e -> {
-                        var handled = false;
-                        if (e instanceof Exception ex)
-                        {
-                            handled = renderer.onError(ex);
-                        }
-
-                        if (!handled)
-                        {
-                            log.error("Unable to render command {}", commandName, e);
-                        }
-                    });
-
-        } else
-        {
-            log.error("Command could not be parsed: " + message);
-        }
-    }
-
-    private Flux<ICommand> getCommandsLike(String commandName, String type)
-    {
-        return Flux.create(sink -> getCommands(type).doOnComplete(sink::complete)
+        return getCommandsFromNamespace(namespace)
+                .stream()
+                .filter(c -> checkType(c.getType(), type))
                 .filter(c -> Arrays.stream(c.getAliases()).anyMatch(a -> a.contains(commandName)))
-                .doOnNext(sink::next).subscribe());
+                .collect(Collectors.toList());
     }
 
     private String getNamespaceForCommand(ICommand c)
@@ -436,7 +314,7 @@ public class CommandDispatcher implements ICommandDispatcher
         middlewareList.get(plugin).add(middleware);
     }
 
-    private Flux<ICommandMiddleware> getMiddlewareForNamespace(String namespace)
+    public Flux<ICommandMiddleware> getMiddlewareForNamespace(String namespace)
     {
 
         return Flux.create(sink -> {
@@ -460,7 +338,7 @@ public class CommandDispatcher implements ICommandDispatcher
      */
     private boolean checkType(String commandType, String contextType)
     {
-        if ("All".equals(commandType))
+        if ("All".equalsIgnoreCase(commandType))
         {
             return true;
         } else if (commandType.equalsIgnoreCase(contextType))
@@ -493,9 +371,12 @@ public class CommandDispatcher implements ICommandDispatcher
      * @param type - THe type of command.
      * @return List
      */
-    public Flux<ICommand> getCommands(String namespace, String type)
+    public List<ICommand> getCommands(String namespace, String type)
     {
-        return getCommandsFromNamespace(namespace).filter(c -> c.getType().equals(type));
+        return getCommandsFromNamespace(namespace)
+                .stream()
+                .filter(c -> checkType(c.getType(), type))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -504,10 +385,24 @@ public class CommandDispatcher implements ICommandDispatcher
      * @param type - THe type of command.
      * @return List
      */
-    public Flux<ICommand> getCommands(String type)
+    public List<ICommand> getCommands(String type)
     {
-        AtomicReference<Flux<ICommand>> commandFlux = new AtomicReference<>(Flux.empty());
-        commands.keySet().forEach(k -> commandFlux.set(commandFlux.get().concatWith(getCommands(k, type))));
-        return commandFlux.get();
+        return commands.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Find a command in the command registry
+     *
+     * @param ctx         the command execution context {@link ICommandContext}
+     * @param namespace   the command namespace
+     * @param commandName the alias of the command
+     * @return {@link Optional} of a {@link ICommand} if a command is found
+     * @since __RELEASE_VERSION__
+     */
+    public Optional<ICommand> findCommand(ICommandContext ctx, String namespace, String commandName)
+    {
+        return getCommandByAlias(namespace, commandName, ctx.getType());
     }
 }

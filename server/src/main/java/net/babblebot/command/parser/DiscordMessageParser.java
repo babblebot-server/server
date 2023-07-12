@@ -56,7 +56,7 @@ public class DiscordMessageParser implements MessageParser
     @Override
     public ICommandContext parseString(String message)
     {
-        log.info("Full command inputted: {}", message);
+        log.debug("Full command inputted: {}", message);
         return new DiscordCommandContext(parseCommandName(message).toLowerCase(Locale.ROOT),
                 parseParams(message),
                 parseValue(message), "Discord", this.message);

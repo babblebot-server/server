@@ -25,7 +25,6 @@
 
 package net.babblebot.api.command;
 
-import net.babblebot.api.obj.message.discord.TTSMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 
 import java.util.function.Supplier;
@@ -36,14 +35,9 @@ import java.util.function.Supplier;
  */
 public interface IResponse
 {
-
     String getStringResponse();
-
-    TTSMessage getTTSMessage();
 
     Supplier<EmbedMessage> getEmbedCreateSpecResponse();
 
     boolean isStringResponse();
-
-    boolean isTTSResponse();
 }

@@ -23,31 +23,34 @@
  *
  */
 
-package net.babblebot.command.response.handlers;
+package net.babblebot.command.execution;
 
-import net.babblebot.api.command.IResponse;
-import net.babblebot.api.obj.message.discord.TTSMessage;
-import net.babblebot.command.ResponseFactory;
-import net.babblebot.command.response.ResponseHandler;
-import reactor.core.publisher.Sinks;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.command.ICommand;
+import net.babblebot.api.command.ICommandContext;
+import net.babblebot.command.parser.MessageParser;
+import net.babblebot.command.renderer.CommandRenderer;
 
-import java.lang.reflect.Type;
+import java.util.function.BiConsumer;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.2.7
+ * Command Execution Policy
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-public class TTSMessageHandler extends ResponseHandler
+@Slf4j
+@Data
+@Builder
+public class CommandExecutionSpec
 {
-
-    public TTSMessageHandler(Type type, Sinks.Many<IResponse> processor)
-    {
-        super(type, processor);
-    }
-
-    @Override
-    protected <T> IResponse getResponse(T o)
-    {
-        return ResponseFactory.createTTSResponse((TTSMessage) o);
-    }
+    private final String message;
+    private final CommandRenderer commandRenderer;
+    private final MessageParser messageParser;
+    @Builder.Default
+    private final BiConsumer<ICommandContext, ICommand> onPreExecution = (ctx, cmd) -> {};
+    @Builder.Default
+    private final BiConsumer<ICommandContext, ICommand> onPostExecution = (ctx, cmd) -> {};
 }

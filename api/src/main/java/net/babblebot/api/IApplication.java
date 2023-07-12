@@ -25,8 +25,8 @@
 
 package net.babblebot.api;
 
+import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.plugins.IPluginContainer;
-import net.babblebot.api.command.ICommandDispatcher;
 import net.babblebot.api.variables.IVariableContainer;
 import org.springframework.stereotype.Component;
 
@@ -52,9 +52,9 @@ public interface IApplication
     /**
      * This will return an instance of the application command dispatcher.
      *
-     * @return {@link ICommandDispatcher}
+     * @return {@link ICommandRegistry}
      */
-    ICommandDispatcher getCommandDispatcher();
+    ICommandRegistry getCommandRegistry();
 
     /**
      * This will return an instance of the application variable container

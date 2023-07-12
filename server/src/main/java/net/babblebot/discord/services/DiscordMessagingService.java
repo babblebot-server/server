@@ -31,8 +31,12 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.InteractionFollowupCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
+import discord4j.discordjson.json.FollowupMessageRequest;
+import discord4j.rest.util.MultipartRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.api.IApplication;
@@ -49,6 +53,8 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -76,12 +82,14 @@ public class DiscordMessagingService implements IDiscordMessagingService
     @Override
     public Mono<DiscordMessage> send(long guild, long channel, DiscordMessageSendSpec spec)
     {
-        Guild g = facade.getClient().getGuildById(Snowflake.of(guild)).blockOptional().orElseThrow();
-        TextChannel c = g.getChannelById(Snowflake.of(channel)).cast(TextChannel.class).blockOptional()
-                .orElseThrow();
-        Mono<DiscordMessage> msgMono = c.createMessage(getMessageCreateSpec(spec, g))
-                .map(m -> messageToDiscordMessage(m, g.getId().asLong(), false));
-        return c.typeUntil(Mono.just("")).elementAt(0).flatMap(m -> msgMono);
+        return wrapReactiveOperation(() -> {
+            Guild g = facade.getClient().getGuildById(Snowflake.of(guild)).blockOptional().orElseThrow();
+            TextChannel c = g.getChannelById(Snowflake.of(channel)).cast(TextChannel.class).blockOptional()
+                    .orElseThrow();
+            Mono<DiscordMessage> msgMono = c.createMessage(getMessageCreateSpec(spec, g))
+                    .map(m -> messageToDiscordMessage(m, g.getId().asLong(), false));
+            return c.typeUntil(Mono.just("")).elementAt(0).flatMap(m -> msgMono);
+        });
     }
 
     private MessageCreateSpec getMessageCreateSpec(DiscordMessageSendSpec spec, Guild g)
@@ -137,22 +145,56 @@ public class DiscordMessagingService implements IDiscordMessagingService
     }
 
     @Override
+    public Mono<Void> sendInteractionFollowup(InteractionDiscordMessage message,
+                                              DiscordMessageSendSpec spec)
+    {
+        return wrapReactiveOperation(() -> {
+            Guild g = facade.getClient().getGuildById(Snowflake.of(message.getGuild().getId().toLong()))
+                    .blockOptional().orElseThrow();
+            InteractionFollowupCreateSpec followupSpec = getInteractionCreateSpec(spec, g);
+            val data = followupSpec.asRequest();
+            FollowupMessageRequest newBody = FollowupMessageRequest.builder()
+                    .from(data.getJsonPayload())
+                    .build();
+            return facade.getClient().getApplicationInfo()
+                    .flatMap(appInfo -> facade.getClient().getRestClient().getWebhookService()
+                            .executeWebhook(appInfo.getId().asLong(), message.getToken(), true,
+                                    MultipartRequest.ofRequest(newBody))
+                            .onErrorComplete()
+                            .flatMap(m -> Mono.empty()));
+        });
+    }
+
+    private InteractionFollowupCreateSpec getInteractionCreateSpec(DiscordMessageSendSpec spec, Guild g)
+    {
+        return InteractionFollowupCreateSpec.builder()
+                .tts(spec.isTts())
+                .addAllEmbeds(getEmbedsFromSpec(spec.getEmbeds(), g))
+                .content(spec.getContent())
+                .build();
+    }
+
+    @Override
     public Mono<DiscordMessage> sendPrivateMessage(long guild, long user, DiscordMessageSendSpec spec)
     {
-        Guild g = facade.getClient().getGuildById(Snowflake.of(guild)).blockOptional().orElseThrow();
-        Member m = g.getMemberById(Snowflake.of(user)).blockOptional().orElseThrow();
-        return m.getPrivateChannel().blockOptional()
-                .orElseThrow()
-                .createMessage(getMessageCreateSpec(spec, g))
-                .map(msg -> messageToDiscordMessage(msg, g.getId().asLong(), true));
+        return wrapReactiveOperation(() -> {
+            Guild g = facade.getClient().getGuildById(Snowflake.of(guild)).blockOptional().orElseThrow();
+            Member m = g.getMemberById(Snowflake.of(user)).blockOptional().orElseThrow();
+            return m.getPrivateChannel().blockOptional()
+                    .orElseThrow()
+                    .createMessage(getMessageCreateSpec(spec, g))
+                    .map(msg -> messageToDiscordMessage(msg, g.getId().asLong(), true));
+        });
     }
 
     @Override
     public Mono<Void> deleteMessage(DiscordMessage message)
     {
-        Message m = discordObjectFactory.messageFromBabblebot(message).blockOptional()
-                .orElseThrow();
-        return m.delete();
+        return wrapReactiveOperation(() -> {
+            Message m = discordObjectFactory.messageFromBabblebot(message).blockOptional()
+                    .orElseThrow();
+            return m.delete();
+        });
     }
 
     @Override
@@ -185,5 +227,12 @@ public class DiscordMessagingService implements IDiscordMessagingService
     public void deleteMessageSync(DiscordMessage message)
     {
         deleteMessage(message).block();
+    }
+
+    @SneakyThrows
+    public <T> T wrapReactiveOperation(Supplier<T> supplier)
+    {
+        CompletableFuture<T> wrapper = CompletableFuture.supplyAsync(supplier);
+        return wrapper.get();
     }
 }

@@ -25,10 +25,7 @@
 
 package net.babblebot.api.discord;
 
-import net.babblebot.api.obj.message.discord.DiscordChannel;
-import net.babblebot.api.obj.message.discord.DiscordGuild;
-import net.babblebot.api.obj.message.discord.DiscordMessage;
-import net.babblebot.api.obj.message.discord.DiscordUser;
+import net.babblebot.api.obj.message.discord.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -49,6 +46,9 @@ public interface IDiscordMessagingService
 
     Mono<DiscordMessage> sendPrivateMessage(DiscordGuild guild, DiscordUser user,
                                             DiscordMessageSendSpec spec);
+
+    Mono<Void> sendInteractionFollowup(InteractionDiscordMessage message,
+                                       DiscordMessageSendSpec spec);
 
     Mono<DiscordMessage> sendPrivateMessage(long guild, long user,
                                             DiscordMessageSendSpec spec);

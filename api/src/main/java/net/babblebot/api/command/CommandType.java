@@ -26,7 +26,7 @@
 package net.babblebot.api.command;
 
 /**
- * A CommandType indicates to the {@link ICommandDispatcher} should this command be handled inside this
+ * A CommandType indicates to the {@link ICommandRegistry} should this command be handled inside this
  * context
  *
  * @author me@bdavies.net (Ben Davies)

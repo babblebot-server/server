@@ -27,8 +27,8 @@ package net.babblebot.plugins;
 
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.DiscordCommandContext;
-import net.babblebot.api.command.*;
 import net.babblebot.api.IApplication;
+import net.babblebot.api.command.*;
 import net.babblebot.api.config.IConfig;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
 import net.babblebot.api.plugins.IPluginSettings;
@@ -115,6 +115,12 @@ public final class PluginCommandParser
                         public CommandParam[] getCommandParams()
                         {
                             return method.getAnnotationsByType(CommandParam.class);
+                        }
+
+                        @Override
+                        public boolean isTts()
+                        {
+                            return command.tts();
                         }
 
                         @Override
