@@ -80,10 +80,6 @@ public class DiscordConfig implements IDiscordConfig
     @Builder.Default
     private final String playingText = "{commandPrefix}help {cmdName}";
 
-    @Builder.Default
-    private String shutdownPassword = "password";
-
-
     /**
      * This will return the token.
      *
@@ -108,11 +104,5 @@ public class DiscordConfig implements IDiscordConfig
     public String getPlayingText()
     {
         return playingText.replace("{commandPrefix}", getCommandPrefix());
-    }
-
-    @Override
-    public String getShutdownPassword()
-    {
-        return shutdownPassword;
     }
 }

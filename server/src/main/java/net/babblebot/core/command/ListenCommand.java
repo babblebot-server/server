@@ -23,32 +23,41 @@
  *
  */
 
-package net.babblebot.api.config;
+package net.babblebot.core.command;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.command.ICommandContext;
+import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.core.Ignore;
+import net.babblebot.core.repository.IgnoreRepository;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
- * @author ben.davies99@outlook.com (Ben Davies)
- * @since 1.0.0
+ * Listen Command for the Core Plugin
+ *
+ * @author me@bdavies.net (Ben Davies)
+ * @since __RELEASE_VERSION__
  */
-public interface IDiscordConfig {
-    /**
-     * This will return the token.
-     *
-     * @return String
-     */
-    String getToken();
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class ListenCommand
+{
+    private final IgnoreRepository ignoreRepository;
 
-    /**
-     * This will return the command prefix.
-     *
-     * @return String
-     */
-    String getCommandPrefix();
-
-    /**
-     * This is the default playing text when the bot starts
-     * NOTE: this can be changed by any module consult the module author if you wish then to add config to stop this.
-     *
-     * @return String
-     */
-    String getPlayingText();
+    public String exec(DiscordMessage message, ICommandContext ctx)
+    {
+        Optional<Ignore> ignore = ignoreRepository.findByChannel(message.getChannel());
+        if (ignore.isEmpty())
+        {
+            return "Channel is not ignored, so cancelling command.";
+        } else
+        {
+            ignoreRepository.delete(ignore.get());
+            return "You can now use Babblebot in this channel again.";
+        }
+    }
 }
