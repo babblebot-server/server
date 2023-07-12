@@ -121,8 +121,11 @@ public class EmbedMessageFactory
         }
         if (em.getAuthor() == null)
         {
-            em.setAuthor(EmbedAuthor.builder().name("BabbleBot")
-                    .url("https://github.com/bendavies99/BabbleBot-Server").build());
+            em.setAuthor(EmbedAuthor.builder()
+                    .name("BabbleBot")
+                    .url("https://github.com/babblebot-server/server")
+                    .iconUrl("https://avatars.githubusercontent.com/u/138989349?s=256&v=4")
+                    .build());
         }
         if (em.getTimestamp() == null)
         {
