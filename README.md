@@ -14,8 +14,7 @@
 ## Documentation
 
 <p align="center">
-  <a style="display: block; height: 70px; width: 90%; background: #20B6CB; color: #ffffff; text-align: center; font-weight: bold; font-size: 200%; line-height: 70px; font-family: Arial; border-radius: 20px; text-decoration: none;" 
-href="https://babblebot.net">Get Started</a>
+  <a href="https://babblebot.net"><img alt="Call To Action" src=".github/CTA.svg" width="90%" /></a>
 </p>
 
 ## Contributing
