@@ -29,7 +29,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.command.IResponse;
-import net.babblebot.api.obj.message.discord.TTSMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 
 import java.util.function.Supplier;
@@ -47,18 +46,11 @@ public class BaseResponse implements IResponse
 {
     private final String stringResponse;
     private final Supplier<EmbedMessage> embedMessageResponse;
-    private final TTSMessage ttsMessage;
 
     @Override
     public String getStringResponse()
     {
         return stringResponse;
-    }
-
-    @Override
-    public TTSMessage getTTSMessage()
-    {
-        return ttsMessage;
     }
 
     @Override
@@ -71,11 +63,5 @@ public class BaseResponse implements IResponse
     public boolean isStringResponse()
     {
         return stringResponse != null && !"".equals(stringResponse);
-    }
-
-    @Override
-    public boolean isTTSResponse()
-    {
-        return ttsMessage != null;
     }
 }
