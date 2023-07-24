@@ -37,6 +37,7 @@ import net.babblebot.api.obj.DiscordColor;
 import net.babblebot.api.obj.message.discord.embed.EmbedAuthor;
 import net.babblebot.api.obj.message.discord.embed.EmbedFooter;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.babblebot.api.service.IVersionService;
 import net.babblebot.discord.DiscordFacade;
 import reactor.core.publisher.Mono;
 
@@ -117,7 +118,8 @@ public class EmbedMessageFactory
         if (em.getFooter() == null)
         {
             em.setFooter(EmbedFooter.builder()
-                    .text("Server Version: " + application.getServerVersion()).build());
+                    .text("Server Version: " + application.get(IVersionService.class).getVersionStr())
+                    .build());
         }
         if (em.getAuthor() == null)
         {

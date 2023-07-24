@@ -61,7 +61,6 @@ import reactor.core.publisher.Mono;
 @Component
 public class DiscordFacade implements IDiscordFacade
 {
-
     @Getter
     private final GatewayDiscordClient client;
 

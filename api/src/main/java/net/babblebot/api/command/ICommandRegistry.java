@@ -122,10 +122,8 @@ public interface ICommandRegistry
      * commands regardless of the namespace it can stop execution of the command at this point
      *
      * @param middleware  {@link ICommandMiddleware} the middleware object that will be run
-     * @param registrar   the object that is registering the middleware
-     * @param application {@link IApplication} instance of the application
      */
-    void registerGlobalMiddleware(ICommandMiddleware middleware, Object registrar, IApplication application);
+    void registerGlobalMiddleware(ICommandMiddleware middleware);
 
     /**
      * Register Plugin middleware that will run before the execution of the command implementation for all

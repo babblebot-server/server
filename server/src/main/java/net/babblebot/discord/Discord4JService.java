@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.config.IDiscordConfig;
 import net.babblebot.discord.services.Discord4JBotMessageService;
-import net.babblebot.connect.ConnectConfigurationProperties;
+import net.babblebot.exception.DiscordTokenNotPresentException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -50,27 +50,25 @@ import org.springframework.stereotype.Service;
 @Service
 public class Discord4JService
 {
-
     private final IApplication application;
     private final IDiscordConfig config;
     @Getter
     private GatewayDiscordClient client;
 
-    public Discord4JService(IApplication application, IDiscordConfig config,
-                            ConnectConfigurationProperties connectConfigurationProperties)
+    public Discord4JService(IApplication application, IDiscordConfig config)
     {
         this.application = application;
         this.config = config;
         setupClient();
     }
 
-    public void setupClient()
+    private void setupClient()
     {
         try
         {
             if (config.getToken().equals(""))
             {
-                return;
+                throw new DiscordTokenNotPresentException();
             }
             log.info("Setting up Discord Client");
 

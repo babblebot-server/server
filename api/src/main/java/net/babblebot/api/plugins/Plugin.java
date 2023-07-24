@@ -25,6 +25,8 @@
 
 package net.babblebot.api.plugins;
 
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,7 +45,16 @@ public @interface Plugin
      *
      * @return String
      */
+    @AliasFor("name")
     String value() default "";
+
+    /**
+     * The name of your plugin
+     *
+     * @return String
+     */
+    @AliasFor("value")
+    String name() default "";
 
     /**
      * The author of the plugin

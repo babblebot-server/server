@@ -61,21 +61,21 @@ public class PluginController
         return ResponseEntity.status(resp.getStatus()).body(resp);
     }
 
-    @GetMapping("/{name}")
-    ResponseEntity<ResponseBag> getPlugin(@PathVariable("name") String name) {
+    @GetMapping("/{namespace}")
+    ResponseEntity<ResponseBag> getPlugin(@PathVariable("namespace") String name) {
         ResponseBag resp = pluginService.getPlugin(name);
         return ResponseEntity.status(resp.getStatus()).body(resp);
     }
 
 
-    @PutMapping("/{name}")
-    ResponseEntity<ResponseBag> updatePlugin(@ModelAttribute CreatePluginRequest request, @PathVariable("name") String name) {
-        ResponseBag resp = pluginService.updatePlugin(name, request);
+    @PutMapping("/{namespace}")
+    ResponseEntity<ResponseBag> updatePlugin(@ModelAttribute CreatePluginRequest request, @PathVariable("namespace") String namespace) {
+        ResponseBag resp = pluginService.updatePlugin(namespace, request);
         return ResponseEntity.status(resp.getStatus()).body(resp);
     }
 
-    @DeleteMapping("/{name}")
-    ResponseEntity<ResponseBag> deletePlugin(@PathVariable("name") String name) {
+    @DeleteMapping("/{namespace}")
+    ResponseEntity<ResponseBag> deletePlugin(@PathVariable("namespace") String name) {
         ResponseBag resp = pluginService.deletePlugin(name);
         return ResponseEntity.status(resp.getStatus()).body(resp);
     }

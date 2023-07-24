@@ -26,7 +26,7 @@
 package net.babblebot.plugins;
 
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.DiscordCommandContext;
+import net.babblebot.discord.DiscordCommandContext;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.command.*;
 import net.babblebot.api.config.IConfig;

@@ -23,51 +23,58 @@
  *
  */
 
-package net.babblebot.connect.queue;
+package net.babblebot.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.connect.ConnectQueue;
-import net.babblebot.api.connect.IConnectQueue;
-import net.babblebot.connect.ConnectClient;
-import net.babblebot.connect.ConnectServer;
-import net.babblebot.connect.DiscordConnectMessage;
+import net.babblebot.api.config.EPluginPermission;
+import net.babblebot.api.plugins.IPluginContainer;
+import net.babblebot.core.CorePlugin;
+import net.babblebot.plugins.PluginModel;
+import net.babblebot.plugins.PluginModelRepository;
+import net.babblebot.plugins.importing.ImportPluginFactory;
+import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
-import java.util.function.Consumer;
+import java.util.List;
 
 /**
- * Discord Connect Queue
+ * Service for Loading Plugins
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since __RELEASE_VERSION__
  */
-@ConnectQueue
 @Slf4j
+@Service
 @RequiredArgsConstructor
-public class DiscordConnectQueue implements IConnectQueue<DiscordConnectMessage>
+public class PluginLoadingService
 {
+    private final IPluginContainer container;
     private final IApplication application;
+    private final CorePlugin corePlugin;
+    private final PluginModelRepository modelRepository;
 
-    @Override
-    public void send(DiscordConnectMessage obj)
+    @PostConstruct
+    void init()
     {
-        ConnectServer connectServer = application.get(ConnectServer.class);
-        connectServer.sendMessage(this, obj);
+        addCorePlugin();
+        loadPluginsFromDatabase();
     }
 
-    @Override
-    public void setMessageHandler(Consumer<DiscordConnectMessage> obj)
+    private void loadPluginsFromDatabase()
     {
-        ConnectClient connectClient = application.get(ConnectClient.class);
-        Consumer<Serializable> consumer = s -> obj.accept((DiscordConnectMessage) s);
-        connectClient.registerMessageHandler(this, consumer);
+        List<PluginModel> plugins = modelRepository.findAll();
+        plugins.forEach(pluginModel -> ImportPluginFactory.importPlugin(pluginModel, application)
+                .subscribe(pObj -> container.addPlugin(pObj, pluginModel)));
     }
 
-    @Override
-    public boolean isWorkerOnly()
+    private void addCorePlugin()
     {
-        return true;
+        container.addPlugin(corePlugin,
+                PluginModel.builder()
+                        .pluginPermissions(EPluginPermission.all())
+                        .namespace("")
+                        .build());
     }
 }

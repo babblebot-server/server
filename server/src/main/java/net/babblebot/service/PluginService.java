@@ -32,9 +32,6 @@ import lombok.val;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.dto.Response;
 import net.babblebot.api.dto.ResponseBag;
-import net.babblebot.api.events.IEventDispatcher;
-import net.babblebot.api.events.PluginAddedEvent;
-import net.babblebot.api.events.PluginRemovedEvent;
 import net.babblebot.api.plugins.IPluginContainer;
 import net.babblebot.dto.AllPluginsResponse;
 import net.babblebot.dto.CreatePluginRequest;
@@ -59,23 +56,22 @@ public class PluginService
     private final PluginModelRepository pluginModelRepository;
     private final IPluginContainer pluginContainer;
     private final IApplication application;
-    private final IEventDispatcher eventDispatcher;
 
     @SneakyThrows
     public ResponseBag createPlugin(CreatePluginRequest request)
     {
         return ResponseBag.from(uid -> {
-            val opt = pluginModelRepository.findByName(request.getName());
+            val opt = pluginModelRepository.findByNamespace(request.getNamespace());
 
             if (opt.isPresent())
             {
-                log.warn("[{}] plugin ({}) already exists", uid, request.getName());
-                return Response.from("Plugin already exists", HttpStatus.NOT_ACCEPTABLE.value());
+                log.warn("[{}] plugin with namespace ({}) already exists", uid, request.getNamespace());
+                return Response.from("Plugin with namespace (" + request.getNamespace() + ") already exists",
+                        HttpStatus.NOT_ACCEPTABLE.value());
             }
 
             val model = PluginModel.builder()
                     .pluginType(request.getType())
-                    .name(request.getName())
                     .pluginPermissions(request.getPermissions())
                     .classPath(request.getClassPath())
                     .namespace(request.getNamespace())
@@ -88,8 +84,6 @@ public class PluginService
             ImportPluginFactory.importPlugin(model, application)
                     .subscribe(pObj -> pluginContainer.addPlugin(pObj, model));
 
-            eventDispatcher.dispatch(new PluginAddedEvent(model));
-
             return Response.from("Plugin added to the system", HttpStatus.CREATED.value());
         });
     }
@@ -100,37 +94,38 @@ public class PluginService
                 .from(Response.from("Plugins"), pluginModelRepository.findAll()));
     }
 
-    public ResponseBag getPlugin(String name)
+    public ResponseBag getPlugin(String namespace)
     {
         return ResponseBag.from(uid -> {
-            val opt = pluginModelRepository.findByName(name);
+            val opt = pluginModelRepository.findByNamespace(namespace);
             if (opt.isEmpty())
             {
-                return Response.from(name + " plugin not found", HttpStatus.NOT_FOUND.value());
+                return Response.from("plugin with namespace: " + namespace + " not found",
+                        HttpStatus.NOT_FOUND.value());
             } else
             {
-                return GetPluginResponse.from(Response.from(name + " plugin"),
+                return GetPluginResponse.from(Response.from("plugin with namespace: " + namespace),
                         opt.get());
             }
         });
     }
 
-    public ResponseBag updatePlugin(String name, CreatePluginRequest request)
+    public ResponseBag updatePlugin(String namespace, CreatePluginRequest request)
     {
         return ResponseBag.from(uid -> {
-            val opt = pluginModelRepository.findByName(name);
+            val opt = pluginModelRepository.findByNamespace(namespace);
 
             if (opt.isEmpty())
             {
-                log.warn("[{}] plugin ({}) doesn't exist", uid, name);
+                log.warn("[{}] plugin namespace ({}) doesn't exist", uid, namespace);
                 return Response.from("Plugin doesn't exist", HttpStatus.NOT_FOUND.value());
             }
 
             PluginModel model = opt.get();
 
-            if (request.getName() != null && !request.getName().trim().equals(""))
+            if (request.getNamespace() != null && !request.getNamespace().trim().equals(""))
             {
-                model.setName(request.getName());
+                model.setName(request.getNamespace());
             }
 
             if (request.getPlugin() != null)
@@ -141,11 +136,6 @@ public class PluginService
             if (request.getType() != null)
             {
                 model.setPluginType(request.getType());
-            }
-
-            if (request.getNamespace() != null)
-            {
-                model.setNamespace(request.getNamespace());
             }
 
             if (request.getClassPath() != null && !request.getClassPath().trim().equals(""))
@@ -160,31 +150,28 @@ public class PluginService
 
             pluginModelRepository.save(model);
 
-            pluginContainer.removePlugin(name);
-            eventDispatcher.dispatch(new PluginRemovedEvent(name));
+            pluginContainer.removePlugin(namespace);
 
             ImportPluginFactory.importPlugin(model, application)
                     .subscribe(pObj -> pluginContainer.addPlugin(pObj, model));
 
-            eventDispatcher.dispatch(new PluginAddedEvent(model));
-
-            return Response.from("Plugin " + name + " updated");
+            return Response.from("Plugin with namespace" + namespace + " updated");
         });
     }
 
-    public ResponseBag deletePlugin(String name)
+    public ResponseBag deletePlugin(String namespace)
     {
         return ResponseBag.from(uid -> {
-            val opt = pluginModelRepository.findByName(name);
+            val opt = pluginModelRepository.findByNamespace(namespace);
             if (opt.isEmpty())
             {
-                return Response.from(name + " plugin not found", HttpStatus.NOT_FOUND.value());
+                return Response.from("Plugin namespace: " + namespace + " not found",
+                        HttpStatus.NOT_FOUND.value());
             } else
             {
                 pluginModelRepository.delete(opt.get());
-                pluginContainer.removePlugin(name);
-                eventDispatcher.dispatch(new PluginRemovedEvent(name));
-                return GetPluginResponse.from(Response.from(name + " plugin delete"),
+                pluginContainer.removePlugin(namespace);
+                return GetPluginResponse.from(Response.from(namespace + " plugin delete"),
                         opt.get());
             }
         });

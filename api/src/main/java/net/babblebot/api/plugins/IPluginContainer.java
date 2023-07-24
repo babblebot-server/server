@@ -48,18 +48,18 @@ public interface IPluginContainer
     /**
      * This method allows you to remove a plugin from the container.
      *
-     * @param name - This is the module that you want to remove.
+     * @param namespace - The namespace of the plugin
      */
-    void removePlugin(String name);
+    void removePlugin(String namespace);
 
 
     /**
      * This method checks whether the plugin specified exists in the container.
      *
-     * @param name - The name of the plugin.
+     * @param namespace - The namespace of the plugin.
      * @return boolean
      */
-    boolean doesPluginExist(String name);
+    boolean doesPluginExist(String namespace);
 
     /**
      * Return a plugin by its name
@@ -71,7 +71,7 @@ public interface IPluginContainer
 
     PluginPermissionContainer getPluginPermissions(Object pluginObj);
 
-    PluginPermissionContainer getPluginPermissions(String name);
+    PluginPermissionContainer getPluginPermissions(String namespace);
 
     /**
      * This will attempt to shut down all plugins if they implement {@link IPluginEvents}

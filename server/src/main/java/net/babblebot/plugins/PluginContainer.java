@@ -27,11 +27,14 @@ package net.babblebot.plugins;
 
 import de.skuzzle.semantic.Version;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
+import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.plugins.*;
+import net.babblebot.api.service.IVersionService;
 import net.babblebot.command.CommandRegistry;
-import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -44,28 +47,23 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class PluginContainer implements IPluginContainer
 {
-    private final Map<String, Object> plugins;
-    private final Map<String, String> pluginNamespaces;
-    private final ApplicationContext applicationContext;
-    private final Map<String, IPluginSettings> settings;
-    private final Map<Object, PluginPermissionContainer> pluginPermissionsMap;
-
-    public PluginContainer(ApplicationContext applicationContext)
-    {
-        this.applicationContext = applicationContext;
-        plugins = new HashMap<>();
-        settings = new HashMap<>();
-        pluginNamespaces = new HashMap<>();
-        pluginPermissionsMap = new HashMap<>();
-    }
+    private final Map<String, Object> plugins = new HashMap<>();
+    private final Map<String, IPluginSettings> settings = new HashMap<>();
+    private final Map<Object, PluginPermissionContainer> pluginPermissionsMap = new HashMap<>();
+    private final IVersionService versionService;
+    private final IApplication application;
+    private final ICommandRegistry commandRegistry;
 
     @Override
     public void addPlugin(Object obj, IPluginModel model)
     {
-        IApplication application = applicationContext.getBean(IApplication.class);
-        if (plugins.containsKey(model.getName()) || plugins.containsValue(obj))
+        String baseName = getPluginNameFromObject(obj);
+        PluginModel model1 = (PluginModel) model;
+        model1.setName(baseName);
+        if (plugins.containsKey(model.getNamespace()) || plugins.containsValue(obj))
         {
             log.error("The key or plugin is already in the container.");
         } else
@@ -73,7 +71,6 @@ public class PluginContainer implements IPluginContainer
             String pName, author, minServerVersion, maxServerVersion;
             pluginPermissionsMap.put(obj, model.getPluginPermissions());
             String namespace = calculateNamespace(model);
-            pluginNamespaces.put(model.getName(), namespace);
 
             if (obj instanceof IPlugin)
             {
@@ -92,7 +89,7 @@ public class PluginContainer implements IPluginContainer
 
                 author = plugin.author();
                 minServerVersion = plugin.minServerVersion().equals("0")
-                        ? application.getServerVersion()
+                        ? versionService.getVersionStr()
                         : plugin.minServerVersion();
                 maxServerVersion = plugin.maxServerVersion();
             } else
@@ -121,26 +118,37 @@ public class PluginContainer implements IPluginContainer
                     }
                 }
                 PluginCommandParser commandParser = new PluginCommandParser(application, settings, obj);
-                application.getCommandRegistry().addNamespace(settings.getNamespace(),
+                commandRegistry.addNamespace(settings.getNamespace(),
                         commandParser.parseCommands(), application);
                 PluginMiddlewareParser middlewareParser = new PluginMiddlewareParser(application, obj);
                 middlewareParser.parseMiddleware().forEach(mp -> {
                     if (mp.getFirst())
                     {
-                        application.getCommandRegistry()
-                                .registerGlobalMiddleware(mp.getSecond(), obj, application);
+                        commandRegistry
+                                .registerGlobalMiddleware(mp.getSecond());
                     } else
                     {
-                        application.getCommandRegistry()
+                        commandRegistry
                                 .registerPluginMiddleware(settings, mp.getSecond());
                     }
                 });
                 log.info("Added plugin: " + settings.getName() + " (by {}), using namespace: \"" +
                         settings.getNamespace() + "\"", settings.getAuthor());
-                this.settings.put(model.getName(), settings);
-                plugins.put(model.getName(), obj);
+                this.settings.put(model.getNamespace(), settings);
+                plugins.put(model.getNamespace(), obj);
             }
         }
+    }
+
+    private String getPluginNameFromObject(Object obj)
+    {
+        if (obj instanceof IPlugin)
+        {
+            return ((IPlugin) obj).getName();
+        }
+        Plugin p = AnnotationUtils.synthesizeAnnotation(obj.getClass().getAnnotation(Plugin.class),
+                obj.getClass());
+        return p.value();
     }
 
     private String calculateNamespace(IPluginModel model)
@@ -158,8 +166,7 @@ public class PluginContainer implements IPluginContainer
                                               String minimumServerVersion,
                                               String maximumServerVersion)
     {
-        IApplication application = applicationContext.getBean(IApplication.class);
-        Version serverVersion = Version.parseVersion(application.getServerVersion());
+        Version serverVersion = Version.parseVersion(versionService.getVersionStr());
         Version minVersion = Version.parseVersion(minimumServerVersion);
 
         if (serverVersion.isGreaterThanOrEqualTo(minVersion))
@@ -200,7 +207,7 @@ public class PluginContainer implements IPluginContainer
     {
         if (!plugins.containsKey(name))
         {
-            log.error("The module name entered does not exist inside this container.");
+            log.error("The plugin namespace entered does not exist inside this container.");
         } else
         {
             Object o = plugins.get(name);
@@ -208,13 +215,11 @@ public class PluginContainer implements IPluginContainer
             {
                 ((IPluginEvents) o).onShutdown();
             }
-            CommandRegistry commandDispatcher = applicationContext.getBean(CommandRegistry.class);
-            IApplication application = applicationContext.getBean(IApplication.class);
-            commandDispatcher.removeNamespace(pluginNamespaces.get(name), application);
+            CommandRegistry commandDispatcher = application.get(CommandRegistry.class);
+            commandDispatcher.removeNamespace(name, application);
             pluginPermissionsMap.remove(o);
             settings.remove(name);
             plugins.remove(name);
-            pluginNamespaces.remove(name);
             log.info("Removed plugin {} from the system", name);
         }
     }
@@ -271,10 +276,6 @@ public class PluginContainer implements IPluginContainer
     @Override
     public Optional<IPluginSettings> getPluginSettingsFromNamespace(String namespace)
     {
-        return settings.values()
-                .stream()
-                .filter(pluginSettings -> pluginSettings.getNamespace()
-                        .equals(namespace))
-                .findFirst();
+        return Optional.ofNullable(settings.getOrDefault(namespace, null));
     }
 }

@@ -23,21 +23,22 @@
  *
  */
 
-package net.babblebot.connect;
+package net.babblebot.exception;
 
-import net.babblebot.api.connect.IConnectQueue;
-import org.springframework.stereotype.Service;
-
-import java.io.Serializable;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Connect Server that will handle sending messages
+ * Exception when the server version file is not present
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since __RELEASE_VERSION__
  */
-@Service
-public interface ConnectServer
+@Slf4j
+public class VersionFileNotPresentException extends RuntimeException
 {
-    void sendMessage(IConnectQueue<?> connectQueue, Serializable serializable);
+    @Override
+    public String getMessage()
+    {
+        return "Could not find version file please run :createProperties";
+    }
 }

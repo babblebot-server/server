@@ -39,5 +39,5 @@ import java.util.Optional;
 @Repository
 public interface PluginModelRepository extends JpaRepository<PluginModel, Long>
 {
-    Optional<PluginModel> findByName(String name);
+    Optional<PluginModel> findByNamespace(String namespace);
 }

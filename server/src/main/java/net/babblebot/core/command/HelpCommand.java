@@ -35,6 +35,7 @@ import net.babblebot.api.config.IConfig;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedField;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.babblebot.api.plugins.IPluginContainer;
 import net.babblebot.api.plugins.IPluginSettings;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -58,6 +59,7 @@ public class HelpCommand
     private final ICommandRegistry commandRegistry;
     private final IConfig config;
     private final IApplication application;
+    private final IPluginContainer pluginContainer;
 
     public EmbedMessage exec(DiscordMessage message, ICommandContext ctx)
     {
@@ -89,7 +91,7 @@ public class HelpCommand
 
             sb.append("```");
 
-            Optional<IPluginSettings> settings = application.getPluginContainer()
+            Optional<IPluginSettings> settings = pluginContainer
                     .getPluginSettingsFromNamespace(namespace);
             String name = namespace + " Commands";
             if (settings.isPresent())

@@ -23,50 +23,37 @@
  *
  */
 
-package net.babblebot.connect.queue;
+package net.babblebot.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.IApplication;
-import net.babblebot.api.connect.ConnectQueue;
-import net.babblebot.api.connect.IConnectQueue;
-import net.babblebot.api.events.IEvent;
-import net.babblebot.connect.ConnectClient;
-import net.babblebot.connect.ConnectServer;
+import net.babblebot.api.service.IVersionService;
+import net.babblebot.exception.VersionFileNotPresentException;
+import org.apache.commons.io.IOUtils;
+import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
-import java.util.function.Consumer;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
- * Event Dispatcher Queue
+ * Version Service for Getting the server version
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@ConnectQueue
-@RequiredArgsConstructor
-public class EventDispatcherQueue implements IConnectQueue<IEvent>
+@Service
+public class VersionService implements IVersionService
 {
-    private final IApplication application;
-
     @Override
-    public void send(IEvent obj)
+    public String getVersionStr()
     {
-        application.get(ConnectServer.class)
-                .sendMessage(this, obj);
-    }
-
-    @Override
-    public void setMessageHandler(Consumer<IEvent> obj)
-    {
-        Consumer<Serializable> s = ser -> obj.accept((IEvent) ser);
-        application.get(ConnectClient.class).registerMessageHandler(this, s);
-    }
-
-    @Override
-    public boolean isMulticast()
-    {
-        return true;
+        try
+        {
+            return IOUtils.resourceToString("/version.txt", StandardCharsets.UTF_8).trim();
+        }
+        catch (IOException e)
+        {
+           throw new VersionFileNotPresentException();
+        }
     }
 }

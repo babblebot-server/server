@@ -56,8 +56,8 @@ public class PluginModel implements IPluginModel
     private String name;
     private PluginType pluginType;
     private String classPath;
-    @Builder.Default
-    private String namespace = "$name";
+    @Column(unique = true)
+    private String namespace;
     private PluginPermissionContainer pluginPermissions;
     @Builder.Default
     private String config = "{}";
@@ -66,15 +66,4 @@ public class PluginModel implements IPluginModel
     @JsonIgnore
     @ToString.Exclude
     private byte[] fileData;
-
-    public String getNamespace()
-    {
-        if (namespace.equals("$name"))
-        {
-            return this.name.toLowerCase();
-        } else
-        {
-            return this.namespace;
-        }
-    }
 }

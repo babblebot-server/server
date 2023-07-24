@@ -33,11 +33,7 @@ import net.babblebot.api.command.ICommand;
 import net.babblebot.api.command.ICommandContext;
 import net.babblebot.api.command.ICommandMiddleware;
 import net.babblebot.api.command.ICommandRegistry;
-import net.babblebot.api.config.EPluginPermission;
-import net.babblebot.api.plugins.IPlugin;
-import net.babblebot.api.plugins.IPluginContainer;
 import net.babblebot.api.plugins.IPluginSettings;
-import net.babblebot.api.plugins.Plugin;
 import net.babblebot.discord.DiscordFacade;
 import net.babblebot.discord.obj.factories.DiscordObjectFactory;
 import org.springframework.stereotype.Component;
@@ -284,26 +280,26 @@ public class CommandRegistry implements ICommandRegistry
     }
 
     @Override
-    public void registerGlobalMiddleware(ICommandMiddleware middleware, Object registrar,
-                                         IApplication application)
+    public void registerGlobalMiddleware(ICommandMiddleware middleware)
     {
-        if (registrar.getClass().isAnnotationPresent(Plugin.class) || registrar instanceof IPlugin)
-        {
-            IPluginContainer container = application.getPluginContainer();
-            if (container.getPluginPermissions(registrar)
-                    .hasPermission(EPluginPermission.REGISTER_GLOBAL_MIDDLEWARE))
-            {
-                log.info("Plugin {} has registered global middleware", registrar.getClass().getSimpleName());
-                this.middlewareList.get(null).add(middleware);
-            } else
-            {
-                log.warn("Plugin {} has attempted to register global middleware when it doesn't have " +
-                        "permission to", registrar.getClass().getSimpleName());
-            }
-        } else
-        {
+//        if (registrar.getClass().isAnnotationPresent(Plugin.class) || registrar instanceof IPlugin)
+//        {
+//            //TODO: Create A Plugin Permissions Service
+////            IPluginContainer container = application.getPluginContainer();
+////            if (container.getPluginPermissions(registrar)
+////                    .hasPermission(EPluginPermission.REGISTER_GLOBAL_MIDDLEWARE))
+////            {
+//            log.info("Plugin {} has registered global middleware", registrar.getClass().getSimpleName());
+//            this.middlewareList.get(null).add(middleware);
+////            } else
+////            {
+////                log.warn("Plugin {} has attempted to register global middleware when it doesn't have " +
+////                        "permission to", registrar.getClass().getSimpleName());
+////            }
+//        } else
+//        {
             this.middlewareList.get(null).add(middleware);
-        }
+//        }
     }
 
 
@@ -399,7 +395,7 @@ public class CommandRegistry implements ICommandRegistry
      * @param namespace   the command namespace
      * @param commandName the alias of the command
      * @return {@link Optional} of a {@link ICommand} if a command is found
- * @since 3.0.0-rc.26
+     * @since 3.0.0-rc.26
      */
     public Optional<ICommand> findCommand(ICommandContext ctx, String namespace, String commandName)
     {

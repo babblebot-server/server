@@ -23,18 +23,39 @@
  *
  */
 
-package net.babblebot.api.connect;
+package net.babblebot.discord;
 
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.command.AbstractCommandContext;
+
+import java.util.Map;
 
 /**
- * Connect Queue Interface
+ * DiscordCommandContext
  *
  * @author me@bdavies.net (Ben Davies)
  * @since 3.0.0-rc.26
  */
-public interface IConnectQueueResponse<T extends Serializable, R extends Serializable> extends
-        IConnectQueue<T>
+@Slf4j
+public class DiscordCommandContext extends AbstractCommandContext
 {
-    R sendWithResponse(T obj);
+    @Getter
+    private final DiscordMessage message;
+
+    /**
+     * This is the CommandContext Constructor.
+     *
+     * @param commandName - The name of the command.
+     * @param parameters  - THe command's parameters.
+     * @param value       - The value of the command (if any).
+     * @param type        - The type of the command.
+     */
+    public DiscordCommandContext(String commandName, Map<String, String> parameters, String value,
+                                 String type, DiscordMessage message)
+    {
+        super(commandName, parameters, value, type);
+        this.message = message;
+    }
 }

@@ -25,13 +25,10 @@
 
 package net.babblebot.api;
 
-import net.babblebot.api.command.ICommandRegistry;
-import net.babblebot.api.plugins.IPluginContainer;
-import net.babblebot.api.variables.IVariableContainer;
 import org.springframework.stereotype.Component;
 
 /**
- * This is a interface for an application
+ * This is an interface for an application
  *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
@@ -39,9 +36,8 @@ import org.springframework.stereotype.Component;
 @Component
 public interface IApplication
 {
-
     /**
-     * This will return of a instance of a class and inject any dependencies that are inside the dependency
+     * This will return of an instance of a class and inject any dependencies that are inside the dependency
      * injector.
      *
      * @param clazz - this is the class to create
@@ -50,49 +46,11 @@ public interface IApplication
     <T> T get(Class<T> clazz);
 
     /**
-     * This will return an instance of the application command dispatcher.
-     *
-     * @return {@link ICommandRegistry}
-     */
-    ICommandRegistry getCommandRegistry();
-
-    /**
-     * This will return an instance of the application variable container
-     *
-     * @return {@link IVariableContainer}
-     */
-    IVariableContainer getVariableContainer();
-
-    /**
-     * This will return an instance of the application plugin container
-     *
-     * @return {@link IVariableContainer}
-     */
-    IPluginContainer getPluginContainer();
-
-    /**
-     * This will return the version of the server.
-     *
-     * @return String
-     */
-    String getServerVersion();
-
-    /**
-     * Will shut down the application
-     */
-    void shutdown();
-
-    /**
-     * This will return true if babblebot has a argument basic at the moment only supports empty arguments
+     * This will return true if babblebot has an argument basic at the moment only supports empty arguments
      * e.g. -restart
      *
      * @param argument - argument to test for
      * @return boolean
      */
     boolean hasArgument(String argument);
-
-    /**
-     * Restart babblebot
-     */
-    void restart();
 }

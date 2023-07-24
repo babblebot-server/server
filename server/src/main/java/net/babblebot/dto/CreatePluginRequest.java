@@ -46,9 +46,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class CreatePluginRequest
 {
     private MultipartFile plugin;
-    private String name;
     private PluginType type;
     private String classPath = null;
-    private String namespace = "$name";
+    private String namespace;
     private PluginPermissionContainer permissions = new PluginPermissionContainer();
 }

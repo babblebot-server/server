@@ -30,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.BabblebotApplication;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.connect.ConnectQueue;
 import net.babblebot.api.plugins.IPlugin;
 import net.babblebot.api.plugins.IPluginModel;
 import net.babblebot.api.plugins.Plugin;
@@ -282,8 +281,7 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                 Entity.class,
                 Controller.class,
                 RestController.class,
-                Entity.class,
-                ConnectQueue.class
+                Entity.class
         );
 
         return Arrays.stream(c.getAnnotations())

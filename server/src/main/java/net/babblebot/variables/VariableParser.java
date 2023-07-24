@@ -68,7 +68,7 @@ public class VariableParser
      */
     public VariableParser(String commandResponse, IApplication application)
     {
-        IVariableContainer container = application.getVariableContainer();
+        IVariableContainer container = application.get(IVariableContainer.class);
 
         parsedString = commandResponse;
         String[] variablesFound = findAllVariables(new DollarSignStrategy(), commandResponse);

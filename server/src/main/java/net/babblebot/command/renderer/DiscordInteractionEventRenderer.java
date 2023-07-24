@@ -25,10 +25,8 @@
 
 package net.babblebot.command.renderer;
 
-import discord4j.core.GatewayDiscordClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.IApplication;
 import net.babblebot.api.command.IResponse;
 import net.babblebot.api.discord.DiscordMessageSendSpec;
 import net.babblebot.api.discord.IDiscordMessagingService;
@@ -48,9 +46,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class DiscordInteractionEventRenderer implements CommandRenderer
 {
-    private final GatewayDiscordClient client;
     private final InteractionDiscordMessage message;
-    private final IApplication application;
     private final IDiscordMessagingService service;
     private boolean replied;
 

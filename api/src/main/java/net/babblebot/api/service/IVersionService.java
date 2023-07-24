@@ -23,27 +23,18 @@
  *
  */
 
-package net.babblebot.api.events;
+package net.babblebot.api.service;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.plugins.IPluginContainer;
-import net.babblebot.api.plugins.IPluginModel;
-
-import java.util.UUID;
+import org.springframework.stereotype.Service;
 
 /**
- * An Event that will trigger when the {@link IPluginContainer} gets a new plugin
+ * Version Service for Getting the server version
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since __RELEASE_VERSION__
  */
-@Slf4j
-@RequiredArgsConstructor
-@Data
-public class PluginAddedEvent implements IEvent
+@Service
+public interface IVersionService
 {
-    private final String uniqueId = UUID.randomUUID().toString();
-    private final IPluginModel pluginModel;
+    String getVersionStr();
 }

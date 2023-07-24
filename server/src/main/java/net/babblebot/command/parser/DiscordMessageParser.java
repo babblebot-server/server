@@ -27,7 +27,7 @@ package net.babblebot.command.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.DiscordCommandContext;
+import net.babblebot.discord.DiscordCommandContext;
 import net.babblebot.api.command.ICommandContext;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
 
