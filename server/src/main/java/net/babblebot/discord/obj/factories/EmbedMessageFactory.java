@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  * Factory to Create EmbedCreateSpec from Babblebot Object
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since 3.0.0-rc.27
  */
 @Slf4j
 public class EmbedMessageFactory

@@ -43,7 +43,7 @@ import java.util.List;
  * Service for Loading Plugins
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.27
  */
 @Slf4j
 @Service

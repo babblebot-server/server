@@ -1,3 +1,5 @@
+# [3.0.0-rc.27](https://github.com/babblebot-server/server/compare/v3.0.0-rc.26...v3.0.0-rc.27) (2023-07-24)
+
 # [3.0.0-rc.26](https://github.com/babblebot-server/server/compare/v3.0.0-rc.25...v3.0.0-rc.26) (2023-07-12)
 
 

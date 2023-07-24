@@ -395,7 +395,7 @@ public class CommandRegistry implements ICommandRegistry
      * @param namespace   the command namespace
      * @param commandName the alias of the command
      * @return {@link Optional} of a {@link ICommand} if a command is found
-     * @since 3.0.0-rc.26
+ * @since 3.0.0-rc.27
      */
     public Optional<ICommand> findCommand(ICommandContext ctx, String namespace, String commandName)
     {

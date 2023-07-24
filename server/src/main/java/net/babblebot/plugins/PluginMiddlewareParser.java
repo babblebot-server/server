@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since 3.0.0-rc.27
  */
 @Slf4j
 public final class PluginMiddlewareParser

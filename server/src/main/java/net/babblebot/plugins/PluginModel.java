@@ -38,7 +38,7 @@ import net.babblebot.api.plugins.PluginType;
  * Entity for a Plugin will serialise for a distributed System
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.26
+ * @since 3.0.0-rc.27
  */
 @Slf4j
 @Entity

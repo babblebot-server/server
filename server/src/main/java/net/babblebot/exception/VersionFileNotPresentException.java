@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * Exception when the server version file is not present
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.27
  */
 @Slf4j
 public class VersionFileNotPresentException extends RuntimeException
