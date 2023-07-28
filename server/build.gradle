@@ -23,7 +23,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'org.xerial:sqlite-jdbc:3.34.0'
     implementation 'net.bytebuddy:byte-buddy:1.11.14'
-    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-lang3:3.13.0'
     implementation 'org.java-websocket:Java-WebSocket:1.5.3'
     implementation 'org.xeustechnologies:jcl-core:2.8'
 
