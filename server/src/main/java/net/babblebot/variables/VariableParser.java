@@ -57,7 +57,7 @@ public class VariableParser
     /**
      * This is the string that has been parsed and will get returned to the user.
      */
-    private String parsedString;
+    private String parsedString = null;
 
 
     /**
@@ -69,6 +69,11 @@ public class VariableParser
     public VariableParser(String commandResponse, IApplication application)
     {
         IVariableContainer container = application.get(IVariableContainer.class);
+        if (commandResponse == null)
+        {
+            parsedString = "";
+            return;
+        }
 
         parsedString = commandResponse;
         String[] variablesFound = findAllVariables(new DollarSignStrategy(), commandResponse);

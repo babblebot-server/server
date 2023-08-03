@@ -29,12 +29,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.command.IResponse;
 import net.babblebot.api.discord.DiscordMessageSendSpec;
-import net.babblebot.api.discord.IDiscordMessagingService;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
-import net.babblebot.api.obj.message.discord.InteractionDiscordMessage;
 import net.babblebot.command.ResponseFactory;
 import net.babblebot.command.errors.UsageException;
-import reactor.core.publisher.Mono;
+import net.babblebot.discord.services.DiscordMessagingService;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+
+import java.util.Optional;
 
 /**
  * Renderer for an Interaction event from Discord
@@ -46,34 +47,30 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class DiscordInteractionEventRenderer implements CommandRenderer
 {
-    private final InteractionDiscordMessage message;
-    private final IDiscordMessagingService service;
+    private final DiscordMessage message;
+    private final DiscordMessagingService service;
+    private final SlashCommandInteractionEvent event;
     private boolean replied;
 
     @Override
     public void render(IResponse response)
     {
-        if (response.isStringResponse())
-        {
-            reply(DiscordMessageSendSpec.fromString(response.getStringResponse()))
-                    .subscribe();
-        } else
-        {
-            reply(DiscordMessageSendSpec.fromEmbed(response.getEmbedCreateSpecResponse().get())).subscribe();
-        }
+        reply(response.getSendSpec());
     }
 
-    private Mono<DiscordMessage> reply(DiscordMessageSendSpec spec)
+    private Optional<DiscordMessage> reply(DiscordMessageSendSpec spec)
     {
         if (replied)
         {
             return service.send(message.getGuild(),
                     message.getChannel(), spec);
         }
-
-        return service.sendInteractionFollowup(message, spec)
-                .doFirst(() -> replied = true)
-                .map(r -> DiscordMessage.builder().build());
+        Optional<DiscordMessage> resp = service.sendInteractionFollowup(event.getHook(), spec);
+        if (resp.isPresent())
+        {
+            replied = true;
+        }
+        return resp;
     }
 
     @Override

@@ -23,24 +23,56 @@
  *
  */
 
-package net.babblebot.command.response;
+package net.babblebot.api.obj.message.discord.interactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.command.IResponse;
-import net.babblebot.api.discord.DiscordMessageSendSpec;
+import net.babblebot.api.obj.message.discord.interactions.button.Button;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownMenu;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Base Response Class
- *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 @Data
-@Builder(toBuilder = true)
-public class BaseResponse implements IResponse
+@Builder
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Row implements InteractionItem
 {
-    private final DiscordMessageSendSpec sendSpec;
+    @Singular("addDropdownMenu")
+    private final List<DropdownMenu> menus;
+    @Singular("addButton")
+    private final List<Button> buttons;
+
+    public static Row from(InteractionItem... items)
+    {
+        return from(Arrays.asList(items));
+    }
+
+    public static Row from(Collection<? extends InteractionItem> items)
+    {
+        RowBuilder builder = Row.builder();
+        items.forEach(i -> {
+            if (i instanceof DropdownMenu)
+            {
+                builder.addDropdownMenu((DropdownMenu) i);
+            }
+
+            if (i instanceof Button)
+            {
+                builder.addButton((Button) i);
+            }
+        });
+        return builder.build();
+    }
 }

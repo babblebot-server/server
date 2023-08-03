@@ -23,25 +23,45 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.api.obj.message.discord.interactions.dropdown;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Command Middleware
+ * Dropdown Menu Interaction
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+@Slf4j
+@Builder
+@Data
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DropdownOption
 {
-    boolean global() default false;
+    private final String name;
+    private final String value;
+    private final String description;
 
-    Class<?> plugin() default Object.class;
+    public static DropdownOption from(String name, String value)
+    {
+        return DropdownOption.builder()
+                .name(name)
+                .value(value)
+                .build();
+    }
+
+    public static DropdownOption from(String name, String value, String description)
+    {
+        return DropdownOption.builder()
+                .name(name)
+                .value(value)
+                .description(description)
+                .build();
+    }
 }

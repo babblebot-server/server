@@ -25,43 +25,43 @@
 
 package net.babblebot.discord;
 
-import discord4j.core.DiscordClient;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.lifecycle.DisconnectEvent;
-import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.object.presence.ClientActivity;
-import discord4j.core.object.presence.ClientPresence;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.IApplication;
 import net.babblebot.api.config.IDiscordConfig;
-import net.babblebot.discord.services.Discord4JBotMessageService;
+import net.babblebot.discord.listener.*;
 import net.babblebot.exception.DiscordTokenNotPresentException;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 /**
- * This class will setup Discord4J by making a {@link discord4j.core.DiscordClient}
+ * This class will DiscordAPI Client by making a {@link JDA}
  *
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
 @Slf4j
 @Service
-public class Discord4JService
+@RequiredArgsConstructor
+public class DiscordLoginService
 {
-    private final IApplication application;
     private final IDiscordConfig config;
+    private final ReadyListener readyListener;
+    private final MessageReceivedListener messageReceivedListener;
+    private final SlashCommandListener slashCommandListener;
+    private final DropdownListener dropdownListener;
+    private final ButtonListener buttonListener;
+
     @Getter
-    private GatewayDiscordClient client;
+    private JDA client;
 
-    public Discord4JService(IApplication application, IDiscordConfig config)
-    {
-        this.application = application;
-        this.config = config;
-        setupClient();
-    }
 
+    @PostConstruct
     private void setupClient()
     {
         try
@@ -71,15 +71,17 @@ public class Discord4JService
                 throw new DiscordTokenNotPresentException();
             }
             log.info("Setting up Discord Client");
-
-            client = DiscordClient.builder(config.getToken()).build().login().block();
-            assert client != null;
-            client.getEventDispatcher().on(ReadyEvent.class).subscribe(e -> {
-                client.updatePresence(ClientPresence.online(ClientActivity.playing(config.getPlayingText())))
-                        .block();
-                log.info("Started Discord Client, waiting for messages...");
-                this.startMessageService();
-            });
+            client = JDABuilder
+                    .createDefault(config.getToken())
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES)
+                    .addEventListeners(
+                            readyListener,
+                            messageReceivedListener,
+                            slashCommandListener,
+                            dropdownListener,
+                            buttonListener
+                    )
+                    .build();
         }
         catch (NullPointerException e)
         {
@@ -90,13 +92,12 @@ public class Discord4JService
     @PreDestroy
     void onShutdown()
     {
-        this.client.on(DisconnectEvent.class).subscribe(s -> log.info("Bot has been logged out!!"));
-        this.client.logout().block();
+        this.client.shutdownNow();
     }
 
-    public void startMessageService()
+    @Bean
+    JDA internalDiscordClient()
     {
-        Discord4JBotMessageService messageService = application.get(Discord4JBotMessageService.class);
-        messageService.register();
+        return this.client;
     }
 }

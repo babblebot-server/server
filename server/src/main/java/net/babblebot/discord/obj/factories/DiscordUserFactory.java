@@ -23,25 +23,44 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.discord.obj.factories;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.obj.message.discord.DiscordId;
+import net.babblebot.api.obj.message.discord.DiscordUser;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.User;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
- * Command Middleware
+ * Factory for converting between babblebot and internal apis
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since 3.0.0-rc.26
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+@Slf4j
+@Component
+@RequiredArgsConstructor(onConstructor_ = @Lazy)
+public class DiscordUserFactory implements IDiscordObjectFactory<DiscordUser, User>
 {
-    boolean global() default false;
+    private final JDA client;
 
-    Class<?> plugin() default Object.class;
+    @Override
+    public DiscordUser makeFromInternal(User user)
+    {
+        return DiscordUser.builder()
+                .id(DiscordId.from(user.getIdLong()))
+                .name(user.getName())
+                .build();
+    }
+
+    @Override
+    public Optional<User> makeInternalFromId(long id)
+    {
+        return Optional.ofNullable(client.getUserById(id));
+    }
 }

@@ -14,7 +14,7 @@ ext {
     project_name = "BabbleBot-Server"
     artifact_group = 'net.babblebot'
     project_version = "$version".toString()
-    project_description = "A fully modular bot for Discord using Discord4j as the back-end"
+    project_description = "A fully modular bot for Discord using JDA as the back-end"
     project_url = 'https://babblebot.net'
     project_jdk = JavaVersion.VERSION_17
     jdk = JavaVersion.current().majorVersion
@@ -133,7 +133,7 @@ subprojects {
 
                         pom {
                             name = "babblebot-server-$project.name"
-                            description = 'A fully modular bot for Discord using Discord4j as the back-end'
+                            description = 'A fully modular bot for Discord using JDA as the back-end'
                             url = 'https://github.com/babblebot-server/server'
                             issueManagement {
                                 system = 'GitHub'

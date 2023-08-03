@@ -27,13 +27,14 @@ package net.babblebot.core;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.discord.DiscordCommandContext;
+import net.babblebot.api.IApplication;
 import net.babblebot.api.command.*;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
-import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownView;
 import net.babblebot.api.plugins.Plugin;
 import net.babblebot.core.command.*;
 import net.babblebot.core.repository.IgnoreRepository;
+import net.babblebot.discord.DiscordCommandContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -52,6 +53,7 @@ public class CorePlugin
     private final RegisterAnnouncementChannelCommand registerAnnouncementChannelCommand;
     private final RemoveAnnouncementChannelCommand removeAnnouncementChannelCommand;
     private final HelpCommand helpCommand;
+    private final IApplication application;
 
     @CommandMiddleware(global = true)
     public boolean checkIfChannelIgnored(ICommandContext ctx)
@@ -101,7 +103,7 @@ public class CorePlugin
             exampleValue = "ignore")
     @CommandParam(value = "cmd", canBeEmpty = false,
             exampleValue = "ignore")
-    public EmbedMessage help(ICommandContext commandContext, DiscordMessage message)
+    public DropdownView help(ICommandContext commandContext, DiscordMessage message)
     {
         return helpCommand.exec(message, commandContext);
     }

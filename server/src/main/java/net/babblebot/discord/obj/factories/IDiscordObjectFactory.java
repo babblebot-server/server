@@ -23,25 +23,24 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.discord.obj.factories;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Optional;
 
 /**
- * Command Middleware
+ * Discord Object Factory Interface
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+public interface IDiscordObjectFactory<Babblebot, Internal>
 {
-    boolean global() default false;
+    Babblebot makeFromInternal(Internal internal);
 
-    Class<?> plugin() default Object.class;
+    default Optional<Babblebot> makeFromId(long id)
+    {
+        return makeInternalFromId(id).map(this::makeFromInternal);
+    }
+
+    Optional<Internal> makeInternalFromId(long id);
 }

@@ -27,52 +27,42 @@ package net.babblebot.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.IApplication;
-import net.babblebot.api.config.EPluginPermission;
-import net.babblebot.api.plugins.IPluginContainer;
-import net.babblebot.core.CorePlugin;
-import net.babblebot.plugins.PluginModel;
-import net.babblebot.plugins.PluginModelRepository;
-import net.babblebot.plugins.importing.ImportPluginFactory;
+import net.babblebot.api.obj.message.discord.interactions.InteractionItem;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 /**
- * Service for Loading Plugins
- *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@Service
 @RequiredArgsConstructor
-public class PluginLoadingService
+@Service
+public class InteractionRegistry
 {
-    private final IPluginContainer container;
-    private final IApplication application;
-    private final CorePlugin corePlugin;
-    private final PluginModelRepository modelRepository;
+    private final Map<String, InteractionItem> handlers = new HashMap<>();
 
-    public void loadPlugins()
+    public void addHandler(String id, InteractionItem handler)
     {
-        addCorePlugin();
-        loadPluginsFromDatabase();
+        handlers.put(id.toLowerCase(Locale.ROOT), handler);
     }
 
-    private void loadPluginsFromDatabase()
+    public Optional<InteractionItem> getHandler(String id)
     {
-        List<PluginModel> plugins = modelRepository.findAll();
-        plugins.forEach(pluginModel -> ImportPluginFactory.importPlugin(pluginModel, application)
-                .subscribe(pObj -> container.addPlugin(pObj, pluginModel)));
+        if (!handlers.containsKey(id.toLowerCase(Locale.ROOT)))
+        {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(handlers.get(id.toLowerCase(Locale.ROOT)));
     }
 
-    private void addCorePlugin()
+    public void removeHandler(String id)
     {
-        container.addPlugin(corePlugin,
-                PluginModel.builder()
-                        .pluginPermissions(EPluginPermission.all())
-                        .namespace("")
-                        .build());
+        handlers.remove(id);
     }
 }

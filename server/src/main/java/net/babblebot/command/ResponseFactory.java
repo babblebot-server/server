@@ -27,6 +27,7 @@ package net.babblebot.command;
 
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.command.IResponse;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.babblebot.command.response.BaseResponse;
 
@@ -39,27 +40,28 @@ import java.util.function.Supplier;
 @Slf4j
 public class ResponseFactory
 {
-
-    public static IResponse createResponse(String s, Supplier<EmbedMessage> spec)
-    {
-        return BaseResponse.builder()
-                .stringResponse(s)
-                .embedMessageResponse(spec)
-                .build();
+    public static IResponse createFromSpec(DiscordMessageSendSpec spec) {
+        return BaseResponse.builder().sendSpec(spec).build();
     }
 
     public static IResponse createStringResponse(String s)
     {
-        return createResponse(s, null);
+        return BaseResponse.builder()
+                .sendSpec(DiscordMessageSendSpec.fromString(s))
+                .build();
     }
 
     public static IResponse createEmbedResponse(EmbedMessage s)
     {
-        return createResponse("", () -> s);
+        return BaseResponse.builder()
+                .sendSpec(DiscordMessageSendSpec.fromEmbed(s))
+                .build();
     }
 
     public static IResponse createEmbedResponse(Supplier<EmbedMessage> s)
     {
-        return createResponse("", s);
+        return BaseResponse.builder()
+                .sendSpec(DiscordMessageSendSpec.fromEmbed(s.get()))
+                .build();
     }
 }

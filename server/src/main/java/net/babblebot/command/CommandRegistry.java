@@ -35,7 +35,9 @@ import net.babblebot.api.command.ICommandMiddleware;
 import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.plugins.IPluginSettings;
 import net.babblebot.discord.DiscordFacade;
-import net.babblebot.discord.obj.factories.DiscordObjectFactory;
+import net.babblebot.discord.obj.factories.DiscordCommandFactory;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -117,36 +119,59 @@ public class CommandRegistry implements ICommandRegistry
                                              IApplication application)
     {
         DiscordFacade facade = application.get(DiscordFacade.class);
-        DiscordObjectFactory factory = application.get(DiscordObjectFactory.class);
-        long applicationId = facade.getClient().getRestClient().getApplicationId().blockOptional()
-                .orElseThrow();
-
-        var service = facade.getClient().getRestClient().getApplicationService();
-
-        facade.getClient().getGuilds().subscribe(guild -> commands.forEach(command ->
-                service.createGuildApplicationCommand(applicationId, guild.getId().asLong(),
-                        factory.createSlashCommand(namespace, command)).subscribe()));
+        DiscordCommandFactory factory = application.get(DiscordCommandFactory.class);
+        List<SlashCommandData> commandData = commands.stream()
+                .map(factory::createSlashCommand)
+                .collect(Collectors.toList());
+        commandData.parallelStream().forEach(cd -> {
+            facade.getClient().upsertCommand(cd).queue();
+            log.info("Registering command: {} {}", cd.getName(), cd.getDescription());
+        });
     }
 
-    public void removeDiscordSlashCommands(String namespace, List<ICommand> commands,
+    public void removeAllDanglingDiscordSlashCommands(IApplication application)
+    {
+        DiscordFacade facade = application.get(DiscordFacade.class);
+        facade.getClient().retrieveCommands().complete().parallelStream().forEach(c -> {
+            if (commands.values().stream()
+                    .flatMap(Collection::stream)
+                    .noneMatch(rc -> rc.getAliases()[0].equalsIgnoreCase(c.getName())))
+            {
+                log.info("Deleting Dangling command: {} {}", c.getName(), c.getDescription());
+                c.delete().queue();
+            }
+        });
+        facade.getClient().getGuilds().parallelStream().forEach(g ->
+                g.retrieveCommands().complete().parallelStream().forEach(c -> {
+                    if (commands.values().stream()
+                            .flatMap(Collection::stream)
+                            .noneMatch(rc -> rc.getAliases()[0].equalsIgnoreCase(c.getName())))
+                    {
+                        log.info("Deleting Dangling command: {} {} in guild: {}", c.getName(),
+                                c.getDescription(),
+                                g.getName());
+                        c.delete().queue();
+                    }
+                }));
+    }
+
+    public void removeDiscordSlashCommands(String namespace, List<ICommand> commandsToRemove,
                                            IApplication application)
     {
         DiscordFacade facade = application.get(DiscordFacade.class);
-        long applicationId = facade.getClient().getRestClient().getApplicationId().blockOptional()
-                .orElseThrow();
-
-        var service = facade.getClient().getRestClient().getApplicationService();
-
-        facade.getClient().getGuilds().subscribe(guild ->
-                service.getGuildApplicationCommands(applicationId, guild.getId().asLong())
-                        .subscribe(applicationCommand -> commands.forEach(command -> {
-                            if (applicationCommand.name()
-                                    .equalsIgnoreCase(namespace + command.getAliases()[0]))
-                            {
-                                service.deleteGuildApplicationCommand(applicationId, guild.getId().asLong(),
-                                        applicationCommand.id().asLong()).subscribe();
-                            }
-                        })));
+        List<Command> commands = facade.getClient().retrieveCommands()
+                .complete();
+        commands.forEach(c -> {
+            if (c.getName().startsWith(namespace))
+            {
+                if (commandsToRemove.stream()
+                        .anyMatch(ic -> ic.getAliases()[0]
+                                .equalsIgnoreCase(c.getName().replace(namespace, ""))))
+                {
+                    c.delete().complete();
+                }
+            }
+        });
     }
 
     @Override
@@ -279,31 +304,12 @@ public class CommandRegistry implements ICommandRegistry
         return namespace.get();
     }
 
-    @Override
     public void registerGlobalMiddleware(ICommandMiddleware middleware)
     {
-//        if (registrar.getClass().isAnnotationPresent(Plugin.class) || registrar instanceof IPlugin)
-//        {
-//            //TODO: Create A Plugin Permissions Service
-////            IPluginContainer container = application.getPluginContainer();
-////            if (container.getPluginPermissions(registrar)
-////                    .hasPermission(EPluginPermission.REGISTER_GLOBAL_MIDDLEWARE))
-////            {
-//            log.info("Plugin {} has registered global middleware", registrar.getClass().getSimpleName());
-//            this.middlewareList.get(null).add(middleware);
-////            } else
-////            {
-////                log.warn("Plugin {} has attempted to register global middleware when it doesn't have " +
-////                        "permission to", registrar.getClass().getSimpleName());
-////            }
-//        } else
-//        {
-            this.middlewareList.get(null).add(middleware);
-//        }
+        this.middlewareList.get(null).add(middleware);
     }
 
 
-    @Override
     public void registerPluginMiddleware(IPluginSettings plugin, ICommandMiddleware middleware)
     {
         middlewareList.putIfAbsent(plugin, new ArrayList<>());

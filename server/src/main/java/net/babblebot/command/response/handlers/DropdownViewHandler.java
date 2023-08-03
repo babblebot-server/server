@@ -23,25 +23,34 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.command.response.handlers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.command.IResponse;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownView;
+import net.babblebot.command.ResponseFactory;
+import net.babblebot.command.response.ResponseHandler;
+import reactor.core.publisher.Sinks;
+
+import java.lang.reflect.Type;
 
 /**
- * Command Middleware
- *
- * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @author ben.davies99@outlook.com (Ben Davies)
+ * @since 1.2.7
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+@Slf4j
+public class DropdownViewHandler extends ResponseHandler
 {
-    boolean global() default false;
 
-    Class<?> plugin() default Object.class;
+    public DropdownViewHandler(Type type, Sinks.Many<IResponse> processor)
+    {
+        super(type, processor);
+    }
+
+    @Override
+    protected <T> IResponse getResponse(T o)
+    {
+        return ResponseFactory.createFromSpec(DiscordMessageSendSpec.fromDropdownView((DropdownView) o));
+    }
 }

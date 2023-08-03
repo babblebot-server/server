@@ -23,25 +23,43 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.discord.obj.factories;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.obj.message.discord.DiscordGuild;
+import net.babblebot.api.obj.message.discord.DiscordId;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
- * Command Middleware
+ * Factory for converting between babblebot and internal apis
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since 3.0.0-rc.26
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+@Slf4j
+@Component
+@RequiredArgsConstructor(onConstructor_ = @Lazy)
+public class DiscordGuildFactory implements IDiscordObjectFactory<DiscordGuild, Guild>
 {
-    boolean global() default false;
+    private final JDA client;
 
-    Class<?> plugin() default Object.class;
+    public DiscordGuild makeFromInternal(Guild guild)
+    {
+        return DiscordGuild
+                .builder()
+                .id(DiscordId.from(guild.getIdLong()))
+                .name(guild.getName())
+                .build();
+    }
+
+    public Optional<Guild> makeInternalFromId(long id)
+    {
+        return Optional.ofNullable(client.getGuildById(id));
+    }
 }

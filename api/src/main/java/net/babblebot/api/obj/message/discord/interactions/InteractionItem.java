@@ -23,25 +23,14 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.api.obj.message.discord.interactions;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.Serializable;
 
 /**
- * Command Middleware
- *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+public interface InteractionItem extends Serializable
 {
-    boolean global() default false;
-
-    Class<?> plugin() default Object.class;
 }

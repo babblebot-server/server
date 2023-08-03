@@ -23,48 +23,53 @@
  *
  */
 
-package net.babblebot.command.renderer;
+package net.babblebot.discord.obj.factories;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.command.IResponse;
-import net.babblebot.api.discord.IDiscordMessagingService;
-import net.babblebot.command.ResponseFactory;
-import net.babblebot.command.errors.UsageException;
+import net.babblebot.api.obj.message.discord.DiscordChannel;
+import net.babblebot.api.obj.message.discord.DiscordId;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
- * Discord Command Renderer that will send the response to the channel
+ * Factory for converting between babblebot and internal apis
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since 3.0.0-rc.26
  */
 @Slf4j
-@RequiredArgsConstructor
-public class DiscordCommandRenderer implements CommandRenderer
+@Component
+@RequiredArgsConstructor(onConstructor_ = @Lazy)
+public class DiscordChannelFactory implements IDiscordObjectFactory<DiscordChannel, TextChannel>
 {
-    private final TextChannel channel;
-    private final Guild guild;
-    private final IDiscordMessagingService service;
+    private final JDA client;
+    private final DiscordGuildFactory discordGuildFactory;
 
     @Override
-    public void render(IResponse response)
+    public DiscordChannel makeFromInternal(TextChannel channel)
     {
-        long guildId = guild.getIdLong();
-        long channelId = channel.getIdLong();
-        service.send(guildId, channelId, response.getSendSpec());
+        return DiscordChannel.builder()
+                .id(DiscordId.from(channel.getIdLong()))
+                .guildId(DiscordId.from(channel.getGuild().getIdLong()))
+                .name(channel.getName())
+                .build();
+    }
+
+    public Optional<TextChannel> getChannelFromGuild(long guildId, long channelId)
+    {
+        Optional<Guild> guild = discordGuildFactory.makeInternalFromId(guildId);
+        return guild.map(value -> value.getTextChannelById(channelId));
     }
 
     @Override
-    public boolean onError(Exception e)
+    public Optional<TextChannel> makeInternalFromId(long id)
     {
-        if (e instanceof UsageException)
-        {
-            render(ResponseFactory.createStringResponse(e.getMessage()));
-            return true;
-        }
-
-        return false;
+        return Optional.ofNullable(client.getChannelById(TextChannel.class, id));
     }
 }

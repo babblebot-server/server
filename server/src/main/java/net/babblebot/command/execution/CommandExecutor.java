@@ -35,7 +35,6 @@ import net.babblebot.command.CommandRegistry;
 import net.babblebot.command.ResponseFactory;
 import net.babblebot.command.errors.UsageException;
 import net.babblebot.command.response.BaseResponse;
-import net.babblebot.variables.VariableParser;
 import org.springframework.stereotype.Service;
 import reactor.util.Loggers;
 
@@ -99,7 +98,6 @@ public class CommandExecutor
                 .getResponses()
                 .asFlux()
                 .cast(BaseResponse.class)
-                .map(this::addVariableParser)
                 .doOnComplete(() -> spec.getOnPostExecution().accept(ctx, command))
                 .log(Loggers.getLogger("CommandResponse-" + commandName))
                 .subscribe(br -> spec.getCommandRenderer().render(br),
@@ -118,17 +116,6 @@ public class CommandExecutor
         {
             log.error("Unable to render command {}", commandName, err);
         }
-    }
-
-    private BaseResponse addVariableParser(BaseResponse br)
-    {
-        if (br.isStringResponse())
-        {
-            return br.toBuilder()
-                    .stringResponse(new VariableParser(br.getStringResponse(), application).toString())
-                    .build();
-        }
-        return br;
     }
 
     private void renderDidYouMean(List<ICommand> commandsLike, CommandExecutionSpec spec,

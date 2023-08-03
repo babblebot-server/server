@@ -46,6 +46,13 @@ public @interface CommandParam
     String value();
 
     /**
+     * Parameter description
+     *
+     * @return string
+     */
+    String description() default "";
+
+    /**
      * If the command is optional
      *
      * @return boolean

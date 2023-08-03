@@ -27,7 +27,6 @@ package net.babblebot.api;
 
 import net.babblebot.api.obj.message.discord.DiscordUser;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -39,20 +38,17 @@ public interface IDiscordFacade
     /**
      * This is available to the public through plugins and this will allow for a bot to be logged out
      * I wouldn't recommend using this only if you would like to implement a logout command for the bot.
-     *
-     * @return {@link Mono} this is a Mono Stream of a Mono
      */
-    Mono<Void> logoutBot();
+    void logoutBot();
 
     /**
      * This is available to the public through plugins and this will return the bot user.
      * To use try doing {@code facade.getOurUser().subscribe(user -> System.out.println(user.getUsername())
      * );} look
-     * at {@link Mono#subscribe(java.util.function.Consumer)}
      *
-     * @return {@link Mono} this is a Mono Stream of a User
+     * @return get the bot user
      */
-    Mono<DiscordUser> getBotUser();
+    DiscordUser getBotUser();
 
     /**
      * This will update the presence of the bot to the text

@@ -27,9 +27,12 @@ package net.babblebot.command.response;
 
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.command.IResponse;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
-import net.babblebot.command.response.handlers.EmbedHandler;
-import net.babblebot.command.response.handlers.StringHandler;
+import net.babblebot.api.obj.message.discord.interactions.button.Button;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownMenu;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownView;
+import net.babblebot.command.response.handlers.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -84,8 +87,21 @@ public class ResponseHandlerFactory
             {
                 return new EmbedHandler(raw, processor);
             }
-        } else if (base.equals(EmbedMessage.class)) {
+        } else if (base.equals(EmbedMessage.class))
+        {
             return new EmbedHandler(raw, processor);
+        } else if (base.equals(DiscordMessageSendSpec.class))
+        {
+            return new SendMessageSpecHandler(raw, processor);
+        } else if (base.equals(DropdownView.class))
+        {
+            return new DropdownViewHandler(raw, processor);
+        } else if (base.equals(DropdownMenu.class))
+        {
+            return new DropdownMenuHandler(raw, processor);
+        } else if (base.equals(Button.class))
+        {
+            return new ButtonHandler(raw, processor);
         }
 
         return null;

@@ -25,30 +25,21 @@
 
 package net.babblebot.discord;
 
-import discord4j.core.DiscordClient;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.entity.User;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.ClientActivity;
-import discord4j.core.object.presence.ClientPresence;
-import discord4j.core.object.presence.Presence;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.IDiscordFacade;
-import net.babblebot.api.obj.message.discord.DiscordId;
 import net.babblebot.api.obj.message.discord.DiscordUser;
-import net.babblebot.discord.obj.factories.DiscordObjectFactory;
-import org.springframework.context.annotation.Bean;
+import net.babblebot.discord.obj.factories.DiscordUserFactory;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Activity;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 /**
  * This is the Public API for the Discord4JWrapper of the Discord API this will be used for plugins
  * It will include common utilities that will be required to create plugins
  * <p>
  * An example use case being calling {@link #getClient()}  in a plugin will give you access to the
- * {@link DiscordClient}
  * Use DiscordClient at your own risk it is subject to change, I would recommend just using the api given
  * to you
  * through the facade.
@@ -62,12 +53,12 @@ import reactor.core.publisher.Mono;
 public class DiscordFacade implements IDiscordFacade
 {
     @Getter
-    private final GatewayDiscordClient client;
+    private final JDA client;
 
     @Getter
     private final IApplication application;
 
-    public DiscordFacade(IApplication application, Discord4JService setup)
+    public DiscordFacade(IApplication application, DiscordLoginService setup)
     {
         this.application = application;
         this.client = setup.getClient();
@@ -76,46 +67,33 @@ public class DiscordFacade implements IDiscordFacade
     /**
      * This is available to the public through plugins and this will allow for a bot to be logged out
      * I wouldn't recommend using this only if you would like to implement a logout command for the bot.
-     *
-     * @return {@link Mono<Void>} this is a Mono Stream of a Mono
      */
-    public Mono<Void> logoutBot()
+    public void logoutBot()
     {
         log.info("Logging DiscordBot out!");
-        return this.client.logout();
+        this.client.shutdownNow();
     }
 
     /**
      * This is available to the public through plugins and this will return the bot user.
      * <p>
      * To use try doing {@code facade.getOurUser().subscribe(user -> System.out.println(user.getUsername()));}
-     * look at {@link Mono#subscribe(java.util.function.Consumer)}
      *
-     * @return {@link Mono<User>} this is a Mono Stream of a User
+     * @return the bot user
      */
-    public Mono<DiscordUser> getBotUser()
+    public DiscordUser getBotUser()
     {
-        DiscordObjectFactory objectFactory = application.get(DiscordObjectFactory.class);
-        return this.client.getSelf()
-                .flatMap(u -> Mono.justOrEmpty(objectFactory.userFromId(DiscordId.from(u.getId().asLong()))));
+        DiscordUserFactory userFactory = application.get(DiscordUserFactory.class);
+        return userFactory.makeFromInternal(client.getSelfUser());
     }
 
     /**
      * This will update the presence of the bot to the text
      *
      * @param text {@link String} the text to change it to
-     * @see GatewayDiscordClient#updatePresence(discord4j.core.object.presence.ClientPresence)
-     * @see Presence
-     * @see Activity
      */
     public void updateBotPlayingText(String text)
     {
-        this.client.updatePresence(ClientPresence.online(ClientActivity.playing(text))).block();
-    }
-
-    @Bean
-    GatewayDiscordClient internalDiscordClient()
-    {
-        return this.client;
+        this.client.getPresence().setActivity(Activity.playing(text));
     }
 }

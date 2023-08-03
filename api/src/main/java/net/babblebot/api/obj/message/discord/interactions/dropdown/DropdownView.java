@@ -23,25 +23,34 @@
  *
  */
 
-package net.babblebot.api.command;
+package net.babblebot.api.obj.message.discord.interactions.dropdown;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
+import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.api.obj.message.discord.interactions.InteractionItem;
+
+import java.util.function.BiFunction;
 
 /**
- * Command Middleware
+ * Dropdown Menu Interaction
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+@Slf4j
+@Builder
+@Data
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DropdownView implements InteractionItem
 {
-    boolean global() default false;
-
-    Class<?> plugin() default Object.class;
+    private final DropdownMenu menu;
+    @Builder.Default
+    private final BiFunction<String, DiscordMessage, DiscordMessageSendSpec> onSelectionView = (s, msg) ->
+            DiscordMessageSendSpec.fromString("Please add in the on Selection view");
 }

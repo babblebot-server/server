@@ -25,9 +25,7 @@
 
 package net.babblebot.api.command;
 
-import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
-
-import java.util.function.Supplier;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
 
 /**
  * @author ben.davies99@outlook.com (Ben Davies)
@@ -35,9 +33,5 @@ import java.util.function.Supplier;
  */
 public interface IResponse
 {
-    String getStringResponse();
-
-    Supplier<EmbedMessage> getEmbedCreateSpecResponse();
-
-    boolean isStringResponse();
+    DiscordMessageSendSpec getSendSpec();
 }

@@ -25,20 +25,16 @@
 
 package net.babblebot.core;
 
-import discord4j.common.util.Snowflake;
-import discord4j.core.object.entity.channel.TextChannel;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.command.IResponse;
 import net.babblebot.api.core.IAnnouncementService;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
 import net.babblebot.api.discord.IDiscordMessagingService;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.babblebot.core.repository.AnnouncementChannelRepository;
-import net.babblebot.command.ResponseFactory;
-import net.babblebot.command.renderer.DiscordCommandRenderer;
-import net.babblebot.discord.DiscordFacade;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.babblebot.discord.obj.factories.DiscordChannelFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -47,38 +43,26 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AnnouncementService implements IAnnouncementService
 {
-    private final DiscordFacade facade;
-
     private final IApplication application;
     private final AnnouncementChannelRepository announcementChannelRepo;
-
-    @Autowired
-    public AnnouncementService(DiscordFacade facade, IApplication application,
-                               AnnouncementChannelRepository announcementChannelRepo)
-    {
-        this.facade = facade;
-        this.application = application;
-        this.announcementChannelRepo = announcementChannelRepo;
-    }
+    private final DiscordChannelFactory discordChannelFactory;
+    private final IDiscordMessagingService messagingService;
 
     public synchronized void sendMessage(String title, String message)
     {
-        announcementChannelRepo.findAll().forEach(ac -> facade.getClient()
-                .getGuildById(Snowflake.of(ac.getGuild().getId().toLong()))
-                .subscribe(g -> g.getChannelById(Snowflake.of(ac.getChannel().getId().toLong()))
-                        .cast(TextChannel.class)
-                        .subscribe(ch -> {
-                            var renderer = new DiscordCommandRenderer(ch, g, application.get(
-                                    IDiscordMessagingService.class));
-                            val em = EmbedMessage.builder()
-                                    .title(title)
-                                    .description("```\n" + message + "```")
-                                    .build();
-                            IResponse response = ResponseFactory.createEmbedResponse(em);
-                            renderer.render(response);
-                        })));
+        announcementChannelRepo.findAll().forEach(ac -> {
+            val em = EmbedMessage.builder()
+                    .title(title)
+                    .description("```\n" + message + "```")
+                    .build();
+            messagingService.send(ac.getGuild(),
+                    ac.getChannel(),
+                    DiscordMessageSendSpec
+                            .fromEmbed(em));
+        });
     }
 
     public synchronized void sendMessage(String message)

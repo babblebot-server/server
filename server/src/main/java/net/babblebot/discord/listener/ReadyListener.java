@@ -23,56 +23,43 @@
  *
  */
 
-package net.babblebot.service;
+package net.babblebot.discord.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.config.EPluginPermission;
-import net.babblebot.api.plugins.IPluginContainer;
-import net.babblebot.core.CorePlugin;
-import net.babblebot.plugins.PluginModel;
-import net.babblebot.plugins.PluginModelRepository;
-import net.babblebot.plugins.importing.ImportPluginFactory;
+import net.babblebot.api.config.IDiscordConfig;
+import net.babblebot.command.CommandRegistry;
+import net.babblebot.service.PluginLoadingService;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 /**
- * Service for Loading Plugins
+ * Ready listener for the Discord API
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PluginLoadingService
+public class ReadyListener extends ListenerAdapter
 {
-    private final IPluginContainer container;
+    private final IDiscordConfig config;
+    private final PluginLoadingService loadingService;
+    private final CommandRegistry registry;
     private final IApplication application;
-    private final CorePlugin corePlugin;
-    private final PluginModelRepository modelRepository;
 
-    public void loadPlugins()
+    @Override
+    public void onReady(@NotNull ReadyEvent event)
     {
-        addCorePlugin();
-        loadPluginsFromDatabase();
-    }
-
-    private void loadPluginsFromDatabase()
-    {
-        List<PluginModel> plugins = modelRepository.findAll();
-        plugins.forEach(pluginModel -> ImportPluginFactory.importPlugin(pluginModel, application)
-                .subscribe(pObj -> container.addPlugin(pObj, pluginModel)));
-    }
-
-    private void addCorePlugin()
-    {
-        container.addPlugin(corePlugin,
-                PluginModel.builder()
-                        .pluginPermissions(EPluginPermission.all())
-                        .namespace("")
-                        .build());
+        event.getJDA().getPresence()
+                .setActivity(Activity.playing(config.getPlayingText()));
+        log.info("Started Discord Client, waiting for messages...");
+        loadingService.loadPlugins();
+        registry.removeAllDanglingDiscordSlashCommands(application);
     }
 }

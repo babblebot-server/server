@@ -31,6 +31,11 @@ import lombok.Singular;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.babblebot.api.obj.message.discord.interactions.Row;
+import net.babblebot.api.obj.message.discord.interactions.button.Button;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownMenu;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownView;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.util.List;
 
@@ -48,15 +53,22 @@ public final class DiscordMessageSendSpec
 {
     @Singular("addEmbed")
     private final List<EmbedMessage> embeds;
+    @Singular("addDropdownMenu")
+    private final List<DropdownMenu> menus;
+    @Singular("addButton")
+    private final List<Button> buttons;
+    @Singular("addRow")
+    private final List<Row> row;
+    private final DropdownView view;
     @Builder.Default
     private final String content = "";
     @Builder.Default
     private final boolean tts = false;
 
-    public static DiscordMessageSendSpec fromString(String content)
+    public static DiscordMessageSendSpec fromString(String content, Object... args)
     {
         return DiscordMessageSendSpec.builder()
-                .content(content)
+                .content(MessageFormatter.arrayFormat(content, args).getMessage())
                 .build();
     }
 
@@ -72,6 +84,34 @@ public final class DiscordMessageSendSpec
         return DiscordMessageSendSpec.builder()
                 .content(content)
                 .tts(true)
+                .build();
+    }
+
+    public static DiscordMessageSendSpec fromDropdown(DropdownMenu menu)
+    {
+        return DiscordMessageSendSpec.builder()
+                .addDropdownMenu(menu)
+                .build();
+    }
+
+    public static DiscordMessageSendSpec fromButton(Button button)
+    {
+        return DiscordMessageSendSpec.builder()
+                .addButton(button)
+                .build();
+    }
+
+    public static DiscordMessageSendSpec fromRow(Row row)
+    {
+        return DiscordMessageSendSpec.builder()
+                .addRow(row)
+                .build();
+    }
+
+    public static DiscordMessageSendSpec fromDropdownView(DropdownView view)
+    {
+        return DiscordMessageSendSpec.builder()
+                .view(view)
                 .build();
     }
 }

@@ -32,11 +32,18 @@ import net.babblebot.api.command.ICommand;
 import net.babblebot.api.command.ICommandContext;
 import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.config.IConfig;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
 import net.babblebot.api.obj.message.discord.embed.EmbedField;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
+import net.babblebot.api.obj.message.discord.interactions.Row;
+import net.babblebot.api.obj.message.discord.interactions.button.Button;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownMenu;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownOption;
+import net.babblebot.api.obj.message.discord.interactions.dropdown.DropdownView;
 import net.babblebot.api.plugins.IPluginContainer;
 import net.babblebot.api.plugins.IPluginSettings;
+import net.babblebot.discord.services.DiscordMessagingService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Listen Command for the Core Plugin
@@ -61,17 +69,45 @@ public class HelpCommand
     private final IApplication application;
     private final IPluginContainer pluginContainer;
 
-    public EmbedMessage exec(DiscordMessage message, ICommandContext ctx)
+    public DropdownView exec(DiscordMessage message, ICommandContext ctx)
     {
+        DiscordMessageSendSpec defaultView = DiscordMessageSendSpec.fromEmbed(
+                handleHelpNoCommand(message, ctx));
+        DropdownMenu menu = getCommandsDropdownMenu(ctx);
+        DropdownView view = DropdownView.builder()
+                .menu(menu)
+                .onSelectionView((s, msg) -> {
+                    if (s == null)
+                    {
+                        return defaultView;
+                    }
+
+                    return handleHelpForCommand(message, ctx, s);
+                })
+                .build();
+        return view;
+    }
+
+    private DropdownMenu getCommandsDropdownMenu(ICommandContext ctx)
+    {
+        DropdownMenu.DropdownMenuBuilder builder = DropdownMenu.builder();
         if (ctx.hasNonEmptyParameter("cmd") || !ctx.getValue().isEmpty())
         {
             String command = ctx.hasNonEmptyParameter("cmd")
                     ? ctx.getParameter("cmd") : ctx.getValue();
-            return handleHelpForCommand(message, ctx, command);
-        } else
-        {
-            return handleHelpNoCommand(message, ctx);
+            builder.addDefaultValue(command);
         }
+
+        commandRegistry.getRegisteredNamespaces().forEach(namespace -> {
+            commandRegistry.getCommandsFromNamespace(namespace).forEach(cmd -> {
+                String fullCommandName = namespace + cmd.getAliases()[0];
+                builder.addOption(
+                        DropdownOption.from(stripLabel(fullCommandName + " " + cmd.getDescription()),
+                                fullCommandName));
+            });
+        });
+
+        return builder.build();
     }
 
     private EmbedMessage handleHelpNoCommand(DiscordMessage message, ICommandContext ctx)
@@ -87,6 +123,8 @@ public class HelpCommand
                         .append("]: ")
                         .append(cmd.getDescription())
                         .append("\n");
+
+                String fullCommandName = namespace + cmd.getAliases()[0];
             });
 
             sb.append("```");
@@ -117,7 +155,17 @@ public class HelpCommand
                 .build();
     }
 
-    private EmbedMessage handleHelpForCommand(DiscordMessage message, ICommandContext ctx, String cmd)
+    private String stripLabel(String s)
+    {
+        if (s.length() >= 100)
+        {
+            return s.substring(0, 96) + "...";
+        }
+        return s;
+    }
+
+    private DiscordMessageSendSpec handleHelpForCommand(DiscordMessage message, ICommandContext ctx,
+                                                        String cmd)
     {
         String namespace = commandRegistry.getNamespaceFromCommandName(cmd);
         String commandName = cmd.replace(namespace, "");
@@ -127,10 +175,10 @@ public class HelpCommand
 
         if (commandOpt.isEmpty())
         {
-            return EmbedMessage.builder()
+            return DiscordMessageSendSpec.fromEmbed(EmbedMessage.builder()
                     .title("Command not found")
                     .description("Command: " + cmd + " was not found in the Command Registry")
-                    .build();
+                    .build());
         }
 
         ICommand command = commandOpt.get();
@@ -138,13 +186,34 @@ public class HelpCommand
         EmbedField key = getKeyField();
         EmbedField usage = getUsageField(command);
         EmbedField examples = getExamplesField(command);
+        DiscordMessagingService service = application.get(DiscordMessagingService.class);
 
-        return EmbedMessage.builder()
-                .title(StringUtils.capitalize(commandName) + " Command Help")
-                .description(command.getDescription())
-                .addField(key)
-                .addField(usage)
-                .addField(examples)
+        Row row = Row.from(
+                Button.primary("Try this command", msg -> {
+                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                        try
+                        {
+                            Thread.sleep(1000);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                        service.send(message.getGuild(), message.getChannel(), DiscordMessageSendSpec
+                                .fromString("$botAction--{}", command.getExamples()[0]));
+                    });
+                    return DiscordMessageSendSpec.fromString("Running command in 1 second...");
+                })
+        );
+
+        return DiscordMessageSendSpec.fromEmbed(EmbedMessage.builder()
+                        .title(StringUtils.capitalize(commandName) + " Command Help")
+                        .description(command.getDescription())
+                        .addField(key)
+                        .addField(usage)
+                        .addField(examples)
+                        .build()).toBuilder()
+                .addRow(row)
                 .build();
     }
 

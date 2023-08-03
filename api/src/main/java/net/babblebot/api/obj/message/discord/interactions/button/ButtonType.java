@@ -23,25 +23,17 @@
  *
  */
 
-package net.babblebot.api.command;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package net.babblebot.api.obj.message.discord.interactions.button;
 
 /**
- * Command Middleware
- *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
-
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandMiddleware
+public enum ButtonType
 {
-    boolean global() default false;
-
-    Class<?> plugin() default Object.class;
+    PRIMARY,
+    SUCCESS,
+    SECONDARY,
+    DANGER,
+    LINK
 }

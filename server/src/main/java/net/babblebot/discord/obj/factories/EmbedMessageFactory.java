@@ -25,11 +25,6 @@
 
 package net.babblebot.discord.obj.factories;
 
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.PartialMember;
-import discord4j.core.spec.EmbedCreateFields;
-import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.rest.util.Color;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.api.IApplication;
@@ -39,11 +34,13 @@ import net.babblebot.api.obj.message.discord.embed.EmbedFooter;
 import net.babblebot.api.obj.message.discord.embed.EmbedMessage;
 import net.babblebot.api.service.IVersionService;
 import net.babblebot.discord.DiscordFacade;
-import reactor.core.publisher.Mono;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Factory to Create EmbedCreateSpec from Babblebot Object
@@ -54,66 +51,64 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EmbedMessageFactory
 {
-    public static EmbedCreateSpec fromBabblebot(EmbedMessage message)
+    public static MessageEmbed fromBabblebot(EmbedMessage message)
     {
-        EmbedCreateSpec embedCreateSpec = EmbedCreateSpec.builder().build();
+        EmbedBuilder builder = new EmbedBuilder();
         if (message.getTitle() != null)
         {
-            embedCreateSpec = embedCreateSpec.withTitle(message.getTitle());
+            builder.setTitle(message.getTitle());
         }
 
         if (message.getDescription() != null)
         {
-            embedCreateSpec = embedCreateSpec.withDescription(message.getDescription());
+            builder.setDescription(message.getDescription());
         }
 
         if (message.getUrl() != null)
         {
-            embedCreateSpec = embedCreateSpec.withUrl(message.getUrl());
+            builder.setUrl(message.getUrl());
         }
 
         if (message.getTimestamp() != null)
         {
-            embedCreateSpec = embedCreateSpec.withTimestamp(message.getTimestamp());
+            builder.setTimestamp(message.getTimestamp());
         }
 
         if (message.getColor() != null)
         {
-            embedCreateSpec = embedCreateSpec.withColor(Color.of(message.getColor().getRGB()));
+            builder.setColor(message.getColor().getRGB());
         }
 
         if (message.getFooter() != null)
         {
             val footer = message.getFooter();
-            embedCreateSpec = embedCreateSpec.withFooter(
-                    EmbedCreateFields.Footer.of(footer.getText(), footer.getIconUrl()));
+            builder.setFooter(footer.getText(), footer.getIconUrl());
         }
 
         if (message.getAuthor() != null)
         {
             val author = message.getAuthor();
-            embedCreateSpec = embedCreateSpec.withAuthor(
-                    EmbedCreateFields.Author.of(author.getName(), author.getUrl(),
-                            author.getIconUrl()));
+            builder.setAuthor(author.getName(), author.getUrl(), author.getIconUrl());
         }
 
         if (message.getImage() != null)
         {
-            embedCreateSpec = embedCreateSpec.withImage(message.getImage());
+            builder.setImage(message.getImage());
         }
 
         if (message.getThumbnail() != null)
         {
-            embedCreateSpec = embedCreateSpec.withThumbnail(message.getThumbnail());
+            builder.setThumbnail(message.getThumbnail());
         }
 
-        embedCreateSpec = embedCreateSpec.withFields(message.getFields().stream().map(f -> EmbedCreateFields
-                .Field.of(f.getName(), f.getValue(), f.isInline())).collect(Collectors.toList()));
+        message.getFields().forEach(field -> {
+            builder.addField(field.getName(), field.getValue(), field.isInline());
+        });
 
-        return embedCreateSpec;
+        return builder.build();
     }
 
-    public static void addDefaults(EmbedMessage em, IApplication application, Mono<Guild> guild)
+    public static void addDefaults(EmbedMessage em, IApplication application, Guild guild)
     {
         if (em.getFooter() == null)
         {
@@ -133,13 +128,16 @@ public class EmbedMessageFactory
         {
             em.setTimestamp(Instant.now());
         }
-        Optional<Color> color = guild.flatMap(
-                        g -> application.get(DiscordFacade.class).getClient().getSelf()
-                                .flatMap(u -> u.asMember(g.getId()).flatMap(PartialMember::getColor)))
-                .blockOptional();
-        if (em.getColor() == null && color.isPresent())
-        {
-            em.setColor(DiscordColor.from(color.get().getRGB()));
+
+        DiscordFacade facade = application.get(DiscordFacade.class);
+        Optional<Member> member = Optional
+                .ofNullable(guild.getMemberById(facade.getBotUser().getId().toLong()));
+
+        if (member.isPresent()) {
+            Member m = member.get();
+            if (em.getColor() == null) {
+                em.setColor(DiscordColor.from(m.getColorRaw()));
+            }
         }
     }
 }

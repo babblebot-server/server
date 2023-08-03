@@ -23,48 +23,44 @@
  *
  */
 
-package net.babblebot.command.renderer;
+package net.babblebot.api.obj.message.discord.interactions.dropdown;
 
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.api.command.IResponse;
-import net.babblebot.api.discord.IDiscordMessagingService;
-import net.babblebot.command.ResponseFactory;
-import net.babblebot.command.errors.UsageException;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.babblebot.api.discord.DiscordMessageSendSpec;
+import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.api.obj.message.discord.interactions.InteractionItem;
+
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
- * Discord Command Renderer that will send the response to the channel
+ * Dropdown Menu Interaction
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since __RELEASE_VERSION__
  */
 @Slf4j
-@RequiredArgsConstructor
-public class DiscordCommandRenderer implements CommandRenderer
+@Builder(toBuilder = true)
+@Data
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DropdownMenu implements InteractionItem
 {
-    private final TextChannel channel;
-    private final Guild guild;
-    private final IDiscordMessagingService service;
-
-    @Override
-    public void render(IResponse response)
-    {
-        long guildId = guild.getIdLong();
-        long channelId = channel.getIdLong();
-        service.send(guildId, channelId, response.getSendSpec());
-    }
-
-    @Override
-    public boolean onError(Exception e)
-    {
-        if (e instanceof UsageException)
-        {
-            render(ResponseFactory.createStringResponse(e.getMessage()));
-            return true;
-        }
-
-        return false;
-    }
+    @Singular("addOption")
+    private final List<DropdownOption> options;
+    @Singular("addDefaultValue")
+    private final List<String> defaultValues;
+    @Builder.Default
+    private final boolean disableOnSelect = true;
+    @Builder.Default
+    private final boolean sendResponse = true;
+    @Builder.Default
+    private final BiFunction<String, DiscordMessage, DiscordMessageSendSpec> onResponse =
+            (s, msg) -> DiscordMessageSendSpec.fromString(
+                    "Please supply a onResponse handler");
 }

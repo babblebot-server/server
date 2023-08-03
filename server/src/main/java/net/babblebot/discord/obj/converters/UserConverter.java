@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.obj.message.discord.DiscordId;
 import net.babblebot.api.obj.message.discord.DiscordUser;
-import net.babblebot.discord.obj.factories.DiscordObjectFactory;
+import net.babblebot.discord.obj.factories.DiscordUserFactory;
 
 /**
  * DB Converter for Text Channel
@@ -45,7 +45,7 @@ import net.babblebot.discord.obj.factories.DiscordObjectFactory;
 public class UserConverter implements AttributeConverter<DiscordUser, String>
 {
     private final DiscordIdConverter discordIdConverter = new DiscordIdConverter();
-    private final DiscordObjectFactory discordObjectFactory;
+    private final DiscordUserFactory discordUserFactory;
 
     @Override
     public String convertToDatabaseColumn(DiscordUser attribute)
@@ -61,6 +61,6 @@ public class UserConverter implements AttributeConverter<DiscordUser, String>
     public DiscordUser convertToEntityAttribute(String dbData)
     {
         DiscordId userId = discordIdConverter.convertToEntityAttribute(dbData);
-        return discordObjectFactory.userFromId(userId).orElse(null);
+        return discordUserFactory.makeFromId(userId.toLong()).orElse(null);
     }
 }

@@ -26,7 +26,6 @@
 package net.babblebot.api.command;
 
 import net.babblebot.api.IApplication;
-import net.babblebot.api.plugins.IPluginSettings;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -116,21 +115,4 @@ public interface ICommandRegistry
      * @return {@link String}
      */
     String getNamespaceFromCommandName(String commandName);
-
-    /**
-     * Register Global middleware that will run before the execution of the command implementation for all
-     * commands regardless of the namespace it can stop execution of the command at this point
-     *
-     * @param middleware  {@link ICommandMiddleware} the middleware object that will be run
-     */
-    void registerGlobalMiddleware(ICommandMiddleware middleware);
-
-    /**
-     * Register Plugin middleware that will run before the execution of the command implementation for all
-     * commands of the namespace of the plugin it can stop execution of the command at this point
-     *
-     * @param plugin     the plugin object
-     * @param middleware {@link ICommandMiddleware} the middleware object that will be run
-     */
-    void registerPluginMiddleware(IPluginSettings plugin, ICommandMiddleware middleware);
 }

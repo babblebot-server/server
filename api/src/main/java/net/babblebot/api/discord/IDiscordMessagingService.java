@@ -25,9 +25,11 @@
 
 package net.babblebot.api.discord;
 
-import net.babblebot.api.obj.message.discord.*;
+import net.babblebot.api.obj.message.discord.DiscordChannel;
+import net.babblebot.api.obj.message.discord.DiscordGuild;
+import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.api.obj.message.discord.DiscordUser;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -40,31 +42,15 @@ import java.util.Optional;
 @Service
 public interface IDiscordMessagingService
 {
-    Mono<DiscordMessage> send(DiscordGuild guild, DiscordChannel channel, DiscordMessageSendSpec spec);
+    Optional<DiscordMessage> send(DiscordGuild guild, DiscordChannel channel,
+                                  DiscordMessageSendSpec spec);
+    Optional<DiscordMessage> send(long guild, long channel, DiscordMessageSendSpec spec);
 
-    Mono<DiscordMessage> send(long guild, long channel, DiscordMessageSendSpec spec);
+    Optional<DiscordMessage> sendPrivateMessage(DiscordGuild guild, DiscordUser user,
+                                                DiscordMessageSendSpec spec);
 
-    Mono<DiscordMessage> sendPrivateMessage(DiscordGuild guild, DiscordUser user,
-                                            DiscordMessageSendSpec spec);
+    Optional<DiscordMessage> sendPrivateMessage(long guild, long user,
+                                                DiscordMessageSendSpec spec);
 
-    Mono<Void> sendInteractionFollowup(InteractionDiscordMessage message,
-                                       DiscordMessageSendSpec spec);
-
-    Mono<DiscordMessage> sendPrivateMessage(long guild, long user,
-                                            DiscordMessageSendSpec spec);
-
-    Mono<Void> deleteMessage(DiscordMessage message);
-
-    Optional<DiscordMessage> sendSync(DiscordGuild guild, DiscordChannel channel,
-                                      DiscordMessageSendSpec spec);
-
-    Optional<DiscordMessage> sendSync(long guild, long channel, DiscordMessageSendSpec spec);
-
-    Optional<DiscordMessage> sendPrivateMessageSync(DiscordGuild guild, DiscordUser user,
-                                                    DiscordMessageSendSpec spec);
-
-    Optional<DiscordMessage> sendPrivateMessageSync(long guild, long user,
-                                                    DiscordMessageSendSpec spec);
-
-    void deleteMessageSync(DiscordMessage message);
+    void deleteMessage(DiscordMessage message);
 }
