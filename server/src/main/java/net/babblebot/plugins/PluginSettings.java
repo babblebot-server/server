@@ -25,6 +25,7 @@
 
 package net.babblebot.plugins;
 
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.plugins.IPluginSettings;
 
@@ -33,6 +34,7 @@ import net.babblebot.api.plugins.IPluginSettings;
  * @since 1.2.7
  */
 @Slf4j
+@ToString
 public class PluginSettings implements IPluginSettings
 {
 

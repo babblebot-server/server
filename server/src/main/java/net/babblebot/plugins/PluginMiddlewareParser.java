@@ -26,11 +26,13 @@
 package net.babblebot.plugins;
 
 import lombok.extern.slf4j.Slf4j;
-import net.babblebot.discord.DiscordCommandContext;
+import net.babblebot.BabblebotApplication;
 import net.babblebot.api.IApplication;
 import net.babblebot.api.command.*;
 import net.babblebot.api.config.IConfig;
 import net.babblebot.api.obj.message.discord.DiscordMessage;
+import net.babblebot.discord.DiscordCommandContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.util.Pair;
 
 import java.lang.reflect.InvocationTargetException;
@@ -81,6 +83,38 @@ public final class PluginMiddlewareParser
                 }
             }
         }
+
+        BabblebotApplication bbApp = (BabblebotApplication) application;
+        ApplicationContext context = bbApp.getApplicationContext();
+        context.getBeansWithAnnotation(CommandMiddleware.class).values().forEach(middleware -> {
+            Class<?> mc = middleware.getClass();
+            CommandMiddleware cm = mc.getAnnotation(CommandMiddleware.class);
+            if (!cm.global())
+            {
+                if (cm.plugin() != Object.class)
+                {
+                    if (cm.plugin() == pluginObj.getClass())
+                    {
+                        if (Arrays.stream(mc.getInterfaces()).anyMatch(i -> i == ICommandMiddleware.class))
+                        {
+                            ICommandMiddleware commandMiddleware = (ICommandMiddleware) middleware;
+                            commandsMiddleware.add(Pair.of(false, commandMiddleware));
+                        } else
+                        {
+                            log.warn("Cannot register command middleware class: {} because there's no " +
+                                    "implementation of ICommandMiddleware", mc);
+                        }
+                    }
+                } else
+                {
+                    log.error("Cannot register command middleware class: {} because the setup is incorrect " +
+                                    "for a plugin middleware ensure you set global to false and the plugin " +
+                                    "parameter",
+                            mc);
+                }
+
+            }
+        });
 
         return commandsMiddleware;
     }

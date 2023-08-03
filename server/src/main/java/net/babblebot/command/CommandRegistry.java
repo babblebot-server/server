@@ -306,12 +306,13 @@ public class CommandRegistry implements ICommandRegistry
 
     public void registerGlobalMiddleware(ICommandMiddleware middleware)
     {
+        log.info("Registered global middleware: {}", middleware);
         this.middlewareList.get(null).add(middleware);
     }
 
-
     public void registerPluginMiddleware(IPluginSettings plugin, ICommandMiddleware middleware)
     {
+        log.info("Registered plugin middleware: {} -- {}", plugin, middleware);
         middlewareList.putIfAbsent(plugin, new ArrayList<>());
         middlewareList.get(plugin).add(middleware);
     }

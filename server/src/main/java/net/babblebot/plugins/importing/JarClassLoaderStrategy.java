@@ -30,10 +30,13 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.babblebot.BabblebotApplication;
 import net.babblebot.api.IApplication;
+import net.babblebot.api.command.CommandMiddleware;
+import net.babblebot.api.command.ICommandMiddleware;
 import net.babblebot.api.plugins.IPlugin;
 import net.babblebot.api.plugins.IPluginModel;
 import net.babblebot.api.plugins.Plugin;
 import net.babblebot.api.plugins.PluginConfig;
+import net.babblebot.command.CommandRegistry;
 import net.babblebot.plugins.PluginConfigParser;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.context.support.GenericApplicationContext;
@@ -126,6 +129,8 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                                     applicationContext::removeBeanDefinition);
                                         }
                                     }
+
+
                                     if (c.isAnnotationPresent(PluginConfig.class))
                                     {
                                         application.get(PluginConfigParser.class)
@@ -134,6 +139,28 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                                             && !c.isAnnotationPresent(Entity.class))
                                     {
                                         applicationContext.registerBean(c);
+                                    }
+
+                                    if (c.isAnnotationPresent(CommandMiddleware.class))
+                                    {
+                                        CommandMiddleware middleware = c.getAnnotation(
+                                                CommandMiddleware.class);
+                                        if (middleware.global())
+                                        {
+                                            if (Arrays.stream(c.getInterfaces())
+                                                    .anyMatch(i -> i == ICommandMiddleware.class))
+                                            {
+                                                application.get(CommandRegistry.class)
+                                                        .registerGlobalMiddleware(
+                                                                (ICommandMiddleware) application.get(c));
+                                            } else
+                                            {
+                                                log.warn(
+                                                        "Cannot register command middleware class: {} " +
+                                                                "because there's no " +
+                                                                "implementation of ICommandMiddleware", c);
+                                            }
+                                        }
                                     }
                                 }
                                 catch (Exception e)
@@ -281,7 +308,8 @@ public class JarClassLoaderStrategy implements IPluginImportStrategy
                 Entity.class,
                 Controller.class,
                 RestController.class,
-                Entity.class
+                Entity.class,
+                CommandMiddleware.class
         );
 
         return Arrays.stream(c.getAnnotations())

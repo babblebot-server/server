@@ -30,7 +30,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.babblebot.api.IApplication;
-import net.babblebot.api.command.ICommandRegistry;
 import net.babblebot.api.plugins.*;
 import net.babblebot.api.service.IVersionService;
 import net.babblebot.command.CommandRegistry;
@@ -55,7 +54,7 @@ public class PluginContainer implements IPluginContainer
     private final Map<Object, PluginPermissionContainer> pluginPermissionsMap = new HashMap<>();
     private final IVersionService versionService;
     private final IApplication application;
-    private final ICommandRegistry commandRegistry;
+    private final CommandRegistry commandRegistry;
 
     @Override
     public void addPlugin(Object obj, IPluginModel model)

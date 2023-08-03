@@ -60,7 +60,7 @@ public class CorePlugin
     {
         if (ctx instanceof DiscordCommandContext discordCommandContext)
         {
-            log.debug("Checking if channel {} is ignored by babblebot", discordCommandContext
+            log.info("Checking if channel {} is ignored by babblebot", discordCommandContext
                     .getMessage().getChannel().getName());
             return ignoreRepository
                     .findByChannel((discordCommandContext).getMessage().getChannel())

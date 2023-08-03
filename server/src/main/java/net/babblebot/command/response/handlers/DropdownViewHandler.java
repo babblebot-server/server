@@ -42,7 +42,6 @@ import java.lang.reflect.Type;
 @Slf4j
 public class DropdownViewHandler extends ResponseHandler
 {
-
     public DropdownViewHandler(Type type, Sinks.Many<IResponse> processor)
     {
         super(type, processor);
