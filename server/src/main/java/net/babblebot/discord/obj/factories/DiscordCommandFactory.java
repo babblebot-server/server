@@ -52,10 +52,11 @@ public class DiscordCommandFactory
 {
     private final JDA client;
 
-    public SlashCommandData createSlashCommand(ICommand command)
+    public SlashCommandData createSlashCommand(String namespace, ICommand command)
     {
         SlashCommandData commandData =
-                Commands.slash(command.getAliases()[0].toLowerCase(Locale.ROOT), command.getDescription());
+                Commands.slash(namespace + command.getAliases()[0].toLowerCase(Locale.ROOT),
+                        command.getDescription());
 
         Arrays.stream(command.getCommandParams()).forEach(commandParam -> {
             //TODO: Support autocomplete options

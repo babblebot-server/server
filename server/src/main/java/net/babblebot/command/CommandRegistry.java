@@ -121,7 +121,7 @@ public class CommandRegistry implements ICommandRegistry
         DiscordFacade facade = application.get(DiscordFacade.class);
         DiscordCommandFactory factory = application.get(DiscordCommandFactory.class);
         List<SlashCommandData> commandData = commands.stream()
-                .map(factory::createSlashCommand)
+                .map(c -> factory.createSlashCommand(namespace, c))
                 .collect(Collectors.toList());
         commandData.parallelStream().forEach(cd -> {
             facade.getClient().upsertCommand(cd).queue();
@@ -133,25 +133,29 @@ public class CommandRegistry implements ICommandRegistry
     {
         DiscordFacade facade = application.get(DiscordFacade.class);
         facade.getClient().retrieveCommands().complete().parallelStream().forEach(c -> {
-            if (commands.values().stream()
-                    .flatMap(Collection::stream)
-                    .noneMatch(rc -> rc.getAliases()[0].equalsIgnoreCase(c.getName())))
-            {
-                log.info("Deleting Dangling command: {} {}", c.getName(), c.getDescription());
-                c.delete().queue();
-            }
+            commands.forEach((k, v) -> {
+                String namespace = k == null ? "" : k;
+                if (v.stream()
+                        .noneMatch(rc -> (namespace + rc.getAliases()[0]).equalsIgnoreCase(c.getName())))
+                {
+                    log.info("Deleting Dangling command: {} {}", c.getName(), c.getDescription());
+                    c.delete().queue();
+                }
+            });
         });
         facade.getClient().getGuilds().parallelStream().forEach(g ->
                 g.retrieveCommands().complete().parallelStream().forEach(c -> {
-                    if (commands.values().stream()
-                            .flatMap(Collection::stream)
-                            .noneMatch(rc -> rc.getAliases()[0].equalsIgnoreCase(c.getName())))
-                    {
-                        log.info("Deleting Dangling command: {} {} in guild: {}", c.getName(),
-                                c.getDescription(),
-                                g.getName());
-                        c.delete().queue();
-                    }
+                    commands.forEach((k, v) -> {
+                        String namespace = k == null ? "" : k;
+                        if (v.stream()
+                                .noneMatch(
+                                        rc -> (namespace + rc.getAliases()[0]).equalsIgnoreCase(c.getName())))
+                        {
+                            log.info("Deleting Dangling command in guild: {} {} (Guild:{})", c.getName(),
+                                    c.getDescription(), g.getName());
+                            c.delete().queue();
+                        }
+                    });
                 }));
     }
 
@@ -402,7 +406,7 @@ public class CommandRegistry implements ICommandRegistry
      * @param namespace   the command namespace
      * @param commandName the alias of the command
      * @return {@link Optional} of a {@link ICommand} if a command is found
- * @since 3.0.0-rc.28
+     * @since 3.0.0-rc.28
      */
     public Optional<ICommand> findCommand(ICommandContext ctx, String namespace, String commandName)
     {
