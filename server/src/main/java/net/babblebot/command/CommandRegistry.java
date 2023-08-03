@@ -133,30 +133,30 @@ public class CommandRegistry implements ICommandRegistry
     {
         DiscordFacade facade = application.get(DiscordFacade.class);
         facade.getClient().retrieveCommands().complete().parallelStream().forEach(c -> {
-            commands.forEach((k, v) -> {
-                String namespace = k == null ? "" : k;
-                if (v.stream()
-                        .noneMatch(rc -> (namespace + rc.getAliases()[0]).equalsIgnoreCase(c.getName())))
-                {
-                    log.info("Deleting Dangling command: {} {}", c.getName(), c.getDescription());
-                    c.delete().queue();
-                }
-            });
+            boolean commandExists = checkCommandExists(c.getName());
+            if (!commandExists)
+            {
+                log.info("Deleting Dangling command in guild: {} {}", c.getName(),
+                        c.getDescription());
+                c.delete().queue();
+            }
         });
         facade.getClient().getGuilds().parallelStream().forEach(g ->
                 g.retrieveCommands().complete().parallelStream().forEach(c -> {
-                    commands.forEach((k, v) -> {
-                        String namespace = k == null ? "" : k;
-                        if (v.stream()
-                                .noneMatch(
-                                        rc -> (namespace + rc.getAliases()[0]).equalsIgnoreCase(c.getName())))
-                        {
-                            log.info("Deleting Dangling command in guild: {} {} (Guild:{})", c.getName(),
-                                    c.getDescription(), g.getName());
-                            c.delete().queue();
-                        }
-                    });
+                    boolean commandExists = checkCommandExists(c.getName());
+                    if (!commandExists)
+                    {
+                        log.info("Deleting Dangling command in guild: {} {} (Guild:{})", c.getName(),
+                                c.getDescription(), g.getName());
+                        c.delete().queue();
+                    }
                 }));
+    }
+
+    private boolean checkCommandExists(String name)
+    {
+        String namespace = getNamespaceFromCommandName(name);
+        return getCommandByAlias(namespace, name, "ALL").isPresent();
     }
 
     public void removeDiscordSlashCommands(String namespace, List<ICommand> commandsToRemove,
@@ -297,7 +297,6 @@ public class CommandRegistry implements ICommandRegistry
     public String getNamespaceFromCommandName(String commandName)
     {
         AtomicReference<String> namespace = new AtomicReference<>("");
-        log.info(commandName);
         this.commands.keySet().forEach(i -> {
             if (commandName.startsWith(i))
             {
