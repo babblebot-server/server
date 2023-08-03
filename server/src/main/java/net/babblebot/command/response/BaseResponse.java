@@ -35,7 +35,7 @@ import net.babblebot.api.discord.DiscordMessageSendSpec;
  * Base Response Class
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.29
+ * @since 3.0.0-rc.30
  */
 @Slf4j
 @Data

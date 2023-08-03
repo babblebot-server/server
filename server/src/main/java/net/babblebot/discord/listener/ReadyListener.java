@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service;
  * Ready listener for the Discord API
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.29
+ * @since 3.0.0-rc.30
  */
 @Slf4j
 @Service

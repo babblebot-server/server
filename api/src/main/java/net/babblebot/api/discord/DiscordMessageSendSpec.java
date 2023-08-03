@@ -43,7 +43,7 @@ import java.util.List;
  * Sending spec for a DiscordMessage
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.29
+ * @since 3.0.0-rc.30
  */
 @Data
 @Builder(toBuilder = true)

@@ -27,7 +27,7 @@ package net.babblebot.api.obj.message.discord.interactions.button;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.29
+ * @since 3.0.0-rc.30
  */
 public enum ButtonType
 {
