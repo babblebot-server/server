@@ -34,7 +34,7 @@ import java.io.Serializable;
  * from a command will then rendered to the output for discord it will render it on the discord channel
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since 3.0.0-rc.28
  */
 public interface CommandRenderer extends Serializable
 {

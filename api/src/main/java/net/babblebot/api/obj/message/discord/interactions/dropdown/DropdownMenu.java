@@ -42,7 +42,7 @@ import java.util.function.BiFunction;
  * Dropdown Menu Interaction
  *
  * @author me@bdavies.net (Ben Davies)
- * @since __RELEASE_VERSION__
+ * @since 3.0.0-rc.28
  */
 @Slf4j
 @Builder(toBuilder = true)

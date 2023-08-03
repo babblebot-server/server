@@ -32,7 +32,7 @@ import org.springframework.stereotype.Repository;
  * Config Repository
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since 3.0.0-rc.28
  */
 @Repository
 public interface ConfigRepository extends JpaRepository<Config, Long>

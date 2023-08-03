@@ -30,7 +30,7 @@ package net.babblebot.api.command;
  * context
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.27
+ * @since 3.0.0-rc.28
  */
 public enum CommandType
 {

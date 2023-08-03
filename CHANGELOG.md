@@ -1,3 +1,10 @@
+# [3.0.0-rc.28](https://github.com/babblebot-server/server/compare/v3.0.0-rc.27...v3.0.0-rc.28) (2023-08-03)
+
+
+### Features
+
+* Add the @CommandMiddleware support for plugins ([79a4a80](https://github.com/babblebot-server/server/commit/79a4a8027212e0ff8b450c0961cdc9c98376f587))
+
 # [3.0.0-rc.27](https://github.com/babblebot-server/server/compare/v3.0.0-rc.26...v3.0.0-rc.27) (2023-07-24)
 
 # [3.0.0-rc.26](https://github.com/babblebot-server/server/compare/v3.0.0-rc.25...v3.0.0-rc.26) (2023-07-12)
