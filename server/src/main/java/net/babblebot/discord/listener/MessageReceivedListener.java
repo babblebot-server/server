@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.28
+ * @since 3.0.0-rc.29
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Lazy)

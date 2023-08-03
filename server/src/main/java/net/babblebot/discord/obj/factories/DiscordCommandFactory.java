@@ -43,7 +43,7 @@ import java.util.Locale;
  * Factory for converting between babblebot and internal apis
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.28
+ * @since 3.0.0-rc.29
  */
 @Slf4j
 @Component

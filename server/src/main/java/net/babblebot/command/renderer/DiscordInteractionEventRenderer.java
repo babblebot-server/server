@@ -41,7 +41,7 @@ import java.util.Optional;
  * Renderer for an Interaction event from Discord
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.28
+ * @since 3.0.0-rc.29
  */
 @Slf4j
 @RequiredArgsConstructor

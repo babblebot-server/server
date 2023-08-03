@@ -1,3 +1,10 @@
+# [3.0.0-rc.29](https://github.com/babblebot-server/server/compare/v3.0.0-rc.28...v3.0.0-rc.29) (2023-08-03)
+
+
+### Bug Fixes
+
+* Namespace issue with slash commands ([567d1b3](https://github.com/babblebot-server/server/commit/567d1b3e0b9acf6d3ec75a5f49bcbde5de75da0f))
+
 # [3.0.0-rc.28](https://github.com/babblebot-server/server/compare/v3.0.0-rc.27...v3.0.0-rc.28) (2023-08-03)
 
 

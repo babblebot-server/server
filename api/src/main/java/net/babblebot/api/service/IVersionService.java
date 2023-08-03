@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service;
  * Version Service for Getting the server version
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.28
+ * @since 3.0.0-rc.29
  */
 @Service
 public interface IVersionService
