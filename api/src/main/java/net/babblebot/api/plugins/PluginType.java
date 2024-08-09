@@ -29,7 +29,7 @@ package net.babblebot.api.plugins;
  * Plugin type enum
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.30
+ * @since 3.0.0-rc.31
  */
 public enum PluginType
 {

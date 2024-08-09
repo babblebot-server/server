@@ -46,7 +46,7 @@ import java.util.Optional;
  * Factory to Create EmbedCreateSpec from Babblebot Object
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.30
+ * @since 3.0.0-rc.31
  */
 @Slf4j
 public class EmbedMessageFactory

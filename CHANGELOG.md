@@ -1,3 +1,10 @@
+# [3.0.0-rc.31](https://github.com/babblebot-server/server/compare/v3.0.0-rc.30...v3.0.0-rc.31) (2024-08-09)
+
+
+### Bug Fixes
+
+* fix deps and other spring boot errors ([694d1b1](https://github.com/babblebot-server/server/commit/694d1b1c9159ed6f2ca7a62aebe40b5c6fc4e620))
+
 # [3.0.0-rc.30](https://github.com/babblebot-server/server/compare/v3.0.0-rc.29...v3.0.0-rc.30) (2023-08-03)
 
 

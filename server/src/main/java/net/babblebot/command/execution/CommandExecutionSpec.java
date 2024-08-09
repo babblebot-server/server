@@ -39,7 +39,7 @@ import java.util.function.BiConsumer;
  * Command Execution Policy
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.30
+ * @since 3.0.0-rc.31
  */
 @Slf4j
 @Data

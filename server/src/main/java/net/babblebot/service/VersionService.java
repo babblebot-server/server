@@ -38,7 +38,7 @@ import java.nio.charset.StandardCharsets;
  * Version Service for Getting the server version
  *
  * @author me@bdavies.net (Ben Davies)
- * @since 3.0.0-rc.30
+ * @since 3.0.0-rc.31
  */
 @Slf4j
 @Service
