@@ -66,7 +66,7 @@ public class DiscordLoginService
     {
         try
         {
-            if (config.getToken().equals(""))
+            if (config.getToken().isEmpty())
             {
                 throw new DiscordTokenNotPresentException();
             }
@@ -85,7 +85,7 @@ public class DiscordLoginService
         }
         catch (NullPointerException e)
         {
-            e.printStackTrace();
+            log.error("Failed to setup Discord Client", e);
         }
     }
 

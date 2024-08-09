@@ -3,7 +3,6 @@ plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id "com.jfrog.bintray" version "1.8.5"
     id 'idea'
 }
 
@@ -35,7 +34,6 @@ if (!isRelease || isJitpack) {
 
 allprojects {
     apply plugin: 'maven-publish'
-    apply plugin: "com.jfrog.bintray"
 
     if (!isJitpack && isRelease) apply plugin: 'signing'
 

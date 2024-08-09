@@ -7,12 +7,14 @@
     "url" : "https://github.com/babblebot-server/server/issues"
   },
   "homepage" : "https://github.com/babblebot-server/server#readme",
+  "main" : "index.js",
   "devDependencies" : {
     "@semantic-release/changelog" : "^5.0.1",
     "@semantic-release/commit-analyzer" : "^8.0.1",
     "@semantic-release/exec" : "^5.0.0",
     "@semantic-release/git" : "^9.0.0",
     "@semantic-release/github" : "^7.2.0",
+    "esutils" : "^2.0.2",
     "@semantic-release/release-notes-generator" : "^9.0.1",
     "commitlint" : "^11.0.0",
     "conventional-changelog-conventionalcommits" : "^4.5.0",

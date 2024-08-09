@@ -45,6 +45,7 @@ import net.babblebot.api.plugins.IPluginContainer;
 import net.babblebot.api.plugins.IPluginSettings;
 import net.babblebot.discord.services.DiscordMessagingService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;

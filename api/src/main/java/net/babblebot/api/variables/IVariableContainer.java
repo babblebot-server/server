@@ -35,7 +35,6 @@ import java.lang.reflect.Method;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Component
 public interface IVariableContainer {
     /**
      * This method will add all the variables (@Variable.class) that are in that class to the 2 Maps.

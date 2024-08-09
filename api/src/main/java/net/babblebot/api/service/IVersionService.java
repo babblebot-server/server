@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
  * @author me@bdavies.net (Ben Davies)
  * @since 3.0.0-rc.30
  */
-@Service
 public interface IVersionService
 {
     String getVersionStr();

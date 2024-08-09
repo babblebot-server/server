@@ -32,7 +32,6 @@ import org.springframework.stereotype.Component;
  * @author ben.davies99@outlook.com (Ben Davies)
  * @since 1.0.0
  */
-@Component
 public interface IDiscordFacade
 {
     /**
